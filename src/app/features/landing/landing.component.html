@@ -1,0 +1,286 @@
+<div class="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50">
+  <header class="bg-white shadow-sm">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center py-6">
+        <div class="flex items-center">
+          <h1 class="text-2xl font-bold text-gray-900">DataSpace Portal</h1>
+        </div>
+        <nav class="hidden md:flex space-x-8">
+          <a href="#features" class="text-gray-600 hover:text-primary-600 transition-colors">Features</a>
+          <a href="#how-it-works" class="text-gray-600 hover:text-primary-600 transition-colors">How It Works</a>
+          <a href="#contact" class="text-gray-600 hover:text-primary-600 transition-colors">Contact</a>
+        </nav>
+        <div class="flex items-center space-x-4">
+          <button *ngIf="!isAuthEnabled || !(isAuthenticated$ | async)" 
+                  (click)="navigateToSignUp()"
+                  class="btn-primary">
+            Sign Up
+          </button>
+          <button *ngIf="isAuthEnabled && !(isAuthenticated$ | async)" 
+                  (click)="login()"
+                  class="btn-outline">
+            Login
+          </button>
+          
+          <div *ngIf="isAuthEnabled && (isAuthenticated$ | async) && (showUserDashboard$ | async)" 
+               class="flex items-center space-x-4">
+            <span class="text-sm text-gray-600">User</span>
+            <button (click)="goToDashboard()" class="btn-primary">
+              My Dashboard
+            </button>
+            <button (click)="logout()" class="text-primary hover:text-accent transition-colors">
+              Logout
+            </button>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="py-20">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-4xl mx-auto">
+        <h1 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+          Access the 
+          <span class="text-primary-800">DataSpace</span>
+          <br>Ecosystem
+        </h1>
+        <p class="text-xl text-gray-600 mb-8 leading-relaxed">
+          Connect to Italy's most advanced data sharing ecosystem. 
+          Access enterprise data and develop innovative solutions in a secure, 
+          controlled and EU regulation-compliant way.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <button
+            (click)="navigateToSignUp()"
+            class="btn-primary text-lg px-8 py-4"
+          >
+            Get Started
+          </button>
+          <button
+            (click)="scrollToFeatures()"
+            class="btn-outline text-lg px-8 py-4"
+          >
+            Learn More
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="py-20 bg-white">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl font-bold text-gray-900 mb-4">Why Choose DataSpace</h2>
+        <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+          A complete platform to access and share enterprise data 
+          with the highest standards of security and compliance.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="card hover:shadow-lg transition-shadow duration-300">
+          <div class="h-12 w-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4">
+            <svg class="h-6 w-6 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">Advanced Security</h3>
+          <p class="text-gray-600">
+            End-to-end encryption, multi-factor authentication and granular access controls 
+            to protect your most sensitive data.
+          </p>
+        </div>
+
+        <div class="card hover:shadow-lg transition-shadow duration-300">
+          <div class="h-12 w-12 bg-accent-100 rounded-lg flex items-center justify-center mb-4">
+            <svg class="h-6 w-6 text-accent-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">GDPR Compliance</h3>
+          <p class="text-gray-600">
+            Full compliance with European regulations on personal data protection 
+            and international best practices.
+          </p>
+        </div>
+
+        <div class="card hover:shadow-lg transition-shadow duration-300">
+          <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+            <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">Optimal Performance</h3>
+          <p class="text-gray-600">
+            Scalable cloud infrastructure with high availability to ensure 
+            consistent performance and 24/7 access.
+          </p>
+        </div>
+
+        <div class="card hover:shadow-lg transition-shadow duration-300">
+          <div class="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+            <svg class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">Integrated Ecosystem</h3>
+          <p class="text-gray-600">
+            Connect with hundreds of Italian and European companies in a unified 
+            and interoperable data sharing ecosystem.
+          </p>
+        </div>
+
+        <div class="card hover:shadow-lg transition-shadow duration-300">
+          <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+            <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">Advanced Analytics</h3>
+          <p class="text-gray-600">
+            Intuitive dashboards and detailed reports to monitor data usage 
+            and optimize your business strategies.
+          </p>
+        </div>
+
+        <div class="card hover:shadow-lg transition-shadow duration-300">
+          <div class="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+            <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25a9.75 9.75 0 100 19.5 9.75 9.75 0 000-19.5z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">Easy Integration</h3>
+          <p class="text-gray-600">
+            RESTful APIs and SDKs to easily integrate DataSpace 
+            into your existing applications.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how-it-works" class="py-20 bg-gray-50">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl font-bold text-gray-900 mb-4">How It Works</h2>
+        <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+          A simple and guided process to access enterprise data in just a few steps.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="text-center">
+          <div class="mx-auto h-16 w-16 bg-primary-800 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-6">
+            1
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-4">Registration</h3>
+          <p class="text-gray-600">
+            Register with your company information. 
+            The process is completely online and takes just a few minutes.
+          </p>
+        </div>
+
+        <div class="text-center">
+          <div class="mx-auto h-16 w-16 bg-accent-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-6">
+            2
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-4">Verification</h3>
+          <p class="text-gray-600">
+            Our team verifies the information provided and activates your access 
+            to available DataSpaces.
+          </p>
+        </div>
+
+        <div class="text-center">
+          <div class="mx-auto h-16 w-16 bg-green-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-6">
+            3
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-4">Access</h3>
+          <p class="text-gray-600">
+            Receive your access credentials and start using partner company data 
+            for your projects.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-20 bg-primary-800">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center">
+        <h2 class="text-4xl font-bold text-white mb-4">
+          Ready to Get Started?
+        </h2>
+        <p class="text-xl text-primary-100 mb-8 max-w-2xl mx-auto">
+          Join hundreds of developers and companies already accessing data 
+          securely and compliantly with DataSpace.
+        </p>
+        <button
+          (click)="navigateToSignUp()"
+          class="bg-accent-500 hover:bg-accent-600 text-white font-bold py-4 px-8 rounded-lg text-lg transition-colors duration-200"
+        >
+          Start Now - It's Free
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <footer id="contact" class="bg-gray-900 text-white py-12">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center mb-4">
+            <h3 class="text-lg font-bold">DataSpace Portal</h3>
+          </div>
+          <p class="text-gray-400 text-sm">
+            Italy's leading platform for secure and compliant enterprise data access.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="font-semibold mb-4">Products</h4>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li><a href="#" class="hover:text-white transition-colors">DataSpace EDC</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">API Management</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Analytics</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Support</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-semibold mb-4">Resources</h4>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li><a href="#" class="hover:text-white transition-colors">Documentation</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Tutorials</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Blog</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Community</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-semibold mb-4">Contact</h4>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li class="flex items-center">
+              <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              support@example.com
+            </li>
+            <li class="flex items-center">
+              <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+              +39 111111111
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
+        <p>&copy; 2025 DataSpace Portal. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</div>

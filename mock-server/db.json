@@ -1,0 +1,31 @@
+{
+  "participants": [
+    {
+      "id": "user-123",
+      "name": "test-company-dev",
+      "description": "Azienda di test per sviluppo",
+      "currentOperation": "ACTIVE",
+      "metadata": {
+        "companyName": "Test Company S.r.l.",
+        "companyType": "SRL",
+        "vatNumber": "12345678901",
+        "fiscalCode": "TSTCMP80A01H501U",
+        "email": "test@testcompany.it",
+        "phone": "+39 02 1234567",
+        "website": "https://www.testcompany.it",
+        "industry": "TECHNOLOGY",
+        "country": "IT",
+        "region": "Lombardia",
+        "city": "Milano",
+        "termsAccepted": true,
+        "privacyAccepted": true,
+        "marketingAccepted": false,
+        "registrationSource": "B2C_PORTAL",
+        "environment": "production"
+      },
+      "createdAt": "2024-01-15T10:30:00Z",
+      "updatedAt": "2024-01-15T10:30:00Z",
+      "status": "ACTIVE"
+    }
+  ]
+}

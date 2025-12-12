@@ -1,0 +1,72 @@
+{
+  "realm": "edc",
+  "enabled": true,
+  "displayName": "EDC DataSpace",
+  "displayNameHtml": "<div class=\"kc-logo-text\"><span>EDC DataSpace</span></div>",
+  "clients": [
+    {
+      "clientId": "edc-participant-portal",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "redirectUris": [
+        "http://localhost:4200/*"
+      ],
+      "webOrigins": [
+        "http://localhost:4200"
+      ],
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "EDC_ADMIN",
+        "description": "Administrator role for EDC portal"
+      },
+      {
+        "name": "EDC_USER_PARTICIPANT", 
+        "description": "Participant role for EDC users"
+      }
+    ]
+  },
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "email": "admin@example.com",
+      "firstName": "Admin",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["EDC_ADMIN"]
+    },
+    {
+      "username": "user",
+      "enabled": true,
+      "email": "user@testcompany.it",
+      "firstName": "Test",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "user123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["EDC_USER_PARTICIPANT"]
+    }
+  ]
+}
