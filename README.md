@@ -122,6 +122,204 @@ Key configuration options:
 
 The configuration file is loaded at application startup. If the file cannot be loaded, the application falls back to default development settings.
 
+### Keycloak Configuration
+
+To enable authentication via Keycloak, you need to configure the `auth` section in the `config.json` file. Below is a detailed guide for each parameter.
+
+#### Enabling Authentication
+
+To activate Keycloak, set `auth.enableAuth` to `true`:
+
+```json
+{
+  "auth": {
+    "enableAuth": true,
+    ...
+  }
+}
+```
+
+When `enableAuth` is `false`, the portal operates in open registration mode without authentication.
+
+#### Keycloak Configuration
+
+The complete Keycloak configuration is located in the `auth.keycloak` section:
+
+```json
+{
+  "auth": {
+    "enableAuth": true,
+    "keycloak": {
+      "url": "https://identity.example.com",
+      "realm": "edc",
+      "clientId": "edc-provisioning-customers-portal-fe",
+      "initOptions": {
+        "onLoad": "login-required",
+        "checkLoginIframe": false,
+        "pkceMethod": "S256"
+      },
+      "bearerExcludedUrls": [
+        "/assets",
+        "/favicon.ico"
+      ]
+    }
+  }
+}
+```
+
+##### Configuration Parameters
+
+**`url`** (string, required)
+- Base URL of the Keycloak server (without `/auth` or `/realms`)
+- Development example: `"http://localhost:8080"`
+- Production example: `"https://identity.example.com"`
+
+**`realm`** (string, required)
+- Name of the Keycloak realm to use
+- The realm must already be configured in Keycloak
+- Example: `"edc"`
+
+**`clientId`** (string, required)
+- Application Client ID configured in Keycloak
+- Must exactly match the Client ID configured in the Keycloak realm
+- Example: `"edc-provisioning-customers-portal-fe"`
+
+**`initOptions`** (object, required)
+- Initialization options for the Keycloak client
+
+  **`onLoad`** (string, required)
+  - Behavior when the application loads
+  - Possible values:
+    - `"login-required"`: Always requires login when the application starts
+    - `"check-sso"`: Checks if the user is already authenticated without showing the login page if not necessary
+  - Recommendation: use `"login-required"` in production, `"check-sso"` in development
+
+  **`checkLoginIframe`** (boolean, required)
+  - Enables periodic authentication status checking via hidden iframe
+  - Set to `false` to avoid issues with cookie security policies (SameSite)
+  - Recommendation: `false` for most cases
+
+  **`pkceMethod`** (string, required)
+  - PKCE (Proof Key for Code Exchange) method for OAuth2 security
+  - Recommended value: `"S256"` (uses SHA-256)
+  - Improves authentication flow security
+
+**`bearerExcludedUrls`** (array of strings, optional)
+- List of URL paths that should not include the Bearer token in HTTP requests
+- Useful for excluding static resources or public endpoints
+- Example: `["/assets", "/favicon.ico"]`
+- Requests to these URLs will not include the `Authorization` header
+
+#### Role Configuration
+
+The `auth.roles` section defines the roles used by the application:
+
+```json
+{
+  "auth": {
+    "roles": {
+      "admin": "EDC_ADMIN",
+      "participant": "EDC_USER_PARTICIPANT",
+      "validRoles": ["EDC_ADMIN", "EDC_USER_PARTICIPANT"]
+    }
+  }
+}
+```
+
+**`admin`** (string)
+- Administrator role name as defined in Keycloak
+- Users with this role have full access to the portal
+
+**`participant`** (string)
+- Participant role name as defined in Keycloak
+- Standard role for registered users
+
+**`validRoles`** (array of strings)
+- List of all valid roles recognized by the application
+- Users must have at least one of these roles to access the portal
+- Roles not in this list are ignored
+
+#### Server-Side Keycloak Configuration
+
+To configure Keycloak on the server side, you can use the `keycloak-setup.json` file included in the project as a reference. This file contains:
+
+- **Realm**: Realm configuration with name and display name
+- **Client**: OIDC client configuration with:
+  - `publicClient: true` (does not require client secret)
+  - `standardFlowEnabled: true` (enables Authorization Code Flow)
+  - `pkce.code.challenge.method: "S256"` (enables PKCE with SHA-256)
+  - Configured Redirect URIs and Web Origins
+- **Roles**: Realm role definitions (`EDC_ADMIN`, `EDC_USER_PARTICIPANT`)
+- **Users**: Example users for testing
+
+To import this configuration into Keycloak:
+
+1. Access the Keycloak administration console
+2. Select the realm or create a new one
+3. Go to **Realm Settings** → **Partial Import**
+4. Upload the `keycloak-setup.json` file
+5. Verify that the Client ID matches the one configured in `config.json`
+
+#### Development Configuration Example
+
+```json
+{
+  "production": false,
+  "apiUrl": "http://localhost:3001/v1",
+  "auth": {
+    "enableAuth": true,
+    "keycloak": {
+      "url": "http://localhost:8080",
+      "realm": "edc",
+      "clientId": "edc-participant-portal",
+      "initOptions": {
+        "onLoad": "check-sso",
+        "checkLoginIframe": false,
+        "pkceMethod": "S256"
+      },
+      "bearerExcludedUrls": ["/assets"]
+    },
+    "roles": {
+      "admin": "EDC_ADMIN",
+      "participant": "EDC_USER_PARTICIPANT",
+      "validRoles": ["EDC_ADMIN", "EDC_USER_PARTICIPANT"]
+    }
+  }
+}
+```
+
+#### Production Configuration Example
+
+```json
+{
+  "production": true,
+  "apiUrl": "https://api.production.com/v1",
+  "auth": {
+    "enableAuth": true,
+    "keycloak": {
+      "url": "https://identity.production.com",
+      "realm": "edc-production",
+      "clientId": "edc-provisioning-customers-portal-fe",
+      "initOptions": {
+        "onLoad": "login-required",
+        "checkLoginIframe": false,
+        "pkceMethod": "S256"
+      },
+      "bearerExcludedUrls": [
+        "/assets",
+        "/favicon.ico",
+        "/config.json"
+      ]
+    },
+    "roles": {
+      "admin": "EDC_ADMIN",
+      "participant": "EDC_USER_PARTICIPANT",
+      "validRoles": ["EDC_ADMIN", "EDC_USER_PARTICIPANT"]
+    }
+  }
+}
+```
+
 ## Authentication
 
 The portal supports optional Keycloak integration for authentication. When enabled, users must authenticate before accessing protected routes. The authentication flow uses PKCE (Proof Key for Code Exchange) for security.
