@@ -30,27 +30,22 @@ export class AuthGuard implements CanActivate, CanActivateChild {
   }
 
   private checkAuth(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
-    // Check if authentication is enabled
     if (!this.authService.isAuthEnabled()) {
       return of(true);
     }
 
-    // Check if user is authenticated
     const isLoggedIn = this.keycloakService.isLoggedIn();
     return of(isLoggedIn).pipe(
       switchMap(isLoggedIn => {
         if (!isLoggedIn) {
-          // User not authenticated, redirect to login
           this.redirectToLogin(state.url);
           return of(false);
         }
 
-        // Check if route requires specific roles
         const requiredRoles = route.data['roles'] as string[];
         if (requiredRoles && requiredRoles.length > 0) {
           const hasRequiredRole = this.authService.hasAnyRole(requiredRoles);
           if (!hasRequiredRole) {
-            // User doesn't have required role, redirect to unauthorized page
             this.router.navigate(['/unauthorized']);
             return of(false);
           }
@@ -67,14 +62,12 @@ export class AuthGuard implements CanActivate, CanActivateChild {
   }
 
   private redirectToLogin(returnUrl: string): void {
-    // Store the return URL for after login
     if (returnUrl && returnUrl !== '/') {
       localStorage.setItem('returnUrl', returnUrl);
     }
 
     const redirectUrl = `${window.location.origin}/customers/`;
 
-    // Redirect to login
     this.keycloakService.login({
       redirectUri: redirectUrl
     });

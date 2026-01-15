@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { Participant } from '../models/participant.model';
 
 export interface ParticipantData {
-  participant: any;
+  participant: Participant;
   contactInfo: {
     name: string;
     email: string;

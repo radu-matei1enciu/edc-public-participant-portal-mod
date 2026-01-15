@@ -1,0 +1,120 @@
+<div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
+  <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+    <div>
+      <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+        Discover Data
+      </h3>
+      <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
+        Explore and discover remote files from the ecosystem
+      </p>
+    </div>
+  </div>
+
+  <div class="px-4 py-4 border-b border-gray-200 dark:border-gray-700">
+    <form [formGroup]="filterForm" class="flex space-x-4">
+      <input
+        formControlName="searchQuery"
+        type="text"
+        placeholder="Search by keywords, company, or file name..."
+        class="flex-1 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+      <select
+        formControlName="selectedUseCase"
+        class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+        <option value="">All Use Cases</option>
+        @for (uc of useCases; track uc.id) {
+          <option [value]="uc.id">{{ uc.label }}</option>
+        }
+      </select>
+      <select
+        formControlName="selectedCompany"
+        class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+        <option value="">All Companies</option>
+      </select>
+    </form>
+  </div>
+  
+  @if (loading) {
+    <div class="p-6 flex items-center justify-center">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+    </div>
+  } @else {
+    @if (files.length > 0) {
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Use Case</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Company</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Dataspace</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Access</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            @for (file of files; track file.id) {
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm font-medium text-gray-900 dark:text-white">{{ file.name }}</div>
+                  @if (file.description) {
+                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ file.description }}</div>
+                  }
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm text-gray-900 dark:text-white">{{ file.useCaseLabel || file.useCase || 'N/A' }}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  {{ getFileCompany(file) }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  {{ file.dataspace || 'N/A' }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  @if (hasAccess(file)) {
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                      Has Access
+                    </span>
+                  } @else {
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                      No Access
+                    </span>
+                  }
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  @if (hasAccess(file)) {
+                    <button
+                      (click)="viewFile(file.id)"
+                      class="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300 mr-4">
+                      View File
+                    </button>
+                  } @else {
+                    <button
+                      (click)="requestAccess(file.id)"
+                      [disabled]="requestingAccess === file.id"
+                      class="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300 disabled:opacity-50">
+                      @if (requestingAccess !== file.id) {
+                        Request Access
+                      } @else {
+                        Requesting...
+                      }
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No files found</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          Prova ad aggiustare i criteri di ricerca o i filtri.
+        </p>
+      </div>
+    }
+  }
+</div>

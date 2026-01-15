@@ -7,6 +7,7 @@ import {
   ParticipantRegistrationRequest, 
   ParticipantRegistrationResponse, 
   ApiError,
+  ApiErrorDetails,
   CredentialRequest,
   CredentialRequestResponse,
   CredentialResponse
@@ -78,7 +79,13 @@ export class ParticipantService {
 
     const url = `${this.baseUrl}/participants${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
     
-    return this.http.get<any>(url)
+    return this.http.get<{
+      content: Participant[];
+      totalElements: number;
+      totalPages: number;
+      size: number;
+      number: number;
+    }>(url)
       .pipe(
         catchError(this.handleError)
       );
@@ -160,7 +167,7 @@ export class ParticipantService {
       status: error.status,
       timestamp: new Date().toISOString(),
       path: error.url || '',
-      details: error.error
+      details: error.error && typeof error.error === 'object' ? error.error as ApiErrorDetails : undefined
     };
 
     return throwError(() => apiError);

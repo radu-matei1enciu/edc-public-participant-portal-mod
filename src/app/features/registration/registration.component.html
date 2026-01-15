@@ -1,0 +1,650 @@
+<div class="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-5xl w-full space-y-8">
+    <!-- Header -->
+    <div class="text-center">
+      <div class="mx-auto h-16 w-16 bg-primary-800 rounded-full flex items-center justify-center mb-4">
+        <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      </div>
+      <h2 class="text-3xl font-bold text-gray-900">Sign Up for DataSpace</h2>
+      <p class="mt-2 text-sm text-gray-600">
+        Join the DataSpace ecosystem and securely access enterprise data
+      </p>
+      
+      <!-- Dev Mode Indicator -->
+      <div *ngIf="configService.config?.features?.enableDevMode" 
+           class="mt-4 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+        Development Mode - Pre-populated form
+      </div>
+    </div>
+
+    <!-- Registration Form -->
+    <div class="bg-white shadow-xl rounded-lg overflow-hidden">
+      <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()" class="space-y-6 p-8">
+        
+        <!-- Cancel Link -->
+        <div class="flex justify-end mb-4">
+          <button
+            type="button"
+            (click)="cancelRegistration()"
+            class="text-sm text-gray-600 hover:text-gray-900 underline"
+          >
+            Cancel
+          </button>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="mb-8 relative py-6">
+          <!-- Left gradient overlay -->
+          <div class="absolute left-0 top-6 bottom-6 w-16 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
+          <!-- Right gradient overlay -->
+          <div class="absolute right-0 top-6 bottom-6 w-16 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+          
+          <!-- Scrollable container -->
+          <div #stepperContainer class="flex items-start overflow-x-auto overflow-y-visible pb-4 pt-2 scrollbar-hide scroll-smooth" 
+               (scroll)="onStepperScroll()">
+            <div class="flex items-start px-4" style="min-width: fit-content;">
+              <div *ngFor="let step of steps; let i = index" class="flex items-start flex-shrink-0" [attr.data-step]="i + 1">
+                <!-- Step circle and label container -->
+                <div class="flex flex-col items-center cursor-pointer transition-all duration-200 hover:scale-105" 
+                     (click)="goToStep(i + 1)"
+                     [class.opacity-50]="currentStep < i + 1 && !canProceedToStep(i)">
+                  <!-- Step circle with proper spacing -->
+                  <div class="w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 shadow-sm mb-3
+                    {{ currentStep > i + 1 ? 'bg-green-500 text-white scale-110' : 
+                       currentStep === i + 1 ? 'bg-primary-800 text-white scale-110 ring-4 ring-primary-200' : 
+                       'bg-gray-200 text-gray-600 hover:bg-gray-300' }}">
+                    <span *ngIf="currentStep > i + 1">
+                      <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                      </svg>
+                    </span>
+                    <span *ngIf="currentStep <= i + 1" class="text-base">{{ i + 1 }}</span>
+                  </div>
+                  <!-- Label with proper spacing and wrapping -->
+                  <span class="text-xs font-medium text-center w-[150px] px-2 leading-tight break-words min-h-[2.5rem] flex items-center justify-center {{ currentStep === i + 1 ? 'text-primary-800 font-semibold' : 'text-gray-600' }}">
+                    {{ step.label }}
+                  </span>
+                </div>
+                <!-- Connector line positioned at circle level -->
+                <div *ngIf="i < steps.length - 1" class="w-16 md:w-20 h-1 mx-3 flex-shrink-0 rounded-full transition-colors duration-300 mt-6 {{ currentStep > i + 1 ? 'bg-green-500' : 'bg-gray-200' }}"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Navigation arrows positioned at circle level -->
+          <button 
+            *ngIf="canScrollLeft"
+            type="button"
+            (click)="scrollStepper('left')"
+            class="absolute left-2 top-[2.75rem] z-20 bg-white rounded-full p-2 shadow-lg border border-gray-200 hover:bg-gray-50 transition-all duration-200 hover:scale-110"
+            aria-label="Scroll left">
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+          </button>
+          
+          <button 
+            *ngIf="canScrollRight"
+            type="button"
+            (click)="scrollStepper('right')"
+            class="absolute right-2 top-[2.75rem] z-20 bg-white rounded-full p-2 shadow-lg border border-gray-200 hover:bg-gray-50 transition-all duration-200 hover:scale-110"
+            aria-label="Scroll right">
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Step 1: Select Dataspace -->
+        <div *ngIf="currentStep === 1" class="space-y-6">
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div class="flex items-center">
+              <svg class="w-6 h-6 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+              <div>
+                <h3 class="text-lg font-medium text-blue-900">Select DataSpace</h3>
+                <p class="text-sm text-blue-700 mt-1">Choose the DataSpace you want to connect to</p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label for="dataspaceSearch" class="form-label">Search DataSpace</label>
+            <div class="relative">
+              <input
+                id="dataspaceSearch"
+                type="text"
+                [formControl]="dataspaceSearchControl"
+                class="form-input pl-11 pr-3"
+                placeholder="Search by name..."
+              >
+            </div>
+          </div>
+
+          <div>
+            <label for="dataspace" class="form-label">DataSpace *</label>
+            <select
+              id="dataspace"
+              formControlName="dataspaceId"
+              class="form-input"
+              [class.border-red-500]="registrationForm.get('dataspaceId')?.invalid && registrationForm.get('dataspaceId')?.touched"
+            >
+              <option value="">Select a DataSpace</option>
+              <option *ngFor="let ds of filteredDataspaces" [value]="ds.id">
+                {{ ds.name }}
+              </option>
+            </select>
+            <div *ngIf="registrationForm.get('dataspaceId')?.invalid && registrationForm.get('dataspaceId')?.touched" 
+                 class="mt-1 text-sm text-red-600">
+              <p>You must select a DataSpace to continue</p>
+            </div>
+            <p *ngIf="selectedDataspace" class="mt-2 text-sm text-gray-600">
+              {{ selectedDataspace.description }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 2: Register Company (Identifier) -->
+        <div *ngIf="currentStep === 2" class="space-y-6">
+          <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
+            <div class="flex items-center">
+              <svg class="w-6 h-6 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+              </svg>
+              <div>
+                <h3 class="text-lg font-medium text-purple-900">Register Company</h3>
+                <p class="text-sm text-purple-700 mt-1">Enter the company identifier if available</p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label for="companyIdentifier" class="form-label">Company Identifier</label>
+            <input
+              id="companyIdentifier"
+              type="text"
+              formControlName="companyIdentifier"
+              class="form-input"
+              placeholder="Enter the identifier required by the DataSpace (optional)"
+            >
+            <p class="mt-1 text-sm text-gray-500">
+              If your company already has an identifier required by the DataSpace, enter it here. This field is optional.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 3: Insert Company Data -->
+        <div *ngIf="currentStep === 3" class="space-y-6">
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div class="flex items-center">
+              <svg class="w-6 h-6 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+              </svg>
+              <div>
+                <h3 class="text-lg font-medium text-blue-900">Company Data</h3>
+                <p class="text-sm text-blue-700 mt-1">Enter your company information</p>
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <label for="participantName" class="form-label">Company Name *</label>
+            <input
+              id="participantName"
+              type="text"
+              formControlName="participantName"
+              class="form-input"
+              placeholder="e.g. Tech Solutions SRL"
+              [class.border-red-500]="registrationForm.get('participantName')?.invalid && registrationForm.get('participantName')?.touched"
+            >
+            <div *ngIf="registrationForm.get('participantName')?.invalid && registrationForm.get('participantName')?.touched" 
+                 class="mt-1 text-sm text-red-600">
+              <p *ngIf="registrationForm.get('participantName')?.errors?.['required']">Company name is required</p>
+              <p *ngIf="registrationForm.get('participantName')?.errors?.['minlength']">Minimum 2 characters</p>
+            </div>
+          </div>
+
+          <div>
+            <label for="description" class="form-label">Company Description *</label>
+            <textarea
+              id="description"
+              formControlName="description"
+              rows="3"
+              class="form-input"
+              placeholder="Brief description of your company and its activities in the data space"
+              [class.border-red-500]="registrationForm.get('description')?.invalid && registrationForm.get('description')?.touched"
+            ></textarea>
+            <div *ngIf="registrationForm.get('description')?.invalid && registrationForm.get('description')?.touched" 
+                 class="mt-1 text-sm text-red-600">
+              <p *ngIf="registrationForm.get('description')?.errors?.['required']">Description is required</p>
+              <p *ngIf="registrationForm.get('description')?.errors?.['minlength']">Minimum 10 characters</p>
+            </div>
+          </div>
+
+          <div class="mt-6">
+            <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+              <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              Additional Information
+            </h4>
+            <p class="text-sm text-gray-600 mb-6">Optional details to better understand your organization</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label for="companyType" class="form-label">Company Type</label>
+                <select id="companyType" formControlName="companyType" class="form-input">
+                  <option value="">Select company type</option>
+                  <option value="SRL">SRL (Limited Liability Company)</option>
+                  <option value="SPA">SPA (Joint Stock Company)</option>
+                  <option value="SNC">SNC (General Partnership)</option>
+                  <option value="SAS">SAS (Limited Partnership)</option>
+                  <option value="SRLS">SRLS (Simplified Limited Liability Company)</option>
+                  <option value="COOPERATIVE">Cooperative</option>
+                  <option value="CONSORZIO">Consortium</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="vatNumber" class="form-label">VAT Number</label>
+                <input
+                  id="vatNumber"
+                  type="text"
+                  formControlName="vatNumber"
+                  class="form-input"
+                  placeholder="IT12345678901"
+                >
+              </div>
+
+              <div>
+                <label for="fiscalCode" class="form-label">Fiscal Code</label>
+                <input
+                  id="fiscalCode"
+                  type="text"
+                  formControlName="fiscalCode"
+                  class="form-input"
+                  placeholder="RSSMRA80A01H501U"
+                >
+              </div>
+
+              <div>
+                <label for="email" class="form-label">Company Email</label>
+                <input
+                  id="email"
+                  type="email"
+                  formControlName="email"
+                  class="form-input"
+                  placeholder="info@company.com"
+                  [class.border-red-500]="registrationForm.get('email')?.invalid && registrationForm.get('email')?.touched"
+                >
+                <div *ngIf="registrationForm.get('email')?.invalid && registrationForm.get('email')?.touched" 
+                    class="mt-1 text-sm text-red-600">
+                  <p *ngIf="registrationForm.get('email')?.errors?.['email']">Please enter a valid email address</p>
+                </div>
+              </div>
+
+              <div>
+                <label for="phone" class="form-label">Company Phone</label>
+                <input
+                  id="phone"
+                  type="tel"
+                  formControlName="phone"
+                  class="form-input"
+                  placeholder="+39 02 1234567"
+                >
+              </div>
+
+              <div>
+                <label for="website" class="form-label">Website</label>
+                <input
+                  id="website"
+                  type="url"
+                  formControlName="website"
+                  class="form-input"
+                  placeholder="https://www.company.com"
+                >
+              </div>
+            </div>
+
+            <!-- Address Information -->
+            <div class="mt-6">
+              <h5 class="text-md font-medium text-gray-900 mb-4">Address</h5>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label for="country" class="form-label">Country</label>
+                  <select id="country" formControlName="country" class="form-input">
+                    <option value="">Select country</option>
+                    <option value="IT">Italy</option>
+                    <option value="DE">Germany</option>
+                    <option value="FR">France</option>
+                    <option value="ES">Spain</option>
+                    <option value="UK">United Kingdom</option>
+                    <option value="US">United States</option>
+                    <option value="OTHER">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label for="region" class="form-label">Region/State</label>
+                  <input
+                    id="region"
+                    type="text"
+                    formControlName="region"
+                    class="form-input"
+                    placeholder="Lombardy"
+                  >
+                </div>
+
+                <div>
+                  <label for="city" class="form-label">City</label>
+                  <input
+                    id="city"
+                    type="text"
+                    formControlName="city"
+                    class="form-input"
+                    placeholder="Milan"
+                  >
+                </div>
+
+                <div>
+                  <label for="postalCode" class="form-label">Postal Code</label>
+                  <input
+                    id="postalCode"
+                    type="text"
+                    formControlName="postalCode"
+                    class="form-input"
+                    placeholder="20100"
+                  >
+                </div>
+
+                <div class="md:col-span-2">
+                  <label for="address" class="form-label">Street Address</label>
+                  <input
+                    id="address"
+                    type="text"
+                    formControlName="address"
+                    class="form-input"
+                    placeholder="Via Roma, 123"
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Upload Documents -->
+        <div *ngIf="currentStep === 4" class="space-y-6">
+          <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+            <div class="flex items-center">
+              <svg class="w-6 h-6 text-orange-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+              </svg>
+              <div>
+                <h3 class="text-lg font-medium text-orange-900">Upload Documents</h3>
+                <p class="text-sm text-orange-700 mt-1">Upload documents that prove your company information</p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label">Proof Documents</label>
+            <div class="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-primary-500 transition-colors">
+              <div class="space-y-1 text-center">
+                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                  <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <div class="flex text-sm text-gray-600">
+                  <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500">
+                    <span>Upload files</span>
+                    <input id="file-upload" name="file-upload" type="file" class="sr-only" multiple (change)="onFileSelected($event)" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                  </label>
+                  <p class="pl-1">or drag and drop</p>
+                </div>
+                <p class="text-xs text-gray-500">PDF, DOC, DOCX, JPG, PNG up to 10MB</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Uploaded Files List -->
+          <div *ngIf="uploadedDocuments.length > 0" class="mt-6">
+            <h4 class="text-sm font-medium text-gray-900 mb-3">Uploaded files ({{ uploadedDocuments.length }})</h4>
+            <div class="space-y-2">
+              <div *ngFor="let doc of uploadedDocuments; let i = index" 
+                   class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div class="flex items-center flex-1 min-w-0">
+                  <svg class="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 truncate">{{ doc.name }}</p>
+                    <p class="text-xs text-gray-500">{{ formatFileSize(doc.size) }}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  (click)="removeDocument(i)"
+                  class="ml-3 text-red-600 hover:text-red-800 transition-colors"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 5: Accept Conditions -->
+        <div *ngIf="currentStep === 5" class="space-y-6">
+          <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
+            <div class="flex items-center">
+              <svg class="w-6 h-6 text-indigo-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <div>
+                <h3 class="text-lg font-medium text-indigo-900">Terms and Conditions</h3>
+                <p class="text-sm text-indigo-700 mt-1">Read and accept the terms for ecosystem participation</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 max-h-96 overflow-y-auto">
+            <h4 class="text-lg font-medium text-gray-900 mb-4">Terms and Conditions of Participation</h4>
+            <div class="prose prose-sm max-w-none text-gray-700">
+              <p class="mb-4">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+              </p>
+              <h5 class="font-semibold mb-2">1. Lorem Ipsum Dolor</h5>
+              <p class="mb-4">
+                Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+              </p>
+              <h5 class="font-semibold mb-2">2. Sed Ut Perspiciatis</h5>
+              <p class="mb-4">
+                Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.
+              </p>
+              <h5 class="font-semibold mb-2">3. Nemo Enim Ipsam</h5>
+              <p class="mb-4">
+                Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet.
+              </p>
+              <h5 class="font-semibold mb-2">4. At Vero Eos Et</h5>
+              <p class="mb-4">
+                At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa.
+              </p>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="flex items-start">
+              <input
+                id="termsAccepted"
+                type="checkbox"
+                formControlName="termsAccepted"
+                class="mt-1 h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+              >
+              <label for="termsAccepted" class="ml-3 text-sm text-gray-700">
+                I accept the <a href="#" class="text-primary-600 hover:text-primary-500 underline">Terms and Conditions</a> *
+              </label>
+            </div>
+            <div *ngIf="registrationForm.get('termsAccepted')?.invalid && registrationForm.get('termsAccepted')?.touched" 
+                 class="ml-7 text-sm text-red-600">
+              You must accept the terms and conditions to continue
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 6: Submit Registration -->
+        <div *ngIf="currentStep === 6" class="space-y-6">
+          <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <div class="flex items-center">
+              <svg class="w-6 h-6 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <div>
+                <h3 class="text-lg font-medium text-green-900">Registration Summary</h3>
+                <p class="text-sm text-green-700 mt-1">Review the entered data and complete the registration</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Summary Sections -->
+          <div class="space-y-4">
+            <!-- Dataspace Summary -->
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <h4 class="font-medium text-gray-900 mb-2 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                Selected DataSpace
+              </h4>
+              <p class="text-gray-700">{{ selectedDataspace?.name || 'None' }}</p>
+            </div>
+
+            <!-- Company Identifier Summary -->
+            <div *ngIf="registrationForm.get('companyIdentifier')?.value" class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <h4 class="font-medium text-gray-900 mb-2">Company Identifier</h4>
+              <p class="text-gray-700">{{ registrationForm.get('companyIdentifier')?.value }}</p>
+            </div>
+
+            <!-- Company Data Summary -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <h4 class="font-medium text-blue-900 mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                </svg>
+                Company Data
+              </h4>
+              <dl class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <dt class="font-medium text-blue-700">Company Name:</dt>
+                  <dd class="text-blue-900">{{ registrationForm.get('participantName')?.value }}</dd>
+                </div>
+                <div>
+                  <dt class="font-medium text-blue-700">Description:</dt>
+                  <dd class="text-blue-900">{{ registrationForm.get('description')?.value }}</dd>
+                </div>
+                <div *ngIf="registrationForm.get('companyType')?.value">
+                  <dt class="font-medium text-blue-700">Company Type:</dt>
+                  <dd class="text-blue-900">{{ registrationForm.get('companyType')?.value }}</dd>
+                </div>
+                <div *ngIf="registrationForm.get('vatNumber')?.value">
+                  <dt class="font-medium text-blue-700">VAT Number:</dt>
+                  <dd class="text-blue-900">{{ registrationForm.get('vatNumber')?.value }}</dd>
+                </div>
+                <div *ngIf="registrationForm.get('email')?.value">
+                  <dt class="font-medium text-blue-700">Email:</dt>
+                  <dd class="text-blue-900">{{ registrationForm.get('email')?.value }}</dd>
+                </div>
+                <div *ngIf="registrationForm.get('phone')?.value">
+                  <dt class="font-medium text-blue-700">Phone:</dt>
+                  <dd class="text-blue-900">{{ registrationForm.get('phone')?.value }}</dd>
+                </div>
+              </dl>
+            </div>
+
+            <!-- Documents Summary -->
+            <div *ngIf="uploadedDocuments.length > 0" class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <h4 class="font-medium text-orange-900 mb-2 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+                Uploaded Documents ({{ uploadedDocuments.length }})
+              </h4>
+              <ul class="list-disc list-inside text-sm text-orange-900 space-y-1">
+                <li *ngFor="let doc of uploadedDocuments">{{ doc.name }}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="bg-red-50 border border-red-200 rounded-md p-4">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-red-800">Registration error</h3>
+              <div class="mt-2 text-sm text-red-700">
+                <p>{{ errorMessage }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex justify-between pt-6 border-t border-gray-200">
+          <button
+            type="button"
+            *ngIf="currentStep > 1"
+            (click)="previousStep()"
+            class="btn-secondary"
+          >
+            <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back
+          </button>
+          <div *ngIf="currentStep === 1" class="w-full"></div>
+          
+          <button
+            type="button"
+            *ngIf="currentStep < 6"
+            (click)="nextStep()"
+            class="btn-primary"
+            [disabled]="!canProceedToNextStep()"
+          >
+            Next
+            <svg class="w-4 h-4 ml-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </button>
+          
+          <button
+            type="submit"
+            *ngIf="currentStep === 6"
+            class="btn-primary"
+            [disabled]="!registrationForm.valid || isLoading"
+          >
+            <span *ngIf="!isLoading">Complete Registration</span>
+            <span *ngIf="isLoading" class="flex items-center">
+              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Registration in progress...
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

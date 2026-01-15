@@ -4,7 +4,7 @@ import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@a
 import { KeycloakService } from 'keycloak-angular';
 
 import { routes } from './app.routes';
-import { ConfigService } from './core/services/config.service';
+import { ConfigService, KeycloakInitOptions } from './core/services/config.service';
 import { AuthService } from './core/services/auth.service';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { ErrorInterceptor } from './core/interceptors/error.interceptor';
@@ -31,11 +31,11 @@ export const appConfig: ApplicationConfig = {
           if (authService.isAuthEnabled()) {
             const keycloakConfig = {
               config: {
-                url: configService.getNestedValue('auth.keycloak.url'),
-                realm: configService.getNestedValue('auth.keycloak.realm'),
-                clientId: configService.getNestedValue('auth.keycloak.clientId')
+                url: configService.getNestedValue<string>('auth.keycloak.url') || '',
+                realm: configService.getNestedValue<string>('auth.keycloak.realm') || '',
+                clientId: configService.getNestedValue<string>('auth.keycloak.clientId') || ''
               },
-              initOptions: configService.getNestedValue('auth.keycloak.initOptions') || {}
+              initOptions: configService.getNestedValue<KeycloakInitOptions>('auth.keycloak.initOptions') || {}
             };
             
             return keycloakService.init(keycloakConfig).then(() => {

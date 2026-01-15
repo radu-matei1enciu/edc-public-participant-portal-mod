@@ -1,108 +1,18 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
+import { AuthUser } from '../../core/models/participant.model';
 
 @Component({
   selector: 'app-role-error',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div class="max-w-2xl w-full">
-        <div class="bg-white shadow-xl rounded-lg overflow-hidden">
-          <div class="px-8 py-12 text-center">
-            <!-- Error Icon -->
-            <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-red-100 mb-6">
-              <svg class="h-12 w-12 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
-            </div>
-
-            <!-- Error Message -->
-            <h1 class="text-3xl font-bold text-gray-900 mb-4">
-              Access Denied
-            </h1>
-            
-            <p class="text-lg text-gray-600 mb-8">
-              Your account does not have the required permissions to access this application.
-            </p>
-
-            <!-- Error Details -->
-            <div class="bg-red-50 rounded-lg p-6 mb-8">
-              <h2 class="text-lg font-medium text-red-900 mb-4">Error Details</h2>
-              <div class="text-left text-sm text-red-800">
-                <p class="mb-2"><strong>Issue:</strong> {{ roleError }}</p>
-                <p class="mb-2"><strong>User:</strong> {{ currentUser?.username || 'Unknown' }}</p>
-                <p class="mb-2"><strong>Email:</strong> {{ currentUser?.email || 'Unknown' }}</p>
-                <p><strong>Assigned Roles:</strong> {{ currentUser?.roles?.join(', ') || 'None' }}</p>
-              </div>
-            </div>
-
-            <!-- Required Roles -->
-            <div class="bg-blue-50 rounded-lg p-6 mb-8">
-              <h3 class="text-lg font-medium text-blue-900 mb-4">Required Roles</h3>
-              <div class="text-sm text-blue-800">
-                <p class="mb-2">To access this application, your account must have one of the following roles:</p>
-                <ul class="list-disc list-inside space-y-1">
-                  <li><strong>ROLE_ADMIN:</strong> Administrative access to manage registrations</li>
-                  <li><strong>ROLE_PARTICIPANT:</strong> Participant access to view dashboard</li>
-                </ul>
-              </div>
-            </div>
-
-            <!-- Contact Information -->
-            <div class="bg-gray-50 rounded-lg p-6 mb-8">
-              <h3 class="text-lg font-medium text-gray-900 mb-4">Need Help?</h3>
-              <p class="text-sm text-gray-600 mb-4">
-                If you believe this is an error, please contact your system administrator to assign the appropriate roles to your account.
-              </p>
-              <div class="space-y-2 text-sm">
-                <div class="flex items-center justify-center">
-                  <svg class="h-4 w-4 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  <span class="text-gray-600">support@example.com</span>
-                </div>
-                <div class="flex items-center justify-center">
-                  <svg class="h-4 w-4 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                  <span class="text-gray-600">+39 11 111 1111</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                (click)="logout()"
-                class="btn-primary"
-              >
-                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                Logout
-              </button>
-              <button
-                (click)="refresh()"
-                class="btn-outline"
-              >
-                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Refresh
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `,
+  templateUrl: './role-error.component.html',
   styles: []
 })
 export class RoleErrorComponent implements OnInit {
   roleError: string | null = null;
-  currentUser: any = null;
+  currentUser: AuthUser | null = null;
   private authService = inject(AuthService);
 
   ngOnInit(): void {

@@ -62,7 +62,6 @@ async function handleParticipantRegistration(req, res) {
 
     const { participant, user } = body;
 
-    // Validate required fields
     if (!participant || !user) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
@@ -218,6 +217,302 @@ function handleGetMe(req, res) {
   res.end(JSON.stringify(mockResponse));
 }
 
+function handleDeleteParticipant(req, res, id) {
+  const index = participants.findIndex(p => p.id === id);
+  if (index !== -1) {
+    participants.splice(index, 1);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ message: 'Participant deleted successfully' }));
+  } else {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Participant not found' }));
+  }
+}
+
+let memberships = [
+  {
+    id: 'membership-1',
+    ecosystemId: 'ecosystem-1',
+    ecosystemName: 'Manufacturing DataSpace',
+    status: 'active',
+    joinedAt: '2024-01-10T10:00:00Z',
+    credentials: [
+      { id: 'cred-1', type: 'VC', status: 'issued', issuedAt: '2024-01-10T10:05:00Z' }
+    ]
+  },
+  {
+    id: 'membership-2',
+    ecosystemId: 'ecosystem-2',
+    ecosystemName: 'Healthcare DataSpace',
+    status: 'active',
+    joinedAt: '2024-01-12T14:30:00Z',
+    credentials: [
+      { id: 'cred-2', type: 'VC', status: 'issued', issuedAt: '2024-01-12T14:35:00Z' }
+    ]
+  },
+  {
+    id: 'membership-3',
+    ecosystemId: 'ecosystem-3',
+    ecosystemName: 'Energy DataSpace',
+    status: 'pending',
+    joinedAt: '2024-01-14T09:00:00Z',
+    credentials: []
+  }
+];
+
+let partners = [
+  {
+    id: 'partner-1',
+    name: 'Acme Corporation',
+    description: 'Leading manufacturer in industrial automation',
+    companyIdentifier: 'ACME001',
+    metadata: {
+      industry: 'Manufacturing',
+      country: 'IT',
+      region: 'Lombardy'
+    }
+  },
+  {
+    id: 'partner-2',
+    name: 'MedTech Solutions',
+    description: 'Healthcare technology provider',
+    companyIdentifier: 'MEDTECH001',
+    metadata: {
+      industry: 'Healthcare',
+      country: 'IT',
+      region: 'Lazio'
+    }
+  }
+];
+
+let files = [
+  {
+    id: 'file-1',
+    name: 'production-data-2024.csv',
+    description: 'Production data for Q1 2024',
+    useCase: 'uc-manufacturing',
+    useCaseLabel: 'Manufacturing Analytics',
+    origin: 'owned',
+    dataspace: 'Manufacturing DataSpace',
+    uploadedAt: '2024-01-10T11:00:00Z',
+    size: 1024000,
+    type: 'text/csv'
+  },
+  {
+    id: 'file-2',
+    name: 'patient-records-sample.json',
+    description: 'Sample patient records (anonymized)',
+    useCase: 'uc-healthcare',
+    useCaseLabel: 'Healthcare Research',
+    origin: 'owned',
+    dataspace: 'Healthcare DataSpace',
+    uploadedAt: '2024-01-12T15:00:00Z',
+    size: 512000,
+    type: 'application/json'
+  },
+  {
+    id: 'file-3',
+    name: 'energy-consumption-report.pdf',
+    description: 'Monthly energy consumption report',
+    useCase: 'uc-energy',
+    useCaseLabel: 'Energy Management',
+    origin: 'remote',
+    dataspace: 'Energy DataSpace',
+    uploadedAt: '2024-01-13T10:00:00Z',
+    size: 2048000,
+    type: 'application/pdf',
+    accessRestrictions: [
+      { partnerId: 'partner-1', partnerName: 'Acme Corporation', policy: 'restricted' }
+    ]
+  }
+];
+
+let useCases = [
+  { id: 'uc-manufacturing', name: 'manufacturing', label: 'Manufacturing Analytics', description: 'Analytics for manufacturing processes' },
+  { id: 'uc-healthcare', name: 'healthcare', label: 'Healthcare Research', description: 'Research data for healthcare' },
+  { id: 'uc-energy', name: 'energy', label: 'Energy Management', description: 'Energy consumption and management' },
+  { id: 'uc-logistics', name: 'logistics', label: 'Logistics Optimization', description: 'Supply chain and logistics optimization' }
+];
+
+let dataspaces = [
+  { id: 'dataspace-1', name: 'CatenaX DataSpace', description: 'DataSpace for automotive supply chain', website: 'https://catena-x.net' },
+  { id: 'dataspace-2', name: 'Gaia-X DataSpace', description: 'European DataSpace for data sovereignty', website: 'https://gaia-x.eu' },
+  { id: 'dataspace-3', name: 'IDSA DataSpace', description: 'International Data Spaces Association DataSpace', website: 'https://internationaldataspaces.org' },
+  { id: 'dataspace-4', name: 'Manufacturing-X', description: 'DataSpace for manufacturing industry', website: 'https://manufacturing-x.org' }
+];
+
+let ecosystems = [
+  { id: 'ecosystem-1', name: 'Manufacturing DataSpace', description: 'DataSpace for manufacturing industry' },
+  { id: 'ecosystem-2', name: 'Healthcare DataSpace', description: 'DataSpace for healthcare industry' },
+  { id: 'ecosystem-3', name: 'Energy DataSpace', description: 'DataSpace for energy industry' }
+];
+
+function handleGetMemberships(req, res, participantId) {
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(memberships));
+}
+
+function handleGetMembershipDetails(req, res, participantId, membershipId) {
+  const membership = memberships.find(m => m.id === membershipId);
+  if (membership) {
+    const ecosystem = ecosystems.find(e => e.id === membership.ecosystemId);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ...membership, ecosystem }));
+  } else {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Membership not found' }));
+  }
+}
+
+function handleGetEcosystems(req, res) {
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(ecosystems));
+}
+
+function handleGetDataspaces(req, res) {
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(dataspaces));
+}
+
+function handleGetPartners(req, res, participantId) {
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(partners));
+}
+
+async function handleAddPartner(req, res, participantId) {
+  try {
+    const body = await parseBody(req);
+    const newPartner = {
+      id: `partner-${Date.now()}`,
+      name: body.name,
+      description: body.description || '',
+      companyIdentifier: body.companyIdentifier || '',
+      metadata: body.metadata || {}
+    };
+    partners.push(newPartner);
+    res.writeHead(201, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(newPartner));
+  } catch (error) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Internal server error' }));
+  }
+}
+
+function handleGetPartner(req, res, participantId, partnerId) {
+  const partner = partners.find(p => p.id === partnerId);
+  if (partner) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(partner));
+  } else {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Partner not found' }));
+  }
+}
+
+function handleGetFiles(req, res, participantId) {
+  const query = url.parse(req.url, true).query;
+  let filteredFiles = [...files];
+  
+  if (query.search) {
+    const searchLower = query.search.toLowerCase();
+    filteredFiles = filteredFiles.filter(f => 
+      f.name.toLowerCase().includes(searchLower) || 
+      (f.description && f.description.toLowerCase().includes(searchLower))
+    );
+  }
+  
+  if (query.useCase) {
+    filteredFiles = filteredFiles.filter(f => f.useCase === query.useCase);
+  }
+  
+  if (query.origin) {
+    filteredFiles = filteredFiles.filter(f => f.origin === query.origin);
+  }
+  
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(filteredFiles));
+}
+
+function handleGetFileDetails(req, res, participantId, fileId) {
+  const file = files.find(f => f.id === fileId);
+  if (file) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(file));
+  } else {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'File not found' }));
+  }
+}
+
+async function handleUploadFile(req, res, participantId) {
+  try {
+    const body = await parseBody(req);
+    const newFile = {
+      id: `file-${Date.now()}`,
+      name: body.name || 'uploaded-file',
+      description: body.description || '',
+      useCase: body.useCase || '',
+      useCaseLabel: useCases.find(uc => uc.id === body.useCase)?.label || '',
+      origin: 'owned',
+      dataspace: body.dataspace || '',
+      uploadedAt: new Date().toISOString(),
+      size: body.size || 0,
+      type: body.type || 'application/octet-stream'
+    };
+    files.push(newFile);
+    res.writeHead(201, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(newFile));
+  } catch (error) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Internal server error' }));
+  }
+}
+
+function handleGetUseCases(req, res) {
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(useCases));
+}
+
+function handleSearchFiles(req, res, participantId) {
+  const query = url.parse(req.url, true).query;
+  const searchTerm = query.q || query.search || '';
+  const searchLower = searchTerm.toLowerCase();
+  
+  const results = files.filter(f => 
+    f.name.toLowerCase().includes(searchLower) || 
+    (f.description && f.description.toLowerCase().includes(searchLower)) ||
+    (f.useCaseLabel && f.useCaseLabel.toLowerCase().includes(searchLower))
+  );
+  
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(results));
+}
+
+async function handleRequestAccess(req, res, participantId, fileId) {
+  try {
+    const body = await parseBody(req);
+    const file = files.find(f => f.id === fileId);
+    if (file) {
+      if (!file.accessRestrictions) {
+        file.accessRestrictions = [];
+      }
+      file.accessRestrictions.push({
+        partnerId: body.partnerId || '',
+        partnerName: body.partnerName || '',
+        policy: body.policy || 'pending'
+      });
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ message: 'Access request submitted', file }));
+    } else {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'File not found' }));
+    }
+  } catch (error) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Internal server error' }));
+  }
+}
+
 
 const server = http.createServer(async (req, res) => {
   const parsedUrl = url.parse(req.url, true);
@@ -233,25 +528,76 @@ const server = http.createServer(async (req, res) => {
   }
 
 
+  // Participants routes
   if (method === 'POST' && path === '/v1/participants') {
     await handleParticipantRegistration(req, res);
   } else if (method === 'GET' && path === '/v1/participants') {
     handleGetParticipants(req, res);
-  }
-  else if (method === 'GET' && path === '/v1/participants/me') {
+  } else if (method === 'GET' && path === '/v1/participants/me') {
     handleGetMe(req, res);
-  }
-  else if (method === 'GET' && path.startsWith('/v1/participants/')) {
+  } else if (method === 'GET' && path.startsWith('/v1/participants/') && !path.includes('/memberships') && !path.includes('/partners') && !path.includes('/files')) {
     const id = path.split('/')[3];
     handleGetParticipant(req, res, id);
-  } else if (method === 'DELETE' && path.startsWith('/v1/participants/')) {
+  } else if (method === 'DELETE' && path.startsWith('/v1/participants/') && !path.includes('/memberships') && !path.includes('/partners') && !path.includes('/files')) {
     const id = path.split('/')[3];
     handleDeleteParticipant(req, res, id);
-  } else if (method === 'GET' && path === '/v1/me') {
+  } 
+  // Memberships routes
+  else if (method === 'GET' && path.match(/^\/v1\/participants\/([^\/]+)\/memberships$/)) {
+    const participantId = path.split('/')[3];
+    handleGetMemberships(req, res, participantId);
+  } else if (method === 'GET' && path.match(/^\/v1\/participants\/([^\/]+)\/memberships\/([^\/]+)$/)) {
+    const parts = path.split('/');
+    const participantId = parts[3];
+    const membershipId = parts[5];
+    handleGetMembershipDetails(req, res, participantId, membershipId);
+  } else if (method === 'GET' && path === '/v1/ecosystems') {
+    handleGetEcosystems(req, res);
+  } else if (method === 'GET' && path === '/v1/dataspaces') {
+    handleGetDataspaces(req, res);
+  }
+  // Partners routes
+  else if (method === 'GET' && path.match(/^\/v1\/participants\/([^\/]+)\/partners$/)) {
+    const participantId = path.split('/')[3];
+    handleGetPartners(req, res, participantId);
+  } else if (method === 'POST' && path.match(/^\/v1\/participants\/([^\/]+)\/partners$/)) {
+    const participantId = path.split('/')[3];
+    await handleAddPartner(req, res, participantId);
+  } else if (method === 'GET' && path.match(/^\/v1\/participants\/([^\/]+)\/partners\/([^\/]+)$/)) {
+    const parts = path.split('/');
+    const participantId = parts[3];
+    const partnerId = parts[5];
+    handleGetPartner(req, res, participantId, partnerId);
+  }
+  // Files routes
+  else if (method === 'GET' && path.match(/^\/v1\/participants\/([^\/]+)\/files$/)) {
+    const participantId = path.split('/')[3];
+    handleGetFiles(req, res, participantId);
+  } else if (method === 'GET' && path.match(/^\/v1\/participants\/([^\/]+)\/files\/([^\/]+)$/)) {
+    const parts = path.split('/');
+    const participantId = parts[3];
+    const fileId = parts[5];
+    handleGetFileDetails(req, res, participantId, fileId);
+  } else if (method === 'POST' && path.match(/^\/v1\/participants\/([^\/]+)\/files$/)) {
+    const participantId = path.split('/')[3];
+    await handleUploadFile(req, res, participantId);
+  } else if (method === 'GET' && path === '/v1/use-cases') {
+    handleGetUseCases(req, res);
+  } else if (method === 'GET' && path.match(/^\/v1\/participants\/([^\/]+)\/files\/search$/)) {
+    const participantId = path.split('/')[3];
+    handleSearchFiles(req, res, participantId);
+  } else if (method === 'POST' && path.match(/^\/v1\/participants\/([^\/]+)\/files\/([^\/]+)\/request-access$/)) {
+    const parts = path.split('/');
+    const participantId = parts[3];
+    const fileId = parts[5];
+    await handleRequestAccess(req, res, participantId, fileId);
+  }
+  // Me route
+  else if (method === 'GET' && path === '/v1/me') {
     handleGetMe(req, res);
   } else {
     res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Not found' }));
+    res.end(JSON.stringify({ error: 'Not found', path: path }));
   }
 });
 
@@ -259,8 +605,22 @@ const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`Mock server is running on port ${PORT}`);
   console.log(`API endpoints:`);
-  console.log(`  POST /v1/participants - Register new participant (with optional credentials)`);
+  console.log(`  POST /v1/participants - Register new participant`);
   console.log(`  GET  /v1/participants - List participants`);
   console.log(`  GET  /v1/participants/:id - Get participant by ID`);
+  console.log(`  DELETE /v1/participants/:id - Delete participant`);
   console.log(`  GET  /v1/me - Get current user profile (requires Bearer token)`);
+  console.log(`  GET  /v1/participants/:id/memberships - List memberships`);
+  console.log(`  GET  /v1/participants/:id/memberships/:membershipId - Get membership details`);
+  console.log(`  GET  /v1/ecosystems - List ecosystems`);
+  console.log(`  GET  /v1/dataspaces - List dataspaces`);
+  console.log(`  GET  /v1/participants/:id/partners - List partners`);
+  console.log(`  POST /v1/participants/:id/partners - Add partner`);
+  console.log(`  GET  /v1/participants/:id/partners/:partnerId - Get partner details`);
+  console.log(`  GET  /v1/participants/:id/files - List files`);
+  console.log(`  GET  /v1/participants/:id/files/:fileId - Get file details`);
+  console.log(`  POST /v1/participants/:id/files - Upload file`);
+  console.log(`  GET  /v1/use-cases - List use cases`);
+  console.log(`  GET  /v1/participants/:id/files/search - Search files`);
+  console.log(`  POST /v1/participants/:id/files/:fileId/request-access - Request file access`);
 });

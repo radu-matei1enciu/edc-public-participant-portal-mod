@@ -3,6 +3,21 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
+export interface KeycloakInitOptions {
+  onLoad?: 'login-required' | 'check-sso';
+  checkLoginIframe?: boolean;
+  pkceMethod?: 'S256';
+  storageKey?: string;
+  enableLogging?: boolean;
+  flow?: 'standard' | 'implicit' | 'hybrid';
+  adapter?: 'default' | 'cordova' | 'cordova-native';
+  redirectUri?: string;
+  silentCheckSsoRedirectUri?: string;
+  checkLoginIframeInterval?: number;
+  responseMode?: 'query' | 'fragment';
+  timeSkew?: number;
+}
+
 export interface AppConfig {
   production: boolean;
   apiUrl: string;
@@ -34,6 +49,10 @@ export interface AppConfig {
       };
       bearerExcludedUrls: string[];
     };
+  };
+  upload?: {
+    maxFileSize: number;
+    allowedFileTypes: string[];
   };
 }
 
@@ -103,19 +122,23 @@ export class ConfigService {
     );
   }
 
-  getNestedValue(path: string): any {
+  getNestedValue<T = unknown>(path: string): T | null {
     const keys = path.split('.');
-    let value: any = this.config;
+    let value: unknown = this.config;
 
     for (const key of keys) {
-      if (value && typeof value === 'object' && key in value) {
-        value = value[key];
+      if (value && typeof value === 'object' && value !== null && key in value) {
+        value = (value as { [key: string]: unknown })[key];
       } else {
         return null;
       }
     }
 
-    return value;
+    return value as T;
+  }
+
+  getApiUrl(): string {
+    return this.config?.apiUrl || 'http://localhost:3001/v1';
   }
 
   private getStorageKey(): string {

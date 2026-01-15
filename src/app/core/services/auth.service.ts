@@ -6,6 +6,23 @@ import { KeycloakService } from 'keycloak-angular';
 import { AuthUser, UserProfile } from '../models/participant.model';
 import { ConfigService } from './config.service';
 
+interface KeycloakRealmAccess {
+  roles: string[];
+}
+
+interface KeycloakResourceAccess {
+  roles: string[];
+}
+
+interface KeycloakTokenParsed {
+  realm_access?: KeycloakRealmAccess;
+  resource_access?: Record<string, KeycloakResourceAccess>;
+  sub?: string;
+  email?: string;
+  preferred_username?: string;
+  exp?: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -65,7 +82,7 @@ export class AuthService implements OnDestroy {
     }
   }
 
-  private getRolesFromToken(tokenParsed: any): string[] {
+  private getRolesFromToken(tokenParsed: KeycloakTokenParsed): string[] {
     const roles: string[] = [];
 
     try {
@@ -74,7 +91,7 @@ export class AuthService implements OnDestroy {
       }
 
       if (tokenParsed.resource_access) {
-        Object.values(tokenParsed.resource_access).forEach((resource: any) => {
+        Object.values(tokenParsed.resource_access).forEach((resource: KeycloakResourceAccess) => {
           if (resource.roles) {
             roles.push(...resource.roles);
           }
@@ -108,7 +125,7 @@ export class AuthService implements OnDestroy {
               this.loadUserFromKeycloak();
             }
           })
-          .catch((error: any) => {
+          .catch((error: unknown) => {
             this.logout();
           });
     } catch (error) {
@@ -223,7 +240,7 @@ export class AuthService implements OnDestroy {
     return this.http.get<UserProfile>(`${apiUrl}/participants/me`);
   }
 
-  private handleAuthError(message: string, error: any): void {
+  private handleAuthError(message: string, error: unknown): void {
     this.isAuthenticatedSubject.next(false);
     this.currentUserSubject.next(null);
   }

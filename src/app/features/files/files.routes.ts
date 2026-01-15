@@ -1,0 +1,12 @@
+import { Routes } from '@angular/router';
+
+export const FILES_ROUTES: Routes = [
+  {
+    path: '',
+    loadComponent: () => import('./files-list.component').then(m => m.FilesListComponent)
+  },
+  {
+    path: ':id',
+    loadComponent: () => import('./file-detail.component').then(m => m.FileDetailComponent)
+  }
+];
