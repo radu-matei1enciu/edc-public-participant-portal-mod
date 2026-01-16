@@ -32,6 +32,26 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'memberships',
+    loadChildren: () => import('./features/memberships/memberships.routes').then(m => m.MEMBERSHIPS_ROUTES),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'partners',
+    loadChildren: () => import('./features/partners/partners.routes').then(m => m.PARTNERS_ROUTES),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'files',
+    loadChildren: () => import('./features/files/files.routes').then(m => m.FILES_ROUTES),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'explore',
+    loadChildren: () => import('./features/explore/explore.routes').then(m => m.EXPLORE_ROUTES),
+    canActivate: [AuthGuard]
+  },
+  {
     path: '**',
     redirectTo: ''
   }

@@ -14,6 +14,7 @@ export interface ParticipantMetadata {
   companyType?: string;
   vatNumber?: string;
   fiscalCode?: string;
+  companyIdentifier?: string;
   
   email?: string;
   phone?: string;
@@ -34,6 +35,18 @@ export interface ParticipantMetadata {
   termsAccepted?: boolean;
   privacyAccepted?: boolean;
   marketingAccepted?: boolean;
+  
+  dataspaceId?: string; 
+  uploadedDocuments?: UploadedDocument[];
+}
+
+export interface UploadedDocument {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  file?: File;
+  uploadedAt?: string;
 }
 
 export interface ParticipantRegistrationRequest {
@@ -75,12 +88,23 @@ export interface ParticipantRegistrationResponse {
   message?: string;
 }
 
+export interface ApiErrorDetails {
+  field?: string;
+  rejectedValue?: unknown;
+  message?: string;
+  code?: string;
+  violations?: Array<{
+    field: string;
+    message: string;
+  }>;
+}
+
 export interface ApiError {
   message: string;
   status: number;
   timestamp: string;
   path: string;
-  details?: any;
+  details?: ApiErrorDetails;
 }
 
 export interface UserProfile {
@@ -92,7 +116,7 @@ export interface UserProfile {
     updatedAt: string;
   };
   participant: {
-    id: string;
+    id: number;
     name: string;
     description: string;
     currentOperation: string;
@@ -114,7 +138,6 @@ export interface AuthUser {
   profile?: UserProfile;
 }
 
-// Credential interfaces
 export interface CredentialRequest {
   credentials: CredentialDefinition[];
 }
@@ -157,3 +180,4 @@ export interface CredentialRequestResponse {
     status: 'REQUESTED';
   }>;
 }
+

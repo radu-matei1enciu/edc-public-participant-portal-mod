@@ -1,0 +1,121 @@
+<div class="p-8">
+  <div class="mb-6">
+    <button (click)="goBack()" 
+            class="inline-flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-4">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+      </svg>
+      Back to Explore
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="flex justify-center py-12">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+    </div>
+  } @else {
+    @if (file) {
+      <div class="space-y-10 mt-6">
+        <div class="mb-6 bg-white dark:bg-gray-800 shadow-lg overflow-hidden sm:rounded-lg">
+          <div class="px-6 py-6 sm:px-8 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="h-16 w-16 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
+                    <svg class="w-8 h-8 text-primary-600 dark:text-primary-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                  </div>
+                </div>
+                <div class="ml-6">
+                  <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ file.name }}</h1>
+                  @if (file.description) {
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ file.description }}</p>
+                  }
+                  <div class="mt-2">
+                    @if (hasAccess(file)) {
+                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                        Has Access
+                      </span>
+                    } @else {
+                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                        No Access
+                      </span>
+                    }
+                  </div>
+                </div>
+              </div>
+              @if (!hasAccess(file)) {
+                <button
+                  (click)="requestAccess()"
+                  [disabled]="requestingAccess"
+                  class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50">
+                  @if (!requestingAccess) {
+                    Request Access
+                  } @else {
+                    Requesting...
+                  }
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="px-6 py-6 sm:p-8">
+            <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3">
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Use Case</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                  {{ file.useCaseLabel || file.useCase || 'N/A' }}
+                </dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Company</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                  {{ getFileCompany(file) }}
+                </dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Dataspace</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                  {{ file.dataspace || 'N/A' }}
+                </dd>
+              </div>
+              @if (file.size) {
+                <div>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Size</dt>
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                    {{ formatFileSize(file.size) }}
+                  </dd>
+                </div>
+              }
+              @if (file.type) {
+                <div>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Type</dt>
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                    {{ file.type }}
+                  </dd>
+                </div>
+              }
+            </dl>
+          </div>
+        </div>
+      </div>
+    } @else {
+      <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">File not found</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          The requested file does not exist or has been deleted.
+        </p>
+        <div class="mt-6">
+          <button type="button" (click)="goBack()"
+                  class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
+            Back to Explore
+          </button>
+        </div>
+      </div>
+    }
+  }
+</div>

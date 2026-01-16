@@ -1,0 +1,114 @@
+<div class="p-8">
+  <div class="mb-6">
+    <button (click)="goBack()" 
+            class="inline-flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-4">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+      </svg>
+      Back to Partners
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="flex justify-center py-12">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+    </div>
+  } @else {
+    @if (partner) {
+      <div class="space-y-10 mt-6">
+        <div class="mb-6 bg-white dark:bg-gray-800 shadow-lg overflow-hidden sm:rounded-lg">
+          <div class="px-6 py-6 sm:px-8 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="h-16 w-16 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
+                    <span class="text-2xl font-bold text-primary-600 dark:text-primary-200">
+                      {{ (partner.name || partner.nickname || partner.identifier).charAt(0).toUpperCase() }}
+                    </span>
+                  </div>
+                </div>
+                <div class="ml-6">
+                  <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ partner.name || partner.nickname || partner.identifier }}</h1>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 font-mono">{{ partner.identifier || partner.id }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-6 py-6 sm:p-8">
+            <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3">
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Name</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                  {{ partner.name || partner.nickname || 'N/A' }}
+                </dd>
+              </div>
+              @if (partner.description) {
+                <div>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Description</dt>
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                    {{ partner.description }}
+                  </dd>
+                </div>
+              }
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Identifier</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono break-all bg-gray-50 dark:bg-gray-700 p-2 rounded">
+                  {{ partner.identifier || partner.id }}
+                </dd>
+              </div>
+              @if (partner.companyIdentifier) {
+                <div>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Company Identifier</dt>
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono">
+                    {{ partner.companyIdentifier }}
+                  </dd>
+                </div>
+              }
+              @if (partner.metadata?.industry) {
+                <div>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Industry</dt>
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                    {{ partner.metadata?.industry }}
+                  </dd>
+                </div>
+              }
+              @if (partner.metadata?.country) {
+                <div>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Country</dt>
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                    {{ partner.metadata?.country }}
+                  </dd>
+                </div>
+              }
+              @if (partner.metadata?.region) {
+                <div>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Region</dt>
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                    {{ partner.metadata?.region }}
+                  </dd>
+                </div>
+              }
+            </dl>
+          </div>
+        </div>
+      </div>
+    } @else {
+      <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Partner not found</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          The requested partner does not exist or has been deleted.
+        </p>
+        <div class="mt-6">
+          <button type="button" (click)="goBack()"
+                  class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
+            Back to Partners
+          </button>
+        </div>
+      </div>
+    }
+  }
+</div>

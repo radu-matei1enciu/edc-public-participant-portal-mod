@@ -67,7 +67,6 @@ export class NotificationService {
     this.notifications.push(notification);
     this.notificationsSubject.next([...this.notifications]);
 
-    // Auto-remove notification after duration
     if (notification.duration) {
       setTimeout(() => {
         this.removeNotification(notification.id);

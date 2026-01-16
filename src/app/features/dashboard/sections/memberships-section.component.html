@@ -1,0 +1,105 @@
+<div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
+  <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+          Memberships
+        </h3>
+        <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
+          View and manage your ecosystem memberships
+        </p>
+      </div>
+      <button
+        (click)="startRegistration()"
+        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        New Registration
+      </button>
+    </div>
+  </div>
+  
+  @if (loading) {
+    <div class="p-6 flex items-center justify-center">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+    </div>
+  } @else {
+    @if (memberships.length > 0) {
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          @for (membership of memberships; track membership.id) {
+            <div 
+              (click)="onViewDetails(membership.id)"
+              class="group relative bg-white dark:bg-gray-700 rounded-lg border-2 border-gray-200 dark:border-gray-600 p-5 hover:border-primary-500 dark:hover:border-primary-400 hover:shadow-lg transition-all cursor-pointer">
+              <div class="flex items-start justify-between">
+                <div class="flex items-center flex-1">
+                  <div class="flex-shrink-0">
+                    <div class="h-12 w-12 rounded-lg bg-primary-100 dark:bg-primary-900 flex items-center justify-center group-hover:bg-primary-200 dark:group-hover:bg-primary-800 transition-colors">
+                      <span class="text-lg font-bold text-primary-600 dark:text-primary-200">
+                        {{ membership.ecosystemName.charAt(0).toUpperCase() }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="ml-4 flex-1 min-w-0">
+                    <h4 class="text-base font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 truncate">
+                      {{ membership.ecosystemName }}
+                    </h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 font-mono truncate mt-1">
+                      {{ membership.ecosystemId }}
+                    </p>
+                    <div class="mt-2 flex items-center space-x-2">
+                      <span [class]="getStatusClass(membership.status)">
+                        {{ membership.status }}
+                      </span>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      Joined: {{ formatDate(membership.joinedAt) }}
+                    </p>
+                  </div>
+                </div>
+                <svg class="h-5 w-5 text-gray-400 group-hover:text-primary-500 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </div>
+            </div>
+          }
+          
+          <div
+            (click)="startRegistration()"
+            class="group relative bg-white dark:bg-gray-700 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 p-5 hover:border-primary-500 dark:hover:border-primary-400 hover:shadow-lg transition-all cursor-pointer flex items-center justify-center">
+            <div class="text-center">
+              <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+              <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">New Registration</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Start a new ecosystem registration
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    } @else {
+      <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No memberships</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          Start by creating your first membership.
+        </p>
+        <div class="mt-6">
+          <button
+            (click)="startRegistration()"
+            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Nuova Registration
+          </button>
+        </div>
+      </div>
+    }
+  }
+</div>
