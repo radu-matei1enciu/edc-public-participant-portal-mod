@@ -136,7 +136,7 @@
               [class.border-red-500]="registrationForm.get('dataspaceId')?.invalid && registrationForm.get('dataspaceId')?.touched"
             >
               <option value="">Select a DataSpace</option>
-              <option *ngFor="let ds of filteredDataspaces" [value]="ds.id">
+              <option *ngFor="let ds of filteredDataspaces" [value]="ds.id.toString()">
                 {{ ds.name }}
               </option>
             </select>
@@ -144,9 +144,6 @@
                  class="mt-1 text-sm text-red-600">
               <p>You must select a DataSpace to continue</p>
             </div>
-            <p *ngIf="selectedDataspace" class="mt-2 text-sm text-gray-600">
-              {{ selectedDataspace.description }}
-            </p>
           </div>
         </div>
 

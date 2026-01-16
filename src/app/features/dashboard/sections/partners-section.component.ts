@@ -1,8 +1,11 @@
 import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { PartnerService } from '../../../core/services/partner.service';
+import { DataspaceService } from '../../../core/services/dataspace.service';
+import { ConfigService } from '../../../core/services/config.service';
 import { Partner } from '../../../core/models/partner.model';
+import { DataspaceResource } from '../../../core/models/ecosystem.model';
 import { NotificationService } from '../../../shared/services/notification.service';
 
 @Component({
@@ -12,33 +15,69 @@ import { NotificationService } from '../../../shared/services/notification.servi
   templateUrl: './partners-section.component.html',
   })
 export class PartnersSectionComponent implements OnInit {
-  @Input() participantId: string = '';
+  @Input() participantId: number | null = null;
 
   partners: Partner[] = [];
+  dataspaces: DataspaceResource[] = [];
+  selectedDataspaceId: number | null = null;
   loading = false;
-  showAddPartnerModal = false;
-  addingPartner = false;
-  partnerForm!: FormGroup;
+  filterForm!: FormGroup;
+  providerId: number = 1;
+  tenantId: number = 1;
 
   private partnerService = inject(PartnerService);
+  private dataspaceService = inject(DataspaceService);
+  private configService = inject(ConfigService);
   private notificationService = inject(NotificationService);
   private fb = inject(FormBuilder);
 
   ngOnInit(): void {
-    this.partnerForm = this.fb.group({
-      name: ['', [Validators.required]],
-      description: [''],
-      companyIdentifier: ['']
+    this.filterForm = this.fb.group({
+      dataspaceId: ['']
     });
+    
+    this.providerId = this.configService.config?.defaultServiceProviderId || 1;
+    this.loadDataspaces();
 
-    if (this.participantId) {
+  }
+
+  onDataspaceChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    const dataspaceId = target.value;
+    if (dataspaceId) {
+      this.selectedDataspaceId = parseInt(dataspaceId);
+      this.filterForm.patchValue({ dataspaceId });
       this.loadPartners();
     }
   }
 
+  loadDataspaces(): void {
+    this.dataspaceService.getDataspaces().subscribe({
+      next: (dataspaces) => {
+        this.dataspaces = dataspaces;
+        if (dataspaces.length > 0 && !this.selectedDataspaceId) {
+          this.selectedDataspaceId = dataspaces[0].id;
+          this.filterForm.patchValue({ dataspaceId: dataspaces[0].id.toString() });
+        }
+      },
+      error: () => {
+        this.notificationService.showError('Error', 'Failed to load dataspaces');
+      }
+    });
+  }
+
   loadPartners(): void {
+    if (!this.participantId || !this.selectedDataspaceId) return;
+    
     this.loading = true;
-    this.partnerService.getPartners(this.participantId).subscribe({
+    this.tenantId = this.participantId;
+    
+    this.partnerService.getPartners(
+      this.providerId,
+      this.tenantId,
+      this.participantId,
+      this.selectedDataspaceId
+    ).subscribe({
       next: (partners) => {
         this.partners = partners;
         this.loading = false;
@@ -48,29 +87,5 @@ export class PartnersSectionComponent implements OnInit {
         this.notificationService.showError('Error', 'Failed to load partners');
       }
     });
-  }
-
-  addPartner(): void {
-    if (this.partnerForm.invalid) return;
-
-    this.addingPartner = true;
-    this.partnerService.addPartner(this.participantId, this.partnerForm.value).subscribe({
-      next: () => {
-        this.addingPartner = false;
-        this.showAddPartnerModal = false;
-        this.partnerForm.reset();
-        this.loadPartners();
-        this.notificationService.showSuccess('Success', 'Partner added successfully');
-      },
-      error: () => {
-        this.addingPartner = false;
-        this.notificationService.showError('Error', 'Failed to add partner');
-      }
-    });
-  }
-
-  closeAddPartnerModal(): void {
-    this.showAddPartnerModal = false;
-    this.partnerForm.reset();
   }
 }

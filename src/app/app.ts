@@ -42,12 +42,14 @@ export class App implements OnInit, OnDestroy {
       filter(event => event instanceof NavigationEnd),
       takeUntil(this.destroy$)
     ).subscribe((event: NavigationEnd) => {
-      const url = event.urlAfterRedirects;
-      this.showAppShell = !['/', '/registration', '/success', '/role-error'].includes(url);
+      const url = event.urlAfterRedirects.split('?')[0];
+      const hideShellPaths = ['/', '/customers', '/customers/', '/registration', '/customers/registration', '/success', '/customers/success', '/role-error', '/customers/role-error'];
+      this.showAppShell = !hideShellPaths.includes(url) && !url.startsWith('/customers/registration') && !url.startsWith('/customers/success');
     });
 
-    const currentUrl = this.router.url;
-    this.showAppShell = !['/', '/registration', '/success', '/role-error'].includes(currentUrl);
+    const currentUrl = this.router.url.split('?')[0];
+    const hideShellPaths = ['/', '/customers', '/customers/', '/registration', '/customers/registration', '/success', '/customers/success', '/role-error', '/customers/role-error'];
+    this.showAppShell = !hideShellPaths.includes(currentUrl) && !currentUrl.startsWith('/customers/registration') && !currentUrl.startsWith('/customers/success');
 
     this.authService.loadUserProfile().subscribe({
       next: (profile) => {

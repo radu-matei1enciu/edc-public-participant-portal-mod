@@ -8,7 +8,10 @@ import { PartnerService } from '../../core/services/partner.service';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../shared/services/notification.service';
 import { UserPreferencesService, UserPreferences } from '../../core/services/user-preferences.service';
+import { DataspaceService } from '../../core/services/dataspace.service';
+import { ConfigService } from '../../core/services/config.service';
 import { Partner } from '../../core/models/partner.model';
+import { DataspaceResource } from '../../core/models/ecosystem.model';
 import { UserProfile } from '../../core/models/participant.model';
 
 @Component({
@@ -18,13 +21,6 @@ import { UserProfile } from '../../core/models/participant.model';
   templateUrl: './partners-list.component.html',
   })
 export class PartnersListComponent implements OnInit {
-  private partnerService = inject(PartnerService);
-  private authService = inject(AuthService);
-  private notificationService = inject(NotificationService);
-  private preferencesService = inject(UserPreferencesService);
-  private destroyRef = inject(DestroyRef);
-  private fb = inject(FormBuilder);
-
   partners: Partner[] = [];
   filteredPartners: Partner[] = [];
   filterForm: FormGroup;
@@ -33,29 +29,41 @@ export class PartnersListComponent implements OnInit {
   currentPage = 1;
   itemsPerPage = 10;
   userProfile: UserProfile | null = null;
-  participantId: string = '';
-  showAddPartnerModal = false;
-  addingPartner = false;
-  partnerForm!: FormGroup;
+  participantId: number | null = null;
+  dataspaces: DataspaceResource[] = [];
+  selectedDataspaceId: number | null = null;
+  providerId: number = 1;
+  tenantId: number = 1;
+
+  private partnerService = inject(PartnerService);
+  private authService = inject(AuthService);
+  private notificationService = inject(NotificationService);
+  private preferencesService = inject(UserPreferencesService);
+  private dataspaceService = inject(DataspaceService);
+  private configService = inject(ConfigService);
+  private destroyRef = inject(DestroyRef);
+  private fb = inject(FormBuilder);
 
   constructor() {
     this.filterForm = this.fb.group({
-      searchTerm: ['']
-    });
-    this.partnerForm = this.fb.group({
-      name: ['', [Validators.required]],
-      description: [''],
-      companyIdentifier: ['']
+      searchTerm: [''],
+      dataspaceId: ['']
     });
     this.preferences$ = this.preferencesService.preferences$;
+    this.providerId = this.configService.config?.defaultServiceProviderId || 1;
   }
 
   ngOnInit(): void {
+    this.loadDataspaces();
+    
     this.authService.loadUserProfile().subscribe({
       next: (profile) => {
         this.userProfile = profile;
         this.participantId = profile.participant.id;
-        this.loadPartners();
+        this.tenantId = profile.participant.id;
+        if (this.selectedDataspaceId) {
+          this.loadPartners();
+        }
       },
       error: () => {
         this.notificationService.showError('Error', 'Failed to load user profile');
@@ -77,39 +85,41 @@ export class PartnersListComponent implements OnInit {
       this.applyFilters();
     });
 
-    this.preferences$.pipe(
-      switchMap(prefs => {
-        const intervalMs = (prefs.autoRefreshInterval || 30) * 1000;
-        return interval(intervalMs).pipe(
-          startWith(0),
-          switchMap(() => {
-            if (this.participantId) {
-              return this.partnerService.getPartners(this.participantId).pipe(
-                catchError(() => of([]))
-              );
-            }
-            return of([]);
-          })
-        );
-      }),
+    this.filterForm.get('dataspaceId')?.valueChanges.pipe(
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe({
-      next: (partners) => {
-        this.partners = partners;
-        this.applyFilters();
-        this.loading = false;
+    ).subscribe((dataspaceId) => {
+      if (dataspaceId) {
+        this.selectedDataspaceId = parseInt(dataspaceId);
+        this.loadPartners();
+      }
+    });
+  }
+
+  loadDataspaces(): void {
+    this.dataspaceService.getDataspaces().subscribe({
+      next: (dataspaces) => {
+        this.dataspaces = dataspaces;
+        if (dataspaces.length > 0 && !this.selectedDataspaceId) {
+          this.selectedDataspaceId = dataspaces[0].id;
+          this.filterForm.patchValue({ dataspaceId: dataspaces[0].id.toString() });
+        }
       },
       error: () => {
-        this.loading = false;
+        this.notificationService.showError('Error', 'Failed to load dataspaces');
       }
     });
   }
 
   loadPartners(): void {
-    if (!this.participantId) return;
+    if (!this.participantId || !this.selectedDataspaceId) return;
     
     this.loading = true;
-    this.partnerService.getPartners(this.participantId).subscribe({
+    this.partnerService.getPartners(
+      this.providerId,
+      this.tenantId,
+      this.participantId,
+      this.selectedDataspaceId
+    ).subscribe({
       next: (partners) => {
         this.partners = partners;
         this.applyFilters();
@@ -158,26 +168,4 @@ export class PartnersListComponent implements OnInit {
     }
   }
 
-  closeAddPartnerModal(): void {
-    this.showAddPartnerModal = false;
-    this.partnerForm.reset();
-  }
-
-  addPartner(): void {
-    if (this.partnerForm.invalid || !this.participantId) return;
-
-    this.addingPartner = true;
-    this.partnerService.addPartner(this.participantId, this.partnerForm.value).subscribe({
-      next: () => {
-        this.notificationService.showSuccess('Success', 'Partner added successfully');
-        this.closeAddPartnerModal();
-        this.loadPartners();
-        this.addingPartner = false;
-      },
-      error: () => {
-        this.notificationService.showError('Error', 'Failed to add partner');
-        this.addingPartner = false;
-      }
-    });
-  }
 }

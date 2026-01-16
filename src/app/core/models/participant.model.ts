@@ -116,7 +116,7 @@ export interface UserProfile {
     updatedAt: string;
   };
   participant: {
-    id: string;
+    id: number;
     name: string;
     description: string;
     currentOperation: string;

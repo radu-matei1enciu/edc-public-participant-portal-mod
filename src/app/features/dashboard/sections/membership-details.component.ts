@@ -11,7 +11,7 @@ import { NotificationService } from '../../../shared/services/notification.servi
   templateUrl: './membership-details.component.html',
   })
 export class MembershipDetailsComponent implements OnInit {
-  @Input() participantId: string = '';
+  @Input() participantId: number | null = null;
   @Input() membershipId: string = '';
   @Output() close = new EventEmitter<void>();
 
@@ -28,6 +28,7 @@ export class MembershipDetailsComponent implements OnInit {
   }
 
   loadMembership(): void {
+    if (!this.participantId) return;
     this.loading = true;
     this.membershipService.getMembershipDetails(this.participantId, this.membershipId).subscribe({
       next: (membership) => {

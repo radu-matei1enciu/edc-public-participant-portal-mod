@@ -13,7 +13,7 @@ import { NotificationService } from '../../../shared/services/notification.servi
   templateUrl: './files-section.component.html',
   })
 export class FilesSectionComponent implements OnInit {
-  @Input() participantId: string = '';
+  @Input() participantId: number | null = null;
   @Input() useCases: UseCase[] = [];
   @Output() viewDetails = new EventEmitter<string>();
   @Output() uploadFile = new EventEmitter<string>();
@@ -54,6 +54,7 @@ export class FilesSectionComponent implements OnInit {
   }
 
   loadFiles(): void {
+    if (!this.participantId) return;
     this.loading = true;
     const formValue = this.filterForm.value;
     const selectedOrigin = formValue.selectedOrigin;
@@ -137,7 +138,7 @@ export class FilesSectionComponent implements OnInit {
     this.uploading = true;
     const uploadMetadata = this.uploadForm.value;
     const uploadPromises = this.selectedFiles.map(file =>
-      this.fileAssetService.uploadFile(this.participantId, file, uploadMetadata).toPromise()
+      this.fileAssetService.uploadFile(this.participantId!, file, uploadMetadata).toPromise()
     );
 
     Promise.all(uploadPromises).then(() => {

@@ -23,7 +23,7 @@ export class MembershipDetailComponent implements OnInit {
 
   membership: Membership | null = null;
   loading = true;
-  participantId: string = '';
+  participantId: number | null = null;
 
   ngOnInit(): void {
     this.authService.loadUserProfile().subscribe({

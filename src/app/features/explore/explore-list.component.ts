@@ -35,7 +35,7 @@ export class ExploreListComponent implements OnInit {
   currentPage = 1;
   itemsPerPage = 10;
   userProfile: UserProfile | null = null;
-  participantId: string = '';
+  participantId: number | null = null;
   requestingAccess: string | null = null;
 
   constructor() {

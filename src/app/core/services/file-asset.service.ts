@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { FileAsset } from '../models/file-asset.model';
 import { UseCase } from '../models/use-case.model';
@@ -19,13 +19,11 @@ export interface FileSearchFilters {
 export class FileAssetService {
   private http = inject(HttpClient);
   private configService = inject(ConfigService);
-  private readonly defaultBaseUrl = 'http://localhost:3001/v1';
-
   private get baseUrl(): string {
-    return this.configService.config?.apiUrl || this.defaultBaseUrl;
+    return this.configService.config?.apiUrl || 'http://localhost:3001/api/ui';
   }
 
-  getFiles(participantId: string, filters?: FileSearchFilters): Observable<FileAsset[]> {
+  getFiles(participantId: number, filters?: FileSearchFilters): Observable<FileAsset[]> {
     let url = `${this.baseUrl}/participants/${participantId}/files`;
     const params = new URLSearchParams();
     if (filters?.search) params.append('search', filters.search);
@@ -38,7 +36,7 @@ export class FileAssetService {
     );
   }
 
-  getFileDetails(participantId: string, fileId: string): Observable<FileAsset> {
+  getFileDetails(participantId: number, fileId: string): Observable<FileAsset> {
     return this.http.get<FileAsset>(`${this.baseUrl}/participants/${participantId}/files/${fileId}`).pipe(
       catchError(() => {
         throw new Error('Failed to load file details');
@@ -46,7 +44,7 @@ export class FileAssetService {
     );
   }
 
-  uploadFile(participantId: string, file: File, metadata: { useCase?: string; partnerId?: string }): Observable<FileAsset> {
+  uploadFile(participantId: number, file: File, metadata: { useCase?: string; partnerId?: string }): Observable<FileAsset> {
     const formData = new FormData();
     formData.append('file', file);
     if (metadata.useCase) formData.append('useCase', metadata.useCase);
@@ -81,7 +79,7 @@ export class FileAssetService {
     );
   }
 
-  requestAccess(participantId: string, fileId: string): Observable<{ success: boolean; message?: string }> {
+  requestAccess(participantId: number, fileId: string): Observable<{ success: boolean; message?: string }> {
     return this.http.post<{ success: boolean; message?: string }>(`${this.baseUrl}/participants/${participantId}/files/${fileId}/request-access`, {}).pipe(
       catchError(() => {
         throw new Error('Failed to request access');

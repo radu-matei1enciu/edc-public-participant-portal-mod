@@ -11,7 +11,7 @@ import { NotificationService } from '../../../shared/services/notification.servi
   templateUrl: './file-details.component.html',
   })
 export class FileDetailsComponent implements OnInit {
-  @Input() participantId: string = '';
+  @Input() participantId: number | null = null;
   @Input() fileId: string = '';
   @Output() close = new EventEmitter<void>();
 
@@ -28,6 +28,7 @@ export class FileDetailsComponent implements OnInit {
   }
 
   loadFile(): void {
+    if (!this.participantId) return;
     this.loading = true;
     this.fileAssetService.getFileDetails(this.participantId, this.fileId).subscribe({
       next: (file) => {

@@ -13,3 +13,8 @@ export interface Dataspace {
   logoUrl?: string;
   website?: string;
 }
+
+export interface DataspaceResource {
+  id: number;
+  name: string;
+}

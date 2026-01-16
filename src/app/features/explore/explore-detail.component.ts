@@ -23,7 +23,7 @@ export class ExploreDetailComponent implements OnInit {
 
   file: FileAsset | null = null;
   loading = true;
-  participantId: string = '';
+  participantId: number | null = null;
   requestingAccess = false;
 
   ngOnInit(): void {

@@ -144,7 +144,7 @@ function handleGetParticipants(req, res) {
   res.end(JSON.stringify(participants));
 }
 
-function handleGetParticipant(req, res, id) {
+function handleGetParticipantById(req, res, id) {
   const participant = participants.find(p => p.id === id);
 
   if (participant) {
@@ -180,7 +180,7 @@ function handleGetMe(req, res) {
       updatedAt: '2024-01-15T10:30:00Z'
     },
     participant: {
-      id: 'participant-123',
+      id: 123,
       name: 'Tech Solutions SRL',
       description: 'Technology company specializing in data solutions and digital transformation',
       currentOperation: 'ACTIVE',
@@ -335,11 +335,17 @@ let useCases = [
 ];
 
 let dataspaces = [
-  { id: 'dataspace-1', name: 'CatenaX DataSpace', description: 'DataSpace for automotive supply chain', website: 'https://catena-x.net' },
-  { id: 'dataspace-2', name: 'Gaia-X DataSpace', description: 'European DataSpace for data sovereignty', website: 'https://gaia-x.eu' },
-  { id: 'dataspace-3', name: 'IDSA DataSpace', description: 'International Data Spaces Association DataSpace', website: 'https://internationaldataspaces.org' },
-  { id: 'dataspace-4', name: 'Manufacturing-X', description: 'DataSpace for manufacturing industry', website: 'https://manufacturing-x.org' }
+  { id: 1, name: 'CatenaX DataSpace' },
+  { id: 2, name: 'Gaia-X DataSpace' },
+  { id: 3, name: 'IDSA DataSpace' },
+  { id: 4, name: 'Manufacturing-X' }
 ];
+
+let serviceProviders = [
+  { id: 1, name: 'Default Service Provider' }
+];
+
+let tenants = [];
 
 let ecosystems = [
   { id: 'ecosystem-1', name: 'Manufacturing DataSpace', description: 'DataSpace for manufacturing industry' },
@@ -372,6 +378,216 @@ function handleGetEcosystems(req, res) {
 function handleGetDataspaces(req, res) {
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(dataspaces));
+}
+
+async function handleRegisterTenant(req, res, providerId) {
+  try {
+    const body = await parseBody(req);
+    const tenantId = tenants.length + 1;
+    
+    const newTenant = {
+      id: tenantId,
+      providerId: parseInt(providerId),
+      name: body.tenantName,
+      participants: []
+    };
+    
+    tenants.push(newTenant);
+    
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(newTenant));
+  } catch (error) {
+    console.error('Error registering tenant:', error);
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Internal server error', message: error.message }));
+  }
+}
+
+async function handleCreateParticipant(req, res, providerId, tenantId) {
+  try {
+    const body = await parseBody(req);
+    const participantId = participants.length + 1;
+    
+    const tenant = tenants.find(t => t.id === parseInt(tenantId) && t.providerId === parseInt(providerId));
+    
+    if (!tenant) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Tenant not found' }));
+      return;
+    }
+    
+    const dataspaceInfos = body.dataspaceInfos || [];
+    const dataspaceInfoList = dataspaceInfos.map((dsInfo, index) => ({
+      dataspaceId: dsInfo.dataspaceId,
+      agreementTypes: dsInfo.agreementTypes || [],
+      roles: dsInfo.roles || [],
+      id: index + 1
+    }));
+    
+    const newParticipant = {
+      id: participantId,
+      identifier: body.identifier || `participant-${participantId}`,
+      agents: [
+        { id: 1, type: 'CONTROL_PLANE', state: 'PENDING' },
+        { id: 2, type: 'CREDENTIAL_SERVICE', state: 'PENDING' },
+        { id: 3, type: 'DATA_PLANE', state: 'PENDING' }
+      ],
+      dataspaceInfos: dataspaceInfoList
+    };
+    
+    tenant.participants.push(newParticipant);
+    participants.push(newParticipant);
+    
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(newParticipant));
+  } catch (error) {
+    console.error('Error creating participant:', error);
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Internal server error', message: error.message }));
+  }
+}
+
+function handleGetTenant(req, res, providerId, tenantId) {
+  const tenant = tenants.find(t => t.id === parseInt(tenantId) && t.providerId === parseInt(providerId));
+  if (tenant) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(tenant));
+  } else {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Tenant not found' }));
+  }
+}
+
+function handleGetParticipant(req, res, providerId, tenantId, participantId) {
+  const participant = participants.find(p => p.id === parseInt(participantId));
+  if (participant) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(participant));
+  } else {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Participant not found' }));
+  }
+}
+
+async function handleDeployParticipant(req, res, providerId, tenantId, participantId) {
+  try {
+    const body = await parseBody(req);
+    const participant = participants.find(p => p.id === parseInt(participantId));
+    if (participant) {
+      participant.agents.forEach(agent => {
+        if (agent.state === 'PENDING') {
+          agent.state = 'ACTIVE';
+        }
+      });
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(participant));
+    } else {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Participant not found' }));
+    }
+  } catch (error) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Internal server error' }));
+  }
+}
+
+function handleGetPartners(req, res, providerId, tenantId, participantId, dataspaceId) {
+  const mockPartners = [
+    { 
+      identifier: 'partner-1', 
+      nickname: 'Acme Corporation',
+      id: 'partner-1',
+      name: 'Acme Corporation',
+      description: 'Leading manufacturer in industrial automation',
+      companyIdentifier: 'ACME001',
+      metadata: {
+        industry: 'Manufacturing',
+        country: 'IT',
+        region: 'Lombardy'
+      }
+    },
+    { 
+      identifier: 'partner-2', 
+      nickname: 'MedTech Solutions',
+      id: 'partner-2',
+      name: 'MedTech Solutions',
+      description: 'Healthcare technology provider',
+      companyIdentifier: 'MEDTECH001',
+      metadata: {
+        industry: 'Healthcare',
+        country: 'IT',
+        region: 'Lazio'
+      }
+    },
+    { 
+      identifier: 'partner-3', 
+      nickname: 'TechCorp Industries',
+      id: 'partner-3',
+      name: 'TechCorp Industries',
+      description: 'Technology solutions provider',
+      companyIdentifier: 'TECHCORP001',
+      metadata: {
+        industry: 'Technology',
+        country: 'IT',
+        region: 'Tuscany'
+      }
+    },
+    { 
+      identifier: 'partner-4', 
+      nickname: 'Global Solutions Ltd',
+      id: 'partner-4',
+      name: 'Global Solutions Ltd',
+      description: 'Global business solutions',
+      companyIdentifier: 'GLOBAL001',
+      metadata: {
+        industry: 'Consulting',
+        country: 'IT',
+        region: 'Lombardy'
+      }
+    }
+  ];
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(mockPartners));
+}
+
+function handleGetPartner(req, res, providerId, tenantId, participantId, partnerId) {
+  const mockPartners = [
+    { 
+      identifier: 'partner-1', 
+      nickname: 'Acme Corporation',
+      id: 'partner-1',
+      name: 'Acme Corporation',
+      description: 'Leading manufacturer in industrial automation',
+      companyIdentifier: 'ACME001',
+      metadata: {
+        industry: 'Manufacturing',
+        country: 'IT',
+        region: 'Lombardy'
+      }
+    },
+    { 
+      identifier: 'partner-2', 
+      nickname: 'MedTech Solutions',
+      id: 'partner-2',
+      name: 'MedTech Solutions',
+      description: 'Healthcare technology provider',
+      companyIdentifier: 'MEDTECH001',
+      metadata: {
+        industry: 'Healthcare',
+        country: 'IT',
+        region: 'Lazio'
+      }
+    }
+  ];
+  
+  const partner = mockPartners.find(p => p.id === partnerId || p.identifier === partnerId);
+  if (partner) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(partner));
+  } else {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Partner not found' }));
+  }
 }
 
 function handleGetPartners(req, res, participantId) {
@@ -527,29 +743,84 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-
-  // Participants routes
-  if (method === 'POST' && path === '/v1/participants') {
+  if (method === 'GET' && (path === '/api/ui/dataspaces' || path === '/v1/dataspaces')) {
+    handleGetDataspaces(req, res);
+  } else if (method === 'POST' && (path.match(/^\/api\/ui\/service-providers\/(\d+)\/tenants$/) || path.match(/^\/v1\/service-providers\/(\d+)\/tenants$/))) {
+    const match = path.match(/\/(\d+)\/tenants$/);
+    const providerId = match ? match[1] : path.split('/')[path.startsWith('/v1') ? 2 : 4];
+    await handleRegisterTenant(req, res, providerId);
+  } else if (method === 'POST' && (path.match(/^\/api\/ui\/service-providers\/(\d+)\/tenants\/(\d+)\/participants$/) || path.match(/^\/v1\/service-providers\/(\d+)\/tenants\/(\d+)\/participants$/))) {
+    const match = path.match(/service-providers\/(\d+)\/tenants\/(\d+)\/participants$/);
+    const providerId = match ? match[1] : (path.startsWith('/v1') ? path.split('/')[2] : path.split('/')[4]);
+    const tenantId = match ? match[2] : (path.startsWith('/v1') ? path.split('/')[4] : path.split('/')[6]);
+    await handleCreateParticipant(req, res, providerId, tenantId);
+  } else if (method === 'GET' && (path.match(/^\/api\/ui\/service-providers\/(\d+)\/tenants\/(\d+)$/) || path.match(/^\/v1\/service-providers\/(\d+)\/tenants\/(\d+)$/))) {
+    const parts = path.split('/');
+    const providerId = parts[parts.length - 2];
+    const tenantId = parts[parts.length - 1];
+    handleGetTenant(req, res, providerId, tenantId);
+  } else if (method === 'GET' && (path.match(/^\/api\/ui\/service-providers\/(\d+)\/tenants\/(\d+)\/participants\/(\d+)$/) || path.match(/^\/v1\/service-providers\/(\d+)\/tenants\/(\d+)\/participants\/(\d+)$/))) {
+    const parts = path.split('/');
+    const providerId = parts[parts.length - 3];
+    const tenantId = parts[parts.length - 2];
+    const participantId = parts[parts.length - 1];
+    handleGetParticipant(req, res, providerId, tenantId, participantId);
+  } else if (method === 'POST' && (path.match(/^\/api\/ui\/service-providers\/(\d+)\/tenants\/(\d+)\/participants\/(\d+)\/deployments$/) || path.match(/^\/v1\/service-providers\/(\d+)\/tenants\/(\d+)\/participants\/(\d+)\/deployments$/))) {
+    const parts = path.split('/');
+    const providerId = parts[parts.length - 4];
+    const tenantId = parts[parts.length - 3];
+    const participantId = parts[parts.length - 2];
+    await handleDeployParticipant(req, res, providerId, tenantId, participantId);
+  } else if (method === 'GET' && (path.match(/^\/api\/ui\/service-providers\/(\d+)\/tenants\/(\d+)\/participants\/(\d+)\/partners\/([^\/]+)$/) || path.match(/^\/v1\/service-providers\/(\d+)\/tenants\/(\d+)\/participants\/(\d+)\/partners\/([^\/]+)$/))) {
+    const parts = path.split('/');
+    const providerId = parts[parts.length - 5];
+    const tenantId = parts[parts.length - 4];
+    const participantId = parts[parts.length - 2];
+    const lastParam = parts[parts.length - 1];
+    
+    const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
+    const dataspaceId = parsedUrl.searchParams.get('dataspaceId');
+    
+    if (lastParam.match(/^partner-/)) {
+      const partnerId = lastParam;
+      handleGetPartner(req, res, providerId, tenantId, participantId, partnerId);
+    } else if (dataspaceId) {
+      handleGetPartners(req, res, providerId, tenantId, participantId, dataspaceId);
+    } else if (lastParam.match(/^\d+$/)) {
+      const dataspaceIdFromPath = lastParam;
+      handleGetPartners(req, res, providerId, tenantId, participantId, dataspaceIdFromPath);
+    } else {
+      const partnerId = lastParam;
+      handleGetPartner(req, res, providerId, tenantId, participantId, partnerId);
+    }
+  } else if (method === 'POST' && path.match(/^\/v1\/service-providers\/(\d+)\/tenants\/(\d+)\/participants$/)) {
+    const parts = path.split('/');
+    const providerId = parts[3];
+    const tenantId = parts[5];
+    await handleCreateParticipant(req, res, providerId, tenantId);
+  }
+  else if (method === 'POST' && path === '/v1/participants') {
     await handleParticipantRegistration(req, res);
   } else if (method === 'GET' && path === '/v1/participants') {
     handleGetParticipants(req, res);
-  } else if (method === 'GET' && path === '/v1/participants/me') {
+  } else if (method === 'GET' && (path === '/v1/participants/me' || path === '/api/ui/participants/me' || path === '/v1/me')) {
     handleGetMe(req, res);
-  } else if (method === 'GET' && path.startsWith('/v1/participants/') && !path.includes('/memberships') && !path.includes('/partners') && !path.includes('/files')) {
+  } else if (method === 'GET' && path.startsWith('/v1/participants/') && !path.includes('/memberships') && !path.includes('/partners') && !path.includes('/files') && path !== '/v1/participants/me') {
     const id = path.split('/')[3];
-    handleGetParticipant(req, res, id);
+    handleGetParticipantById(req, res, id);
   } else if (method === 'DELETE' && path.startsWith('/v1/participants/') && !path.includes('/memberships') && !path.includes('/partners') && !path.includes('/files')) {
     const id = path.split('/')[3];
     handleDeleteParticipant(req, res, id);
   } 
   // Memberships routes
-  else if (method === 'GET' && path.match(/^\/v1\/participants\/([^\/]+)\/memberships$/)) {
-    const participantId = path.split('/')[3];
-    handleGetMemberships(req, res, participantId);
-  } else if (method === 'GET' && path.match(/^\/v1\/participants\/([^\/]+)\/memberships\/([^\/]+)$/)) {
+  else if (method === 'GET' && (path.match(/^\/v1\/participants\/([^\/]+)\/memberships$/) || path.match(/^\/api\/ui\/participants\/([^\/]+)\/memberships$/))) {
     const parts = path.split('/');
-    const participantId = parts[3];
-    const membershipId = parts[5];
+    const participantId = path.startsWith('/api/ui') ? parts[4] : parts[3];
+    handleGetMemberships(req, res, participantId);
+  } else if (method === 'GET' && (path.match(/^\/v1\/participants\/([^\/]+)\/memberships\/([^\/]+)$/) || path.match(/^\/api\/ui\/participants\/([^\/]+)\/memberships\/([^\/]+)$/))) {
+    const parts = path.split('/');
+    const participantId = path.startsWith('/api/ui') ? parts[4] : parts[3];
+    const membershipId = path.startsWith('/api/ui') ? parts[6] : parts[5];
     handleGetMembershipDetails(req, res, participantId, membershipId);
   } else if (method === 'GET' && path === '/v1/ecosystems') {
     handleGetEcosystems(req, res);
@@ -570,31 +841,30 @@ const server = http.createServer(async (req, res) => {
     handleGetPartner(req, res, participantId, partnerId);
   }
   // Files routes
-  else if (method === 'GET' && path.match(/^\/v1\/participants\/([^\/]+)\/files$/)) {
-    const participantId = path.split('/')[3];
+  else if (method === 'GET' && (path.match(/^\/v1\/participants\/([^\/]+)\/files$/) || path.match(/^\/api\/ui\/participants\/([^\/]+)\/files$/))) {
+    const parts = path.split('/');
+    const participantId = path.startsWith('/api/ui') ? parts[4] : parts[3];
     handleGetFiles(req, res, participantId);
-  } else if (method === 'GET' && path.match(/^\/v1\/participants\/([^\/]+)\/files\/([^\/]+)$/)) {
+  } else if (method === 'GET' && (path.match(/^\/v1\/participants\/([^\/]+)\/files\/([^\/]+)$/) || path.match(/^\/api\/ui\/participants\/([^\/]+)\/files\/([^\/]+)$/))) {
     const parts = path.split('/');
-    const participantId = parts[3];
-    const fileId = parts[5];
+    const participantId = path.startsWith('/api/ui') ? parts[4] : parts[3];
+    const fileId = path.startsWith('/api/ui') ? parts[6] : parts[5];
     handleGetFileDetails(req, res, participantId, fileId);
-  } else if (method === 'POST' && path.match(/^\/v1\/participants\/([^\/]+)\/files$/)) {
-    const participantId = path.split('/')[3];
-    await handleUploadFile(req, res, participantId);
-  } else if (method === 'GET' && path === '/v1/use-cases') {
-    handleGetUseCases(req, res);
-  } else if (method === 'GET' && path.match(/^\/v1\/participants\/([^\/]+)\/files\/search$/)) {
-    const participantId = path.split('/')[3];
-    handleSearchFiles(req, res, participantId);
-  } else if (method === 'POST' && path.match(/^\/v1\/participants\/([^\/]+)\/files\/([^\/]+)\/request-access$/)) {
+  } else if (method === 'POST' && (path.match(/^\/v1\/participants\/([^\/]+)\/files$/) || path.match(/^\/api\/ui\/participants\/([^\/]+)\/files$/))) {
     const parts = path.split('/');
-    const participantId = parts[3];
-    const fileId = parts[5];
+    const participantId = path.startsWith('/api/ui') ? parts[4] : parts[3];
+    await handleUploadFile(req, res, participantId);
+  } else if (method === 'GET' && (path === '/v1/use-cases' || path === '/api/ui/use-cases')) {
+    handleGetUseCases(req, res);
+  } else if (method === 'GET' && (path.match(/^\/v1\/participants\/([^\/]+)\/files\/search$/) || path.match(/^\/api\/ui\/participants\/([^\/]+)\/files\/search$/))) {
+    const parts = path.split('/');
+    const participantId = path.startsWith('/api/ui') ? parts[4] : parts[3];
+    handleSearchFiles(req, res, participantId);
+  } else if (method === 'POST' && (path.match(/^\/v1\/participants\/([^\/]+)\/files\/([^\/]+)\/request-access$/) || path.match(/^\/api\/ui\/participants\/([^\/]+)\/files\/([^\/]+)\/request-access$/))) {
+    const parts = path.split('/');
+    const participantId = path.startsWith('/api/ui') ? parts[4] : parts[3];
+    const fileId = path.startsWith('/api/ui') ? parts[6] : parts[5];
     await handleRequestAccess(req, res, participantId, fileId);
-  }
-  // Me route
-  else if (method === 'GET' && path === '/v1/me') {
-    handleGetMe(req, res);
   } else {
     res.writeHead(404, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'Not found', path: path }));
@@ -607,6 +877,13 @@ server.listen(PORT, () => {
   console.log(`API endpoints:`);
   console.log(`  POST /v1/participants - Register new participant`);
   console.log(`  GET  /v1/participants - List participants`);
+  console.log(`  GET  /api/ui/dataspaces or /v1/dataspaces - List dataspaces`);
+  console.log(`  POST /api/ui/service-providers/:providerId/tenants or /v1/service-providers/:providerId/tenants - Register tenant`);
+  console.log(`  POST /api/ui/service-providers/:providerId/tenants/:tenantId/participants or /v1/service-providers/:providerId/tenants/:tenantId/participants - Create participant`);
+  console.log(`  GET  /api/ui/service-providers/:providerId/tenants/:tenantId or /v1/service-providers/:providerId/tenants/:tenantId - Get tenant`);
+  console.log(`  GET  /api/ui/service-providers/:providerId/tenants/:tenantId/participants/participantId or /v1/service-providers/:providerId/tenants/:tenantId/participants/participantId - Get participant`);
+  console.log(`  POST /api/ui/service-providers/:providerId/tenants/:tenantId/participants/:participantId/deployments or /v1/service-providers/:providerId/tenants/:tenantId/participants/:participantId/deployments - Deploy participant`);
+  console.log(`  GET  /api/ui/service-providers/:providerId/tenants/:tenantId/participants/participantId/partners/:dataspaceId or /v1/service-providers/:providerId/tenants/:tenantId/participants/participantId/partners/:dataspaceId - Get partners`);
   console.log(`  GET  /v1/participants/:id - Get participant by ID`);
   console.log(`  DELETE /v1/participants/:id - Delete participant`);
   console.log(`  GET  /v1/me - Get current user profile (requires Bearer token)`);
@@ -614,9 +891,6 @@ server.listen(PORT, () => {
   console.log(`  GET  /v1/participants/:id/memberships/:membershipId - Get membership details`);
   console.log(`  GET  /v1/ecosystems - List ecosystems`);
   console.log(`  GET  /v1/dataspaces - List dataspaces`);
-  console.log(`  GET  /v1/participants/:id/partners - List partners`);
-  console.log(`  POST /v1/participants/:id/partners - Add partner`);
-  console.log(`  GET  /v1/participants/:id/partners/:partnerId - Get partner details`);
   console.log(`  GET  /v1/participants/:id/files - List files`);
   console.log(`  GET  /v1/participants/:id/files/:fileId - Get file details`);
   console.log(`  POST /v1/participants/:id/files - Upload file`);

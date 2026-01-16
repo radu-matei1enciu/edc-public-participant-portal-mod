@@ -3,10 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ParticipantService } from '../../core/services/participant.service';
+import { TenantService } from '../../core/services/tenant.service';
 import { DataspaceService } from '../../core/services/dataspace.service';
 import { NotificationService } from '../../shared/services/notification.service';
 import { ParticipantRegistrationRequest, ParticipantMetadata, UserMetadata, UploadedDocument } from '../../core/models/participant.model';
-import { Dataspace } from '../../core/models/ecosystem.model';
+import { DataspaceResource } from '../../core/models/ecosystem.model';
+import { NewTenantRegistration, NewDataspaceInfo } from '../../core/models/tenant.model';
 import { ConfigService } from '../../core/services/config.service';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -28,12 +30,13 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
   configService = inject(ConfigService);
   private authService = inject(AuthService);
   private dataspaceService = inject(DataspaceService);
+  private tenantService = inject(TenantService);
   private notificationService = inject(NotificationService);
 
-  dataspaces: Dataspace[] = [];
-  filteredDataspaces: Dataspace[] = [];
+  dataspaces: DataspaceResource[] = [];
+  filteredDataspaces: DataspaceResource[] = [];
   dataspaceSearchControl = new FormControl('');
-  selectedDataspace: Dataspace | null = null;
+  selectedDataspace: DataspaceResource | null = null;
 
   uploadedDocuments: UploadedDocument[] = [];
 
@@ -64,7 +67,7 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
     }
 
     this.registrationForm.get('dataspaceId')?.valueChanges.subscribe(dataspaceId => {
-      this.selectedDataspace = this.dataspaces.find(ds => ds.id === dataspaceId) || null;
+      this.selectedDataspace = this.dataspaces.find(ds => ds.id.toString() === dataspaceId) || null;
     });
 
     this.dataspaceSearchControl.valueChanges.subscribe(() => {
@@ -172,12 +175,12 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
 
   private initializeDataspaces(): void {
     this.dataspaceService.getDataspaces().subscribe({
-      next: (dataspaces: Dataspace[]) => {
+      next: (dataspaces: DataspaceResource[]) => {
         this.dataspaces = dataspaces;
         this.filteredDataspaces = [...this.dataspaces];
         if (this.dataspaces.length > 0 && !this.registrationForm.get('dataspaceId')?.value) {
           this.selectedDataspace = this.dataspaces[0];
-          this.registrationForm.patchValue({ dataspaceId: this.dataspaces[0].id });
+          this.registrationForm.patchValue({ dataspaceId: this.dataspaces[0].id.toString() });
         }
       },
       error: () => {
@@ -197,8 +200,7 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
 
     const term = searchTerm.toLowerCase();
     this.filteredDataspaces = this.dataspaces.filter(ds =>
-      ds.name.toLowerCase().includes(term) ||
-      (ds.description && ds.description.toLowerCase().includes(term))
+      ds.name.toLowerCase().includes(term)
     );
   }
 
@@ -356,55 +358,36 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
       this.successMessage = '';
 
       const formValue = this.registrationForm.value;
+      const providerId = this.configService.config?.defaultServiceProviderId || 1;
+      const dataspaceId = parseInt(formValue.dataspaceId);
+      
+      if (!dataspaceId || isNaN(dataspaceId)) {
+        this.errorMessage = 'Please select a valid dataspace';
+        this.isLoading = false;
+        return;
+      }
 
-      const registrationRequest: ParticipantRegistrationRequest = {
-        participant: {
-          name: formValue.participantName,
-          description: formValue.description,
-          metadata: {
-            companyName: formValue.participantName,
-            companyType: formValue.companyType,
-            vatNumber: formValue.vatNumber,
-            fiscalCode: formValue.fiscalCode,
-            companyIdentifier: formValue.companyIdentifier,
-            email: formValue.email,
-            phone: formValue.phone,
-            website: formValue.website,
-            country: formValue.country,
-            region: formValue.region,
-            city: formValue.city,
-            address: formValue.address,
-            postalCode: formValue.postalCode,
-            termsAccepted: formValue.termsAccepted || false,
-            privacyAccepted: formValue.termsAccepted || false,
-            registrationSource: 'B2C_PORTAL',
-            environment: 'production',
-            dataspaceId: formValue.dataspaceId,
-            uploadedDocuments: this.uploadedDocuments.map(doc => ({
-              id: doc.id,
-              name: doc.name,
-              size: doc.size,
-              type: doc.type,
-              uploadedAt: new Date().toISOString()
-            }))
+      const tenantRegistration: NewTenantRegistration = {
+        tenantName: formValue.participantName,
+        dataspaceInfos: [
+          {
+            dataspaceId: dataspaceId,
+            agreementTypes: [],
+            roles: ['PARTICIPANT']
           }
-        },
-        user: {
-          username: '',
-          password: '',
-          metadata: {}
-        }
+        ]
       };
 
-      this.participantService.registerParticipant(registrationRequest).subscribe({
+      this.tenantService.registerTenantAndParticipant(providerId, tenantRegistration, formValue.companyIdentifier || formValue.participantName.toLowerCase().replace(/\s+/g, '-')).subscribe({
         next: (response) => {
           this.isLoading = false;
-          this.successMessage = `Registration completed successfully! The company "${response.participant?.name}" has been registered.`;
+          this.successMessage = `Registration completed successfully! The company "${response.tenant.name}" has been registered.`;
 
           this.router.navigate(['/success'], {
             queryParams: {
-              participantId: response.participant?.id,
-              participantName: response.participant?.name
+              tenantId: response.tenant.id.toString(),
+              participantId: response.participant.id.toString(),
+              participantName: response.tenant.name
             }
           });
         },

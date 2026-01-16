@@ -5,9 +5,16 @@ export interface Partner {
   companyIdentifier?: string;
   logoUrl?: string;
   website?: string;
+  identifier: string;
+  nickname: string;
   metadata?: {
     industry?: string;
     country?: string;
     region?: string;
   };
+}
+
+export interface PartnerReferenceResource {
+  identifier: string;
+  nickname: string;
 }

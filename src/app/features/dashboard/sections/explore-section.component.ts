@@ -13,7 +13,7 @@ import { NotificationService } from '../../../shared/services/notification.servi
   templateUrl: './explore-section.component.html',
   })
 export class ExploreSectionComponent implements OnInit {
-  @Input() participantId: string = '';
+  @Input() participantId: number | null = null;
   @Input() useCases: UseCase[] = [];
 
   files: FileAsset[] = [];

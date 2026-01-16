@@ -11,19 +11,17 @@ import { ConfigService } from './config.service';
 export class MembershipService {
   private http = inject(HttpClient);
   private configService = inject(ConfigService);
-  private readonly defaultBaseUrl = 'http://localhost:3001/v1';
-
   private get baseUrl(): string {
-    return this.configService.config?.apiUrl || this.defaultBaseUrl;
+    return this.configService.config?.apiUrl || 'http://localhost:3001/api/ui';
   }
 
-  getMemberships(participantId: string): Observable<Membership[]> {
+  getMemberships(participantId: number): Observable<Membership[]> {
     return this.http.get<Membership[]>(`${this.baseUrl}/participants/${participantId}/memberships`).pipe(
       catchError(() => of([]))
     );
   }
 
-  getMembershipDetails(participantId: string, membershipId: string): Observable<Membership> {
+  getMembershipDetails(participantId: number, membershipId: string): Observable<Membership> {
     return this.http.get<Membership>(`${this.baseUrl}/participants/${participantId}/memberships/${membershipId}`).pipe(
       catchError(() => {
         throw new Error('Failed to load membership details');

@@ -104,12 +104,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.partnerService.getPartners(participantId).subscribe({
-      next: (partners) => {
-        this.partnersCount = partners.length;
-        this.lastUpdateTime = new Date();
-      }
-    });
 
     this.fileAssetService.getFiles(participantId).subscribe({
       next: (files) => {

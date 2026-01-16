@@ -12,6 +12,11 @@ import {
   CredentialRequestResponse,
   CredentialResponse
 } from '../models/participant.model';
+import { 
+  ParticipantResource,
+  NewParticipantDeployment,
+  NewDataspaceInfo
+} from '../models/tenant.model';
 import { ConfigService } from './config.service';
 
 @Injectable({
@@ -20,10 +25,8 @@ import { ConfigService } from './config.service';
 export class ParticipantService {
   private http = inject(HttpClient);
   private configService = inject(ConfigService);
-  private readonly defaultBaseUrl = 'http://localhost:3001/v1';
-
   private get baseUrl(): string {
-    return this.configService.config?.apiUrl || this.defaultBaseUrl;
+    return this.configService.config?.apiUrl || 'http://localhost:3001/api/ui';
   }
 
   registerParticipant(participant: ParticipantRegistrationRequest): Observable<ParticipantRegistrationResponse> {
@@ -111,18 +114,61 @@ export class ParticipantService {
     return vatRegex.test(vatNumber);
   }
 
-  getCredentials(participantId: string): Observable<CredentialResponse[]> {
+  getCredentials(participantId: number): Observable<CredentialResponse[]> {
     return this.http.get<CredentialResponse[]>(`${this.baseUrl}/participants/${participantId}/credentials`)
       .pipe(
         catchError(this.handleError)
       );
   }
 
-  requestCredentials(participantId: string, credentialRequest: CredentialRequest): Observable<CredentialRequestResponse> {
+  requestCredentials(participantId: number, credentialRequest: CredentialRequest): Observable<CredentialRequestResponse> {
     return this.http.post<CredentialRequestResponse>(`${this.baseUrl}/participants/${participantId}/credentials`, credentialRequest)
       .pipe(
         catchError(this.handleError)
       );
+  }
+
+  getParticipantByTenant(
+    providerId: number,
+    tenantId: number,
+    participantId: number
+  ): Observable<ParticipantResource> {
+    return this.http.get<ParticipantResource>(
+      `${this.baseUrl}/service-providers/${providerId}/tenants/${tenantId}/participants/${participantId}`
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  createParticipantByTenant(
+    providerId: number,
+    tenantId: number,
+    identifier: string,
+    dataspaceInfos: NewDataspaceInfo[]
+  ): Observable<ParticipantResource> {
+    return this.http.post<ParticipantResource>(
+      `${this.baseUrl}/service-providers/${providerId}/tenants/${tenantId}/participants`,
+      {
+        identifier,
+        dataspaceInfos
+      }
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  deployParticipant(
+    providerId: number,
+    tenantId: number,
+    participantId: number,
+    deployment: NewParticipantDeployment
+  ): Observable<ParticipantResource> {
+    return this.http.post<ParticipantResource>(
+      `${this.baseUrl}/service-providers/${providerId}/tenants/${tenantId}/participants/${participantId}/deployments`,
+      deployment
+    ).pipe(
+      catchError(this.handleError)
+    );
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {

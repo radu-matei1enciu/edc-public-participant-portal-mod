@@ -1,9 +1,6 @@
 import { Component, OnInit, inject, DestroyRef } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { PartnerService } from '../../core/services/partner.service';
-import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../shared/services/notification.service';
 import { Partner } from '../../core/models/partner.model';
 
@@ -16,50 +13,25 @@ import { Partner } from '../../core/models/partner.model';
 export class PartnerDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private partnerService = inject(PartnerService);
-  private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
-  private destroyRef = inject(DestroyRef);
 
   partner: Partner | null = null;
-  loading = true;
-  participantId: string = '';
+  loading = false;
 
   ngOnInit(): void {
-    this.authService.loadUserProfile().subscribe({
-      next: (profile) => {
-        this.participantId = profile.participant.id;
-        this.loadPartner();
-      },
-      error: () => {
+    const navigation = this.router.getCurrentNavigation();
+    if (navigation?.extras?.state && navigation.extras.state['partner']) {
+      this.partner = navigation.extras.state['partner'] as Partner;
+    } else {
+      const historyState = history.state;
+      if (historyState && historyState['partner']) {
+        this.partner = historyState['partner'] as Partner;
+      } else {
         this.loading = false;
-        this.notificationService.showError('Error', 'Failed to load user profile');
+        this.notificationService.showError('Error', 'Partner data not available');
+        this.goBack();
       }
-    });
-  }
-
-  loadPartner(): void {
-    this.route.params.pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe({
-      next: (params) => {
-        const partnerId = params['id'];
-        if (partnerId && this.participantId) {
-          this.partnerService.getPartner(this.participantId, partnerId).subscribe({
-            next: (partner) => {
-              this.partner = partner;
-              this.loading = false;
-            },
-            error: () => {
-              this.loading = false;
-              this.notificationService.showError('Error', 'Failed to load partner details');
-            }
-          });
-        } else {
-          this.loading = false;
-        }
-      }
-    });
+    }
   }
 
   goBack(): void {

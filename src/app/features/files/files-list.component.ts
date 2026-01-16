@@ -35,7 +35,7 @@ export class FilesListComponent implements OnInit {
   currentPage = 1;
   itemsPerPage = 10;
   userProfile: UserProfile | null = null;
-  participantId: string = '';
+  participantId: number | null = null;
   showUploadDialog = false;
   uploadStep = 1;
   selectedFiles: File[] = [];
@@ -113,6 +113,7 @@ export class FilesListComponent implements OnInit {
       origin: this.filterForm.get('originFilter')?.value || undefined
     };
     
+    if (!this.participantId) return;
     this.fileAssetService.getFiles(this.participantId, filters).subscribe({
       next: (files) => {
         this.files = files;
@@ -197,7 +198,7 @@ export class FilesListComponent implements OnInit {
     this.uploading = true;
     const uploadMetadata = this.uploadForm.value;
     const uploadPromises = this.selectedFiles.map(file =>
-      this.fileAssetService.uploadFile(this.participantId, file, uploadMetadata).toPromise()
+      this.fileAssetService.uploadFile(this.participantId!, file, uploadMetadata).toPromise()
     );
 
     Promise.all(uploadPromises).then(() => {

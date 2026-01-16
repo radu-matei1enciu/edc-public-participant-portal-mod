@@ -33,7 +33,7 @@ export class MembershipsListComponent implements OnInit {
   currentPage = 1;
   itemsPerPage = 10;
   userProfile: UserProfile | null = null;
-  participantId: string = '';
+  participantId: number | null = null;
 
   constructor() {
     this.filterForm = this.fb.group({

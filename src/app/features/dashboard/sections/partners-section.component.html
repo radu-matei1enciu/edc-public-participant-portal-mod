@@ -6,17 +6,18 @@
           Partners
         </h3>
         <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
-          Add and view partner company details for quick selection
+          View partners by dataspace
         </p>
       </div>
-      <button
-        (click)="showAddPartnerModal = true"
-        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-        </svg>
-        Add Partner
-      </button>
+      <div class="w-64">
+        <select [value]="selectedDataspaceId || ''" (change)="onDataspaceChange($event)"
+                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white sm:text-sm">
+          <option value="">Select a dataspace</option>
+          @for (dataspace of dataspaces; track dataspace.id) {
+            <option [value]="dataspace.id.toString()">{{ dataspace.name }}</option>
+          }
+        </select>
+      </div>
     </div>
   </div>
   
@@ -76,67 +77,10 @@
         </svg>
         <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No partners</h3>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Start by adding your first partner.
+          Select a dataspace to view partners.
         </p>
-        <div class="mt-6">
-          <button
-            (click)="showAddPartnerModal = true"
-            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
-            Aggiungi Partner
-          </button>
-        </div>
       </div>
     }
   }
 
-  @if (showAddPartnerModal) {
-    <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" (click)="closeAddPartnerModal()">
-      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800" (click)="$event.stopPropagation()">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Add Partner</h3>
-        <form [formGroup]="partnerForm" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Company Name *</label>
-            <input
-              formControlName="name"
-              type="text"
-              class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-              placeholder="Enter company name">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
-            <textarea
-              formControlName="description"
-              rows="3"
-              class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-              placeholder="Enter description"></textarea>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Company Identifier</label>
-            <input
-              formControlName="companyIdentifier"
-              type="text"
-              class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-              placeholder="Enter company identifier">
-          </div>
-        </form>
-        <div class="flex justify-end space-x-3 mt-6">
-          <button
-            (click)="closeAddPartnerModal()"
-            class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500">
-            Cancel
-          </button>
-          <button
-            (click)="addPartner()"
-            [disabled]="partnerForm.invalid || addingPartner"
-            class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50">
-            <span *ngIf="!addingPartner">Add Partner</span>
-            <span *ngIf="addingPartner">Adding...</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  }
 </div>

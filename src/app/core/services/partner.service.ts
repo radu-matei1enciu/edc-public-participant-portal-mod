@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { Partner } from '../models/partner.model';
 import { ConfigService } from './config.service';
 
@@ -11,31 +11,36 @@ import { ConfigService } from './config.service';
 export class PartnerService {
   private http = inject(HttpClient);
   private configService = inject(ConfigService);
-  private readonly defaultBaseUrl = 'http://localhost:3001/v1';
 
   private get baseUrl(): string {
-    return this.configService.config?.apiUrl || this.defaultBaseUrl;
+    return this.configService.config?.apiUrl || 'http://localhost:3001/api/ui';
   }
 
-  getPartners(participantId: string): Observable<Partner[]> {
-    return this.http.get<Partner[]>(`${this.baseUrl}/participants/${participantId}/partners`).pipe(
+  getPartners(
+    providerId: number,
+    tenantId: number,
+    participantId: number,
+    dataspaceId: number
+  ): Observable<Partner[]> {
+    return this.http.get<Partner[]>(
+      `${this.baseUrl}/service-providers/${providerId}/tenants/${tenantId}/participants/${participantId}/partners/${dataspaceId}`
+    ).pipe(
       catchError(() => of([]))
     );
   }
 
-  addPartner(participantId: string, partner: Partial<Partner>): Observable<Partner> {
-    return this.http.post<Partner>(`${this.baseUrl}/participants/${participantId}/partners`, partner).pipe(
-      catchError(() => {
-        throw new Error('Failed to add partner');
-      })
-    );
-  }
-
-  getPartner(participantId: string, partnerId: string): Observable<Partner> {
-    return this.http.get<Partner>(`${this.baseUrl}/participants/${participantId}/partners/${partnerId}`).pipe(
-      catchError(() => {
-        throw new Error('Failed to load partner');
-      })
+  getPartnerReference(
+    providerId: number,
+    tenantId: number,
+    participantId: number,
+    dataspaceId: number,
+    partnerIdentifier: string
+  ): Observable<Partner | null> {
+    return this.getPartners(providerId, tenantId, participantId, dataspaceId).pipe(
+      map((partners: Partner[]) => 
+        partners.find(p => (p.identifier || p.id) === partnerIdentifier) || null
+      ),
+      catchError(() => of(null))
     );
   }
 }

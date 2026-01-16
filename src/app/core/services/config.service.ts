@@ -21,6 +21,7 @@ export interface KeycloakInitOptions {
 export interface AppConfig {
   production: boolean;
   apiUrl: string;
+  defaultServiceProviderId?: number;
   appName: string;
   version: string;
   features: {
@@ -84,7 +85,8 @@ export class ConfigService {
       catchError(error => {
         const fallbackConfig: AppConfig = {
           production: false,
-          apiUrl: 'http://localhost:3001/v1',
+          apiUrl: 'http://localhost:3001/ui',
+          defaultServiceProviderId: 1,
           appName: 'EDC Participant Portal',
           version: '1.0.0',
           features: {
