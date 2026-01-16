@@ -6,6 +6,7 @@ import { ParticipantService } from '../../core/services/participant.service';
 import { TenantService } from '../../core/services/tenant.service';
 import { DataspaceService } from '../../core/services/dataspace.service';
 import { NotificationService } from '../../shared/services/notification.service';
+import { ModalService } from '../../core/services/modal.service';
 import { ParticipantRegistrationRequest, ParticipantMetadata, UserMetadata, UploadedDocument } from '../../core/models/participant.model';
 import { DataspaceResource } from '../../core/models/ecosystem.model';
 import { NewTenantRegistration, NewDataspaceInfo } from '../../core/models/tenant.model';
@@ -32,6 +33,7 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
   private dataspaceService = inject(DataspaceService);
   private tenantService = inject(TenantService);
   private notificationService = inject(NotificationService);
+  private modalService = inject(ModalService);
 
   dataspaces: DataspaceResource[] = [];
   filteredDataspaces: DataspaceResource[] = [];
@@ -62,10 +64,6 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    if (this.configService.config?.features?.enableDevMode) {
-      this.prepopulateForm();
-    }
-
     this.registrationForm.get('dataspaceId')?.valueChanges.subscribe(dataspaceId => {
       this.selectedDataspace = this.dataspaces.find(ds => ds.id.toString() === dataspaceId) || null;
     });
@@ -176,19 +174,50 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
   private initializeDataspaces(): void {
     this.dataspaceService.getDataspaces().subscribe({
       next: (dataspaces: DataspaceResource[]) => {
+        if (!dataspaces || dataspaces.length === 0) {
+          this.showErrorModalAndRedirect();
+          return;
+        }
+        
         this.dataspaces = dataspaces;
         this.filteredDataspaces = [...this.dataspaces];
-        if (this.dataspaces.length > 0 && !this.registrationForm.get('dataspaceId')?.value) {
-          this.selectedDataspace = this.dataspaces[0];
-          this.registrationForm.patchValue({ dataspaceId: this.dataspaces[0].id.toString() });
+        
+        const currentValue = this.registrationForm.get('dataspaceId')?.value;
+        if (!currentValue || currentValue === '') {
+          const defaultDataspace = this.getDefaultDataspace(dataspaces);
+          this.selectedDataspace = defaultDataspace;
+          this.registrationForm.patchValue({ dataspaceId: defaultDataspace.id.toString() });
+        }
+        
+        if (this.configService.config?.features?.enableDevMode) {
+          this.prepopulateForm();
         }
       },
       error: () => {
-        this.notificationService.showError('Error', 'Failed to load dataspaces');
-        this.dataspaces = [];
-        this.filteredDataspaces = [];
+        this.showErrorModalAndRedirect();
       }
     });
+  }
+
+  private showErrorModalAndRedirect(): void {
+    this.modalService.alert({
+      title: 'Error',
+      message: 'An error occurred while loading dataspaces. You will be redirected to the landing page.',
+      confirmText: 'OK'
+    }).then(() => {
+      this.router.navigate(['/']);
+    });
+  }
+
+  private getDefaultDataspace(dataspaces: DataspaceResource[]): DataspaceResource {
+    const catenaXByName = dataspaces.find(ds => 
+      ds.name?.toLowerCase().includes('catena')
+    );
+    if (catenaXByName) {
+      return catenaXByName;
+    }
+    
+    return dataspaces[0];
   }
 
   filterDataspaces(): void {
@@ -232,8 +261,9 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
   }
 
   private prepopulateForm(): void {
+    const defaultDataspace = this.getDefaultDataspace(this.dataspaces);
     this.registrationForm.patchValue({
-      dataspaceId: 'dataspace-1',
+      dataspaceId: defaultDataspace.id.toString(),
       participantName: 'Tech Solutions SRL',
       description: 'Technology company specializing in data solutions and digital transformation',
       companyType: 'SRL',
@@ -249,9 +279,7 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
       postalCode: '20100',
       termsAccepted: true
     });
-    if (this.dataspaces.length > 0) {
-      this.selectedDataspace = this.dataspaces[0];
-    }
+    this.selectedDataspace = defaultDataspace;
   }
 
   nextStep(): void {
@@ -308,12 +336,22 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
       Array.from(input.files).forEach(file => {
         if (file.size > maxFileSize) {
           const maxSizeMB = Math.round(maxFileSize / (1024 * 1024));
-          this.errorMessage = `The file "${file.name}" exceeds the maximum size of ${maxSizeMB}MB`;
+          const errorMsg = `The file "${file.name}" exceeds the maximum size of ${maxSizeMB}MB`;
+          this.modalService.alert({
+            title: 'Upload Error',
+            message: errorMsg,
+            confirmText: 'OK'
+          });
           return;
         }
 
         if (!allowedTypes.includes(file.type)) {
-          this.errorMessage = `The file type "${file.name}" is not supported`;
+          const errorMsg = `The file type "${file.name}" is not supported`;
+          this.modalService.alert({
+            title: 'Upload Error',
+            message: errorMsg,
+            confirmText: 'OK'
+          });
           return;
         }
 
@@ -395,13 +433,18 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
           this.isLoading = false;
           console.error('Registration error:', error);
 
+          let errorMessage = 'Registration failed. Please try again.';
           if (error.error?.message) {
-            this.errorMessage = error.error.message;
+            errorMessage = error.error.message;
           } else if (error.message) {
-            this.errorMessage = error.message;
-          } else {
-            this.errorMessage = 'Registration failed. Please try again.';
+            errorMessage = error.message;
           }
+
+          this.modalService.alert({
+            title: 'Registration Error',
+            message: errorMessage,
+            confirmText: 'OK'
+          });
         }
       });
     }
