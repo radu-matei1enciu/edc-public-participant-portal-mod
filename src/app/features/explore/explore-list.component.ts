@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Observable, interval, startWith, switchMap, catchError, of, debounceTime, distinctUntilChanged } from 'rxjs';
 import { FileAssetService } from '../../core/services/file-asset.service';
+import { UseCaseService } from '../../core/services/use-case.service';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../shared/services/notification.service';
 import { UserPreferencesService, UserPreferences } from '../../core/services/user-preferences.service';
@@ -20,6 +21,7 @@ import { UserProfile } from '../../core/models/participant.model';
   })
 export class ExploreListComponent implements OnInit {
   private fileAssetService = inject(FileAssetService);
+  private useCaseService = inject(UseCaseService);
   private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
   private preferencesService = inject(UserPreferencesService);
@@ -89,7 +91,7 @@ export class ExploreListComponent implements OnInit {
   }
 
   loadUseCases(): void {
-    this.fileAssetService.getUseCases().subscribe({
+    this.useCaseService.getUseCases().subscribe({
       next: (useCases) => {
         this.useCases = useCases;
       },

@@ -120,13 +120,9 @@ export class UserPreferencesService {
 
     window.addEventListener('storage', (e) => {
       if (e.key === this.STORAGE_KEY && e.newValue) {
-        try {
-          const newPreferences = JSON.parse(e.newValue);
-          this.preferencesSubject.next(newPreferences);
-          this.applyPreferences(newPreferences);
-        } catch (error) {
-          console.error('Error parsing preferences from storage:', error);
-        }
+        const newPreferences = JSON.parse(e.newValue);
+        this.preferencesSubject.next(newPreferences);
+        this.applyPreferences(newPreferences);
       }
       if (e.key === this.THEME_KEY && e.newValue) {
         const prefs = { ...this.preferencesSubject.value, theme: e.newValue as 'light' | 'dark' | 'system' };
@@ -148,24 +144,20 @@ export class UserPreferencesService {
   }
 
   private loadPreferences(): UserPreferences {
-    try {
-      const stored = localStorage.getItem(this.STORAGE_KEY);
-      if (stored) {
+    const stored = localStorage.getItem(this.STORAGE_KEY);
+    if (stored) {
+      try {
         const parsed = JSON.parse(stored);
         return { ...this.defaultPreferences, ...parsed };
+      } catch {
+        return this.defaultPreferences;
       }
-    } catch (error) {
-      console.error('Error loading preferences from localStorage:', error);
     }
     return this.defaultPreferences;
   }
 
   private savePreferences(preferences: UserPreferences): void {
-    try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(preferences));
-    } catch (error) {
-      console.error('Error saving preferences to localStorage:', error);
-    }
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(preferences));
   }
 
   updatePreferences(updates: Partial<UserPreferences>): void {
@@ -194,8 +186,8 @@ export class UserPreferencesService {
         this.updatePreferences(mergedPreferences);
         return true;
       }
-    } catch (error) {
-      console.error('Error importing preferences:', error);
+    } catch {
+      return false;
     }
     return false;
   }

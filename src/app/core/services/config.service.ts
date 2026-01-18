@@ -82,7 +82,7 @@ export class ConfigService {
         this.configSubject.next(config);
         this.configLoaded = true;
       }),
-      catchError(error => {
+      catchError(() => {
         const fallbackConfig: AppConfig = {
           production: false,
           apiUrl: 'http://localhost:3001/ui',

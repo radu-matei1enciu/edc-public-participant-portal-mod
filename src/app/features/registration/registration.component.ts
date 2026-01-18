@@ -431,7 +431,6 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
         },
         error: (error) => {
           this.isLoading = false;
-          console.error('Registration error:', error);
 
           let errorMessage = 'Registration failed. Please try again.';
           if (error.error?.message) {

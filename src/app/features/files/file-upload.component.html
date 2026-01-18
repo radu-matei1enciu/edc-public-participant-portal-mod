@@ -1,0 +1,207 @@
+<div class="p-6">
+  <div class="bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+    <div class="flex justify-between items-center">
+      <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Upload Files</h2>
+      <button (click)="closeUpload()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="px-6 py-6 border-b border-gray-200 dark:border-gray-700">
+    <div class="flex items-center justify-between">
+      @for (step of uploadSteps; track step.number) {
+        <div class="flex items-center flex-1">
+          <div class="flex flex-col items-center">
+            <button
+              type="button"
+              (click)="goToStep(step.number)"
+              [disabled]="!canNavigateToStep(step.number)"
+              class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300
+                {{ uploadStep > step.number ? 'bg-green-500 text-white cursor-pointer hover:bg-green-600' : 
+                   uploadStep === step.number ? 'bg-primary-600 text-white ring-4 ring-primary-200 cursor-default' : 
+                   canNavigateToStep(step.number) ? 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600' :
+                   'bg-gray-200 text-gray-400 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed opacity-50' }}
+                disabled:opacity-50 disabled:cursor-not-allowed">
+              @if (uploadStep > step.number) {
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+              } @else {
+                {{ step.number }}
+              }
+            </button>
+            <span class="mt-2 text-xs font-medium text-center {{ uploadStep === step.number ? 'text-primary-600 dark:text-primary-400' : 'text-gray-600 dark:text-gray-400' }}">
+              {{ step.label }}
+            </span>
+          </div>
+          @if (step.number < uploadSteps.length) {
+            <div class="flex-1 h-1 mx-4 rounded-full transition-colors duration-300 {{ uploadStep > step.number ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700' }}"></div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="px-6 py-6">
+    @if (uploadStep === 1) {
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select File(s)</label>
+          <input
+            type="file"
+            multiple
+            (change)="onFileSelected($event)"
+            class="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-primary-900 dark:file:text-primary-200">
+        </div>
+        @if (selectedFiles.length > 0) {
+          <div class="mt-4 border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
+            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Selected Files:</p>
+            <ul class="space-y-2">
+              @for (file of selectedFiles; track file.name) {
+                <li class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 p-2 rounded">
+                  <span>{{ file.name }}</span>
+                  <span class="text-xs text-gray-500">{{ formatFileSize(file.size) }}</span>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+    }
+
+    @if (uploadStep === 2) {
+      <div class="space-y-4" [formGroup]="uploadForm">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Use Case (Optional)</label>
+          <select
+            formControlName="useCase"
+            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+            <option [value]="''" [selected]="!uploadForm.get('useCase')?.value">Select use case (optional)</option>
+            @for (uc of useCases; track uc.id) {
+              <option [value]="uc.id">{{ uc.label }}</option>
+            }
+          </select>
+        </div>
+        @if (selectedFiles.length > 0) {
+          <div class="mt-4 border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
+            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Selected File(s):</p>
+            <ul class="space-y-2">
+              @for (file of selectedFiles; track file.name) {
+                <li class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 p-2 rounded">
+                  <span>{{ file.name }}</span>
+                  <span class="text-xs text-gray-500">{{ formatFileSize(file.size) }}</span>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+    }
+
+    @if (uploadStep === 3) {
+      <div class="space-y-4" [formGroup]="uploadForm">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Partner (Optional)</label>
+          <select
+            formControlName="partnerId"
+            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+            <option [value]="''" [selected]="!uploadForm.get('partnerId')?.value">Select partner (optional)</option>
+            @for (partner of partners; track partner.id) {
+              <option [value]="partner.id">{{ partner.name }}</option>
+            }
+          </select>
+          @if (partners.length === 0) {
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">No partners available</p>
+          }
+        </div>
+      </div>
+    }
+
+    @if (uploadStep === 4) {
+      <div class="space-y-4">
+        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
+          <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Document Data:</h4>
+          <div class="space-y-3">
+            @for (preview of filePreviewData; track preview.name) {
+              <div class="bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700">
+                <div class="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span class="font-medium text-gray-700 dark:text-gray-300">Name:</span>
+                    <span class="ml-2 text-gray-600 dark:text-gray-400">{{ preview.name }}</span>
+                  </div>
+                  <div>
+                    <span class="font-medium text-gray-700 dark:text-gray-300">Size:</span>
+                    <span class="ml-2 text-gray-600 dark:text-gray-400">{{ formatFileSize(preview.size) }}</span>
+                  </div>
+                  <div>
+                    <span class="font-medium text-gray-700 dark:text-gray-300">Type:</span>
+                    <span class="ml-2 text-gray-600 dark:text-gray-400">{{ preview.type }}</span>
+                  </div>
+                  @if (preview.useCase) {
+                    <div>
+                      <span class="font-medium text-gray-700 dark:text-gray-300">Use Case:</span>
+                      <span class="ml-2 text-gray-600 dark:text-gray-400">{{ preview.useCase }}</span>
+                    </div>
+                  }
+                  @if (preview.partner) {
+                    <div>
+                      <span class="font-medium text-gray-700 dark:text-gray-300">Partner:</span>
+                      <span class="ml-2 text-gray-600 dark:text-gray-400">{{ preview.partner }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="flex justify-between mt-6">
+      <div>
+        @if (uploadStep > 1) {
+          <button
+            (click)="previousStep()"
+            class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors">
+            Previous
+          </button>
+        }
+      </div>
+      <div class="ml-auto flex space-x-3">
+        <button
+          (click)="closeUpload()"
+          class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors">
+          @if (uploadStep === 4) {
+            Close
+          } @else {
+            Cancel
+          }
+        </button>
+        @if (uploadStep < 4) {
+          <button
+            (click)="nextStep()"
+            [disabled]="!canProceed()"
+            class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            Continue
+          </button>
+        }
+        @if (uploadStep === 4) {
+          <button
+            (click)="uploadFiles()"
+            [disabled]="uploading"
+            class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            @if (!uploading) {
+              Finish Upload
+            } @else {
+              Uploading...
+            }
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+</div>

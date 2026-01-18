@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { FileAsset } from '../models/file-asset.model';
-import { UseCase } from '../models/use-case.model';
 import { ConfigService } from './config.service';
 
 export interface FileSearchFilters {
@@ -44,25 +43,24 @@ export class FileAssetService {
     );
   }
 
-  uploadFile(participantId: number, file: File, metadata: { useCase?: string; partnerId?: string }): Observable<FileAsset> {
+  uploadFiles(participantId: number, files: File[], metadata: { useCase?: string; partnerId?: string; description?: string; dataspace?: string }): Observable<FileAsset[]> {
     const formData = new FormData();
-    formData.append('file', file);
+    
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+    
     if (metadata.useCase) formData.append('useCase', metadata.useCase);
     if (metadata.partnerId) formData.append('partnerId', metadata.partnerId);
+    if (metadata.description) formData.append('description', metadata.description);
+    if (metadata.dataspace) formData.append('dataspace', metadata.dataspace);
 
-    return this.http.post<FileAsset>(`${this.baseUrl}/participants/${participantId}/files`, formData).pipe(
-      catchError(() => {
-        throw new Error('Failed to upload file');
+
+    return this.http.post<FileAsset[]>(`${this.baseUrl}/participants/${participantId}/files`, formData).pipe(
+      catchError((error) => {
+        const errorMessage = error.error?.message || error.message || 'Failed to upload files';
+        throw new Error(errorMessage);
       })
-    );
-  }
-
-  getUseCases(): Observable<UseCase[]> {
-    return this.http.get<UseCase[]>(`${this.baseUrl}/use-cases`).pipe(
-      catchError(() => of([
-        { id: 'catena-x', name: 'catena-x', label: 'Catena-X', description: 'Catena-X use cases' },
-        { id: 'gaia-x', name: 'gaia-x', label: 'Gaia-X', description: 'Gaia-X use cases' }
-      ]))
     );
   }
 
@@ -79,10 +77,23 @@ export class FileAssetService {
     );
   }
 
-  requestAccess(participantId: number, fileId: string): Observable<{ success: boolean; message?: string }> {
-    return this.http.post<{ success: boolean; message?: string }>(`${this.baseUrl}/participants/${participantId}/files/${fileId}/request-access`, {}).pipe(
+  requestAccess(participantId: number, fileId: string, partnerId?: string, partnerName?: string): Observable<{ success: boolean; message?: string }> {
+    const body: { partnerId?: string; partnerName?: string } = {};
+    if (partnerId) body.partnerId = partnerId;
+    if (partnerName) body.partnerName = partnerName;
+    
+    return this.http.post<{ success: boolean; message?: string }>(`${this.baseUrl}/participants/${participantId}/files/${fileId}/request-access`, body).pipe(
       catchError(() => {
         throw new Error('Failed to request access');
+      })
+    );
+  }
+
+  updateFile(participantId: number, fileId: string, updates: { useCase?: string; partnerId?: string }): Observable<FileAsset> {
+    return this.http.patch<FileAsset>(`${this.baseUrl}/participants/${participantId}/files/${fileId}`, updates).pipe(
+      catchError((error) => {
+        const errorMessage = error.error?.message || error.message || 'Failed to update file';
+        throw new Error(errorMessage);
       })
     );
   }
