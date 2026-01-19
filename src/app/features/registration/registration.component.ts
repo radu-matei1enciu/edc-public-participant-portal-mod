@@ -12,6 +12,7 @@ import { DataspaceResource } from '../../core/models/ecosystem.model';
 import { NewTenantRegistration, NewDataspaceInfo } from '../../core/models/tenant.model';
 import { ConfigService } from '../../core/services/config.service';
 import { AuthService } from '../../core/services/auth.service';
+import { formatFileSize } from '../../shared/utils/format.utils';
 
 @Component({
   selector: 'app-registration',
@@ -21,6 +22,8 @@ import { AuthService } from '../../core/services/auth.service';
   styleUrls: ['./registration.component.scss']
 })
 export class RegistrationComponent implements OnInit, AfterViewInit {
+  formatFileSize = formatFileSize;
+  
   @ViewChild('stepperContainer', { static: false }) stepperContainer!: ElementRef<HTMLDivElement>;
   
   registrationForm: FormGroup;
@@ -373,13 +376,6 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
     this.uploadedDocuments.splice(index, 1);
   }
 
-  formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-  }
 
   cancelRegistration(): void {
     if (confirm('Are you sure you want to cancel the registration? All entered data will be lost.')) {
@@ -431,7 +427,6 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
         },
         error: (error) => {
           this.isLoading = false;
-          console.error('Registration error:', error);
 
           let errorMessage = 'Registration failed. Please try again.';
           if (error.error?.message) {

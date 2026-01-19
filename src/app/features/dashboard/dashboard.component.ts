@@ -6,6 +6,7 @@ import { UserProfile } from '../../core/models/participant.model';
 import { NotificationService } from '../../shared/services/notification.service';
 import { NotificationsComponent } from '../../shared/services/notifications.component';
 import { FileAssetService } from '../../core/services/file-asset.service';
+import { UseCaseService } from '../../core/services/use-case.service';
 import { MembershipService } from '../../core/services/membership.service';
 import { PartnerService } from '../../core/services/partner.service';
 import { UseCase } from '../../core/models/use-case.model';
@@ -37,6 +38,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private router = inject(Router);
   private fileAssetService = inject(FileAssetService);
+  private useCaseService = inject(UseCaseService);
   private membershipService = inject(MembershipService);
   private partnerService = inject(PartnerService);
   private notificationService = inject(NotificationService);
@@ -81,7 +83,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   loadUseCases(): void {
-    this.fileAssetService.getUseCases().subscribe({
+    this.useCaseService.getUseCases().subscribe({
       next: (useCases) => {
         this.useCases = useCases;
       },

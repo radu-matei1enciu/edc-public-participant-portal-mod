@@ -76,8 +76,7 @@ export class AuthService implements OnDestroy {
 
         this.currentUserSubject.next(user);
       }
-    } catch (error) {
-      console.error('Error loading user from Keycloak:', error);
+    } catch {
       this.currentUserSubject.next(null);
     }
   }
@@ -85,20 +84,16 @@ export class AuthService implements OnDestroy {
   private getRolesFromToken(tokenParsed: KeycloakTokenParsed): string[] {
     const roles: string[] = [];
 
-    try {
-      if (tokenParsed.realm_access?.roles) {
-        roles.push(...tokenParsed.realm_access.roles);
-      }
+    if (tokenParsed.realm_access?.roles) {
+      roles.push(...tokenParsed.realm_access.roles);
+    }
 
-      if (tokenParsed.resource_access) {
-        Object.values(tokenParsed.resource_access).forEach((resource: KeycloakResourceAccess) => {
-          if (resource.roles) {
-            roles.push(...resource.roles);
-          }
-        });
-      }
-    } catch (error) {
-      console.error('Error extracting roles from token:', error);
+    if (tokenParsed.resource_access) {
+      Object.values(tokenParsed.resource_access).forEach((resource: KeycloakResourceAccess) => {
+        if (resource.roles) {
+          roles.push(...resource.roles);
+        }
+      });
     }
 
     return roles;
@@ -115,22 +110,18 @@ export class AuthService implements OnDestroy {
   }
 
   private refreshTokenSilently(): void {
-    try {
-      const keycloakInstance = this.keycloakService.getKeycloakInstance();
-      const tokenPromise = keycloakInstance.updateToken(30);
+    const keycloakInstance = this.keycloakService.getKeycloakInstance();
+    const tokenPromise = keycloakInstance.updateToken(30);
 
-      (tokenPromise as Promise<boolean>)
-          .then((refreshed: boolean) => {
-            if (refreshed) {
-              this.loadUserFromKeycloak();
-            }
-          })
-          .catch((error: unknown) => {
-            this.logout();
-          });
-    } catch (error) {
-      console.error('Token refresh error:', error);
-    }
+    (tokenPromise as Promise<boolean>)
+        .then((refreshed: boolean) => {
+          if (refreshed) {
+            this.loadUserFromKeycloak();
+          }
+        })
+        .catch(() => {
+          this.logout();
+        });
   }
 
   isAuthEnabled(): boolean {
@@ -218,8 +209,7 @@ export class AuthService implements OnDestroy {
     return from(this.keycloakService.login()).pipe(
         switchMap(() => from(this.syncAuthState())),
         map(() => this.isAuthenticatedSync()),
-        catchError(error => {
-          console.error('Login failed:', error);
+        catchError(() => {
           return of(false);
         })
     );

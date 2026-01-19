@@ -33,16 +33,26 @@ let participants = [
 
 function parseBody(req) {
   return new Promise((resolve, reject) => {
-    let body = '';
+    const chunks = [];
     req.on('data', chunk => {
-      body += chunk.toString();
+      chunks.push(chunk);
     });
     req.on('end', () => {
-      try {
-        resolve(JSON.parse(body));
-      } catch (error) {
-        reject(error);
+      const contentType = req.headers['content-type'] || '';
+      if (contentType.includes('application/json')) {
+        try {
+          const body = Buffer.concat(chunks).toString('utf8');
+          resolve(JSON.parse(body));
+        } catch (error) {
+          reject(error);
+        }
+      } else {
+        const body = Buffer.concat(chunks).toString('binary');
+        resolve(body);
       }
+    });
+    req.on('error', (error) => {
+      reject(error);
     });
   });
 }
@@ -296,7 +306,31 @@ let files = [
     dataspace: 'Manufacturing DataSpace',
     uploadedAt: '2024-01-10T11:00:00Z',
     size: 1024000,
-    type: 'text/csv'
+    type: 'text/csv',
+    access: 'public',
+    accessRestrictions: [],
+    agreements: [
+      {
+        id: 'agreement-1',
+        partnerName: 'Acme Corporation',
+        status: 'ACTIVE',
+        createdAt: '2024-01-11T10:00:00Z'
+      }
+    ],
+    transactionHistory: [
+      {
+        id: 'txn-1',
+        type: 'DOWNLOAD',
+        status: 'SUCCESS',
+        timestamp: '2024-01-11T14:30:00Z'
+      },
+      {
+        id: 'txn-2',
+        type: 'SHARE',
+        status: 'SUCCESS',
+        timestamp: '2024-01-12T09:15:00Z'
+      }
+    ]
   },
   {
     id: 'file-2',
@@ -308,7 +342,27 @@ let files = [
     dataspace: 'Healthcare DataSpace',
     uploadedAt: '2024-01-12T15:00:00Z',
     size: 512000,
-    type: 'application/json'
+    type: 'application/json',
+    access: 'restricted',
+    accessRestrictions: [
+      { partnerId: 'partner-2', partnerName: 'MedTech Solutions', policy: 'restricted' }
+    ],
+    agreements: [
+      {
+        id: 'agreement-2',
+        partnerName: 'MedTech Solutions',
+        status: 'PENDING',
+        createdAt: '2024-01-13T08:00:00Z'
+      }
+    ],
+    transactionHistory: [
+      {
+        id: 'txn-3',
+        type: 'UPLOAD',
+        status: 'SUCCESS',
+        timestamp: '2024-01-12T15:00:00Z'
+      }
+    ]
   },
   {
     id: 'file-3',
@@ -321,8 +375,31 @@ let files = [
     uploadedAt: '2024-01-13T10:00:00Z',
     size: 2048000,
     type: 'application/pdf',
+    access: 'restricted',
     accessRestrictions: [
       { partnerId: 'partner-1', partnerName: 'Acme Corporation', policy: 'restricted' }
+    ],
+    agreements: [
+      {
+        id: 'agreement-3',
+        partnerName: 'Acme Corporation',
+        status: 'ACTIVE',
+        createdAt: '2024-01-13T10:30:00Z'
+      }
+    ],
+    transactionHistory: [
+      {
+        id: 'txn-4',
+        type: 'DOWNLOAD',
+        status: 'SUCCESS',
+        timestamp: '2024-01-13T11:00:00Z'
+      },
+      {
+        id: 'txn-5',
+        type: 'VIEW',
+        status: 'SUCCESS',
+        timestamp: '2024-01-14T09:00:00Z'
+      }
     ]
   }
 ];
@@ -333,6 +410,13 @@ let useCases = [
   { id: 'uc-energy', name: 'energy', label: 'Energy Management', description: 'Energy consumption and management' },
   { id: 'uc-logistics', name: 'logistics', label: 'Logistics Optimization', description: 'Supply chain and logistics optimization' }
 ];
+
+const useCaseToDataspace = {
+  'uc-manufacturing': 'Manufacturing DataSpace',
+  'uc-healthcare': 'Healthcare DataSpace',
+  'uc-energy': 'Energy DataSpace',
+  'uc-logistics': 'Logistics DataSpace'
+};
 
 let dataspaces = [
   { id: 1, name: 'CatenaX DataSpace' },
@@ -652,35 +736,363 @@ function handleGetFiles(req, res, participantId) {
 function handleGetFileDetails(req, res, participantId, fileId) {
   const file = files.find(f => f.id === fileId);
   if (file) {
+    const fileDetails = {
+      ...file,
+      access: file.access || 'public', 
+      accessRestrictions: file.accessRestrictions || [],
+      agreements: file.agreements || [],
+      transactionHistory: file.transactionHistory || []
+    };
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(file));
+    res.end(JSON.stringify(fileDetails));
   } else {
     res.writeHead(404, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'File not found' }));
   }
 }
 
-async function handleUploadFile(req, res, participantId) {
+async function handleUpdateFile(req, res, participantId, fileId) {
   try {
     const body = await parseBody(req);
+    const fileIndex = files.findIndex(f => f.id === fileId);
+    
+    if (fileIndex === -1) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'File not found' }));
+      return;
+    }
+    
+    const file = files[fileIndex];
+    
+    if (body.useCase !== undefined) {
+      file.useCase = body.useCase || '';
+      const useCase = useCases.find(uc => uc.id === body.useCase);
+      file.useCaseLabel = useCase ? useCase.label : '';
+    }
+    
+    if (body.partnerId !== undefined) {
+      if (body.partnerId && body.partnerId !== '') {
+        const partner = partners.find(p => p.id === body.partnerId);
+        if (partner) {
+          file.accessRestrictions = [{
+            partnerId: body.partnerId,
+            partnerName: partner.name,
+            policy: 'pending'
+          }];
+          file.access = 'restricted';
+        }
+      } else {
+        file.accessRestrictions = [];
+        file.access = 'public';
+      }
+    }
+    
+    file.updatedAt = new Date().toISOString();
+    
+    const updatedFile = {
+      ...file,
+      access: file.access || 'public',
+      accessRestrictions: file.accessRestrictions || [],
+      agreements: file.agreements || [],
+      transactionHistory: file.transactionHistory || []
+    };
+    
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(updatedFile));
+  } catch (error) {
+    console.error('Error updating file:', error);
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Failed to update file', message: error.message }));
+  }
+}
+
+function parseFormData(body, boundary) {
+  const result = {};
+  const files = [];
+  
+  try {
+    const boundaryMarker = '--' + boundary;
+    const parts = body.split(boundaryMarker);
+    
+    console.log('Parsing FormData: found', parts.length, 'parts');
+    
+    for (let i = 1; i < parts.length - 1; i++) {
+      try {
+        let part = parts[i];
+        if (!part || part.trim().length === 0) continue;
+        
+        part = part.replace(/^[\r\n]+/, '');
+        
+        let headerEnd = part.indexOf('\r\n\r\n');
+        if (headerEnd === -1) {
+          headerEnd = part.indexOf('\n\n');
+        }
+        
+        if (headerEnd === -1) {
+          console.log('Part', i, 'has no header separator, skipping');
+          continue;
+        }
+        
+        const headers = part.substring(0, headerEnd);
+        let content = part.substring(headerEnd);
+        
+        content = content.replace(/^[\r\n]+/, '');
+        
+        const nameMatch = headers.match(/name="([^"]+)"/);
+        if (!nameMatch) {
+          console.log('No name found in headers for part', i);
+          continue;
+        }
+        
+        const fieldName = nameMatch[1];
+        
+        if (fieldName === 'file') {
+          const filenameMatch = headers.match(/filename="([^"]+)"/);
+          if (filenameMatch) {
+            result.name = filenameMatch[1];
+            console.log('Extracted filename:', result.name);
+          }
+          continue;
+        }
+        
+        if (fieldName === 'files') {
+          const filenameMatch = headers.match(/filename="([^"]+)"/);
+          if (filenameMatch) {
+            const filename = filenameMatch[1];
+            const contentTypeMatch = headers.match(/Content-Type:\s*([^\r\n]+)/i);
+            const contentType = contentTypeMatch ? contentTypeMatch[1].trim() : 'application/octet-stream';
+            
+            const nextBoundaryIndex = content.indexOf('--' + boundary);
+            let fileContent = content;
+            if (nextBoundaryIndex !== -1) {
+              fileContent = content.substring(0, nextBoundaryIndex);
+            }
+            fileContent = fileContent.replace(/[\r\n]+$/, '').replace(/--$/, '').trim();
+            
+            files.push({
+              name: filename,
+              content: fileContent,
+              type: contentType,
+              size: fileContent.length
+            });
+            console.log('Extracted file:', filename, 'size:', fileContent.length);
+          }
+          continue;
+        }
+        
+        const nextBoundaryIndex = content.indexOf('--' + boundary);
+        if (nextBoundaryIndex !== -1) {
+          content = content.substring(0, nextBoundaryIndex);
+        }
+        
+        let textContent = content.replace(/[\r\n]+$/, '').replace(/--$/, '').trim();
+        
+        result[fieldName] = textContent;
+        console.log('Extracted', fieldName, '=', textContent.substring(0, 50));
+      } catch (partError) {
+        console.error('Error parsing part', i, ':', partError);
+      }
+    }
+  } catch (error) {
+    console.error('Error in parseFormData:', error);
+  }
+  
+  if (files.length > 0) {
+    result.files = files;
+  }
+  
+  console.log('Final parsed result:', Object.keys(result));
+  return result;
+}
+
+async function handleUploadFile(req, res, participantId) {
+  try {
+    console.log('Upload request received:', {
+      participantId: participantId,
+      contentType: req.headers['content-type'],
+      method: req.method
+    });
+    
+    let body = {};
+    const contentType = req.headers['content-type'] || '';
+    
+    if (contentType.includes('multipart/form-data')) {
+      const boundaryMatch = contentType.match(/boundary=([^;]+)/);
+      const boundary = boundaryMatch ? boundaryMatch[1].trim() : null;
+      
+      console.log('Parsing FormData with boundary:', boundary);
+      
+      if (boundary) {
+        try {
+          const rawBody = await parseBody(req);
+          console.log('Raw body length:', rawBody.length);
+          console.log('Raw body preview (first 500 chars):', rawBody.substring(0, 500));
+          
+          body = parseFormData(rawBody, boundary);
+          console.log('Parsed FormData result:', JSON.stringify(body, null, 2));
+          
+          if (Object.keys(body).length === 0) {
+            console.log('WARNING: FormData parsing returned empty!');
+            console.log('Trying fallback extraction from raw body...');
+            const nameMatch = rawBody.match(/name="name"[\r\n]+([^\r\n]+)/);
+            const sizeMatch = rawBody.match(/name="size"[\r\n]+([^\r\n]+)/);
+            const typeMatch = rawBody.match(/name="type"[\r\n]+([^\r\n]+)/);
+            const useCaseMatch = rawBody.match(/name="useCase"[\r\n]+([^\r\n]+)/);
+            const partnerMatch = rawBody.match(/name="partnerId"[\r\n]+([^\r\n]+)/);
+            
+            if (nameMatch) body.name = nameMatch[1].trim();
+            if (sizeMatch) body.size = sizeMatch[1].trim();
+            if (typeMatch) body.type = typeMatch[1].trim();
+            if (useCaseMatch) body.useCase = useCaseMatch[1].trim();
+            if (partnerMatch) body.partnerId = partnerMatch[1].trim();
+            
+            console.log('Fallback extraction result:', body);
+          }
+        } catch (parseError) {
+          console.error('Error parsing FormData:', parseError);
+          console.error('Stack:', parseError.stack);
+          body = {
+            name: `file-${Date.now()}`,
+            size: 0,
+            type: 'application/octet-stream'
+          };
+        }
+      } else {
+        console.log('No boundary found, trying JSON fallback');
+        try {
+          body = await parseBody(req);
+          console.log('Parsed as JSON:', body);
+        } catch (e) {
+          console.error('Failed to parse body:', e);
+          body = {
+            name: `file-${Date.now()}`,
+            size: 0,
+            type: 'application/octet-stream'
+          };
+        }
+      }
+    } else {
+      try {
+        body = await parseBody(req);
+        console.log('Parsed as JSON:', body);
+      } catch (e) {
+        console.error('Failed to parse JSON:', e);
+        body = {
+          name: `file-${Date.now()}`,
+          size: 0,
+          type: 'application/octet-stream'
+        };
+      }
+    }
+    
+    const useCase = body.useCase ? String(body.useCase).trim() : '';
+    const partnerId = body.partnerId ? String(body.partnerId).trim() : '';
+    let dataspace = body.dataspace ? String(body.dataspace).trim() : '';
+    if (!dataspace && useCase && useCaseToDataspace[useCase]) {
+      dataspace = useCaseToDataspace[useCase];
+      console.log('Derived dataspace from use case:', useCase, '->', dataspace);
+    }
+    
+    if (body.files && Array.isArray(body.files) && body.files.length > 0) {
+      const uploadedFiles = [];
+      
+      for (const fileData of body.files) {
+        const fileName = fileData.name || `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const fileSize = fileData.size || 0;
+        const fileType = fileData.type || 'application/octet-stream';
+        
+        const newFile = {
+          id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          name: fileName,
+          description: body.description ? String(body.description).trim() : '',
+          useCase: useCase,
+          useCaseLabel: useCase ? (useCases.find(uc => uc.id === useCase)?.label || '') : '',
+          origin: 'owned',
+          dataspace: dataspace,
+          uploadedAt: new Date().toISOString(),
+          size: fileSize,
+          type: fileType,
+          agreements: [],
+          transactionHistory: [],
+          access: body.access || 'public',
+          accessRestrictions: []
+        };
+        
+        if (partnerId) {
+          const partner = partners.find(p => p.id === partnerId);
+          if (partner) {
+            newFile.accessRestrictions = [{
+              partnerId: partnerId,
+              partnerName: partner.name,
+              policy: 'pending'
+            }];
+            newFile.access = 'restricted';
+          }
+        }
+        
+        files.push(newFile);
+        uploadedFiles.push(newFile);
+        console.log('File created successfully:', newFile);
+      }
+      
+      res.writeHead(201, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(uploadedFiles));
+      return;
+    }
+    
+    const fileName = body.name || `file-${Date.now()}`;
+    const fileSize = body.size ? parseInt(String(body.size).trim(), 10) : 0;
+    const fileType = body.type || 'application/octet-stream';
+    
+    console.log('Creating file:', {
+      fileName,
+      fileSize,
+      fileType,
+      useCase,
+      partnerId,
+      rawBodyKeys: Object.keys(body),
+      bodyValues: body
+    });
+    
     const newFile = {
       id: `file-${Date.now()}`,
-      name: body.name || 'uploaded-file',
-      description: body.description || '',
-      useCase: body.useCase || '',
-      useCaseLabel: useCases.find(uc => uc.id === body.useCase)?.label || '',
+      name: fileName,
+      description: body.description ? String(body.description).trim() : '',
+      useCase: useCase,
+      useCaseLabel: useCase ? (useCases.find(uc => uc.id === useCase)?.label || '') : '',
       origin: 'owned',
-      dataspace: body.dataspace || '',
+      dataspace: dataspace,
       uploadedAt: new Date().toISOString(),
-      size: body.size || 0,
-      type: body.type || 'application/octet-stream'
+      size: fileSize,
+      type: fileType,
+      agreements: [],
+      transactionHistory: [],
+      access: body.access || 'public',
+      accessRestrictions: []
     };
+    
+    if (partnerId) {
+      const partner = partners.find(p => p.id === partnerId);
+      if (partner) {
+        newFile.accessRestrictions = [{
+          partnerId: partnerId,
+          partnerName: partner.name,
+          policy: 'pending'
+        }];
+        newFile.access = 'restricted';
+      }
+    }
+    
     files.push(newFile);
+    console.log('File created successfully:', newFile);
+    
     res.writeHead(201, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(newFile));
   } catch (error) {
+    console.error('Upload error:', error);
+    console.error('Error stack:', error.stack);
     res.writeHead(500, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Internal server error' }));
+    res.end(JSON.stringify({ error: 'Internal server error', message: error.message }));
   }
 }
 
@@ -854,6 +1266,11 @@ const server = http.createServer(async (req, res) => {
     const parts = path.split('/');
     const participantId = path.startsWith('/api/ui') ? parts[4] : parts[3];
     await handleUploadFile(req, res, participantId);
+  } else if (method === 'PATCH' && (path.match(/^\/v1\/participants\/([^\/]+)\/files\/([^\/]+)$/) || path.match(/^\/api\/ui\/participants\/([^\/]+)\/files\/([^\/]+)$/))) {
+    const parts = path.split('/');
+    const participantId = path.startsWith('/api/ui') ? parts[4] : parts[3];
+    const fileId = path.startsWith('/api/ui') ? parts[6] : parts[5];
+    await handleUpdateFile(req, res, participantId, fileId);
   } else if (method === 'GET' && (path === '/v1/use-cases' || path === '/api/ui/use-cases')) {
     handleGetUseCases(req, res);
   } else if (method === 'GET' && (path.match(/^\/v1\/participants\/([^\/]+)\/files\/search$/) || path.match(/^\/api\/ui\/participants\/([^\/]+)\/files\/search$/))) {
@@ -894,6 +1311,7 @@ server.listen(PORT, () => {
   console.log(`  GET  /v1/participants/:id/files - List files`);
   console.log(`  GET  /v1/participants/:id/files/:fileId - Get file details`);
   console.log(`  POST /v1/participants/:id/files - Upload file`);
+  console.log(`  PATCH /v1/participants/:id/files/:fileId - Update file`);
   console.log(`  GET  /v1/use-cases - List use cases`);
   console.log(`  GET  /v1/participants/:id/files/search - Search files`);
   console.log(`  POST /v1/participants/:id/files/:fileId/request-access - Request file access`);

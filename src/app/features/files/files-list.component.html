@@ -8,7 +8,7 @@
       </p>
     </div>
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-      <button (click)="showUploadDialog = true" 
+      <button (click)="openUploadSection()" 
               class="inline-flex items-center justify-center rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600">
         <svg class="-ml-0.5 mr-1.5 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -88,13 +88,22 @@
                   Use Case
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Origin
+                  Type
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Dataspace
+                  Size
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Partner
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Access
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Uploaded
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Modified
                 </th>
                 <th scope="col" class="relative px-6 py-3">
                   <span class="sr-only">Actions</span>
@@ -104,7 +113,7 @@
             <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
               @if (loading) {
                 <tr>
-                  <td colspan="6" class="px-6 py-12 text-center">
+                  <td colspan="9" class="px-6 py-12 text-center">
                     <div class="flex justify-center">
                       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
                     </div>
@@ -123,16 +132,47 @@
                       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {{ file.useCaseLabel || file.useCase || 'N/A' }}
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <span [class]="file.origin === 'owned' ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'">
-                          {{ file.origin }}
-                        </span>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        @if (file.type) {
+                          <span class="px-2 inline-flex text-xs leading-5 font-medium rounded bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                            {{ file.type }}
+                          </span>
+                        } @else {
+                          <span class="text-gray-400 dark:text-gray-500">N/A</span>
+                        }
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {{ file.dataspace || 'N/A' }}
+                        {{ formatFileSize(file.size) }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        @if (file.accessRestrictions && file.accessRestrictions.length > 0) {
+                          <div class="space-y-1">
+                            @for (restriction of file.accessRestrictions; track restriction.partnerId) {
+                              <div class="px-2 inline-flex text-xs leading-5 font-medium rounded bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                                {{ restriction.partnerName || restriction.partnerId || 'Unknown' }}
+                              </div>
+                            }
+                          </div>
+                        } @else {
+                          <span class="text-gray-400 dark:text-gray-500">-</span>
+                        }
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        @if (file.access) {
+                          <span [class]="file.access === 'public' ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : file.access === 'restricted' ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'">
+                            {{ file.access }}
+                          </span>
+                        } @else {
+                          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                            public
+                          </span>
+                        }
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {{ formatDate(file.uploadedAt) }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {{ formatDate(file.updatedAt || file.uploadedAt) }}
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <a [routerLink]="['/files', file.id]" 
@@ -148,7 +188,7 @@
                   }
                 } @else {
                   <tr>
-                    <td colspan="6" class="px-6 py-12 text-center">
+                    <td colspan="9" class="px-6 py-12 text-center">
                       <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                       </svg>
@@ -157,7 +197,7 @@
                         Get started by uploading your first file.
                       </p>
                       <div class="mt-6">
-                        <button (click)="showUploadDialog = true" 
+                        <button (click)="openUploadSection()" 
                                 class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
                           <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -198,86 +238,43 @@
   }
 
   
-  @if (showUploadDialog) {
-    <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" (click)="closeUploadDialog()">
-      <div class="relative top-10 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800" (click)="$event.stopPropagation()">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Upload File</h3>
-        
-        @if (uploadStep === 1) {
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select File(s)</label>
-              <input
-                type="file"
-                multiple
-                (change)="onFileSelected($event)"
-                class="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100">
-            </div>
-            @if (selectedFiles.length > 0) {
-              <div class="mt-4">
-                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Selected Files:</p>
-                <ul class="list-disc list-inside space-y-1">
-                  @for (file of selectedFiles; track file.name) {
-                    <li class="text-sm text-gray-600 dark:text-gray-400">{{ file.name }}</li>
-                  }
-                </ul>
-              </div>
-            }
-          </div>
-        }
-
-        @if (uploadStep === 2) {
-          <div class="space-y-4" [formGroup]="uploadForm">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Use Case</label>
-              <select
-                formControlName="useCase"
-                class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
-                <option value="">Select use case</option>
-                @for (uc of useCases; track uc.id) {
-                  <option [value]="uc.id">{{ uc.label }}</option>
-                }
-              </select>
-            </div>
-          </div>
-        }
-
-        <div class="flex justify-between mt-6">
-          <button
-            *ngIf="uploadStep > 1"
-            (click)="previousStep()"
-            class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500">
-            Previous
+  @if (showExploreSelection) {
+    <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" (click)="closeExploreSelection()">
+      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800" (click)="$event.stopPropagation()">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">Select Action</h3>
+          <button (click)="closeExploreSelection()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
           </button>
-          <div class="ml-auto flex space-x-3">
-            <button
-              (click)="closeUploadDialog()"
-              class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500">
-              Cancel
-            </button>
-            @if (uploadStep < 2) {
-              <button
-                (click)="nextStep()"
-                [disabled]="!canProceed()"
-                class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50">
-                Continue
-              </button>
-            }
-            @if (uploadStep === 2) {
-              <button
-                (click)="uploadFiles()"
-                [disabled]="uploading"
-                class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50">
-                @if (!uploading) {
-                  Upload
-                } @else {
-                  Uploading...
-                }
-              </button>
-            }
-          </div>
+        </div>
+        <div class="space-y-3">
+          <button
+            (click)="openUploadSection()"
+            class="w-full text-left px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-3 transition-colors">
+            <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+            </svg>
+            <div>
+              <p class="text-sm font-medium text-gray-900 dark:text-white">Upload File(s)</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Upload one or many files</p>
+            </div>
+          </button>
+          <button
+            (click)="openSearchNetwork()"
+            class="w-full text-left px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-3 transition-colors">
+            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <div>
+              <p class="text-sm font-medium text-gray-900 dark:text-white">Search Network</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Search the ecosystem</p>
+            </div>
+          </button>
         </div>
       </div>
     </div>
   }
+
 </div>

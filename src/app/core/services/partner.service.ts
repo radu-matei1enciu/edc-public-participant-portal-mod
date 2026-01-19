@@ -29,6 +29,12 @@ export class PartnerService {
     );
   }
 
+  getPartnersByParticipant(participantId: number): Observable<Partner[]> {
+    return this.http.get<Partner[]>(`${this.baseUrl}/participants/${participantId}/partners`).pipe(
+      catchError(() => of([]))
+    );
+  }
+
   getPartnerReference(
     providerId: number,
     tenantId: number,

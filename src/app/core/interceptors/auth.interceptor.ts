@@ -9,9 +9,8 @@ export class AuthInterceptor implements HttpInterceptor {
   private keycloakService = inject(KeycloakService);
   private authService = inject(AuthService);
 
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    let headers: { [key: string]: string } = {
-      'Content-Type': 'application/json',
+  intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+    const headers: { [key: string]: string } = {
       'Accept': 'application/json',
       'X-Requested-With': 'XMLHttpRequest'
     };

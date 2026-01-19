@@ -34,45 +34,40 @@
                   }
                 </div>
               </div>
+              @if (!editing) {
+                <button
+                  (click)="startEditing()"
+                  class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                  </svg>
+                  Edit
+                </button>
+              }
             </div>
           </div>
 
-          <div class="px-6 py-6 sm:p-8">
+          <div class="px-6 py-6 sm:p-8" [formGroup]="editForm">
             <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3">
               <div>
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Use Case</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                  {{ file.useCaseLabel || file.useCase || 'N/A' }}
-                </dd>
-              </div>
-              <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Origin</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                  <span [class]="file.origin === 'owned' ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'">
-                    {{ file.origin }}
-                  </span>
-                </dd>
-              </div>
-              <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Dataspace</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                  {{ file.dataspace || 'N/A' }}
-                </dd>
-              </div>
-              <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Uploaded At</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                  {{ formatDate(file.uploadedAt) }}
-                </dd>
-              </div>
-              @if (file.size) {
-                <div>
-                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Size</dt>
-                  <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                    {{ formatFileSize(file.size) }}
+                @if (editing) {
+                  <dd class="mt-1">
+                    <select
+                      formControlName="useCase"
+                      class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                      <option [value]="''">None</option>
+                      @for (uc of useCases; track uc.id) {
+                        <option [value]="uc.id">{{ uc.label }}</option>
+                      }
+                    </select>
                   </dd>
-                </div>
-              }
+                } @else {
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                    {{ file.useCaseLabel || file.useCase || 'N/A' }}
+                  </dd>
+                }
+              </div>
               @if (file.type) {
                 <div>
                   <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Type</dt>
@@ -81,81 +76,209 @@
                   </dd>
                 </div>
               }
+              @if (file.size) {
+                <div>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Size</dt>
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                    {{ formatFileSize(file.size) }}
+                  </dd>
+                </div>
+              }
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Access</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                  @if (file.access) {
+                    <span [class]="file.access === 'public' ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : file.access === 'restricted' ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'">
+                      {{ file.access }}
+                    </span>
+                  } @else {
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                      public
+                    </span>
+                  }
+                </dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Uploaded</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                  {{ formatDate(file.uploadedAt) }}
+                </dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Modified</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                  {{ formatDate(file.updatedAt || file.uploadedAt) }}
+                </dd>
+              </div>
             </dl>
 
             @if (file.accessRestrictions && file.accessRestrictions.length > 0) {
               <div class="mt-6">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Access Restrictions</h3>
-                <div class="space-y-3">
-                  @for (restriction of file.accessRestrictions; track restriction.partnerId) {
-                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                      <p class="text-sm font-medium text-gray-900 dark:text-white">
-                        {{ restriction.partnerName || 'Unknown Partner' }}
-                      </p>
-                      @if (restriction.policy) {
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Policy: {{ restriction.policy }}</p>
-                      }
+                @if (editing) {
+                  <div [formGroup]="editForm">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Partner</label>
+                      <select
+                        formControlName="partnerId"
+                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                        <option [value]="''">None</option>
+                        @for (partner of partners; track partner.id) {
+                          <option [value]="partner.id">{{ partner.name }}</option>
+                        }
+                      </select>
                     </div>
-                  }
-                </div>
-              </div>
-            }
-
-            @if (file.agreements && file.agreements.length > 0) {
-              <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Agreements</h3>
-                <div class="space-y-3">
-                  @for (agreement of file.agreements; track agreement.id) {
-                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                      <div class="flex items-center justify-between">
-                        <div>
-                          <p class="text-sm font-medium text-gray-900 dark:text-white">{{ agreement.partnerName }}</p>
-                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Status: {{ agreement.status }}</p>
-                          <p class="text-xs text-gray-500 dark:text-gray-400">Created: {{ formatDate(agreement.createdAt) }}</p>
-                        </div>
-                        <button
-                          (click)="downloadAgreement(agreement.id)"
-                          class="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300 text-sm">
-                          Download
-                        </button>
+                  </div>
+                } @else {
+                  <div class="space-y-3">
+                    @for (restriction of file.accessRestrictions; track restriction.partnerId) {
+                      <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">
+                          {{ restriction.partnerName || 'Unknown Partner' }}
+                        </p>
                       </div>
-                    </div>
-                  }
+                    }
+                  </div>
+                }
+              </div>
+            } @else if (editing) {
+              <div class="mt-6">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Access Restrictions</h3>
+                <div [formGroup]="editForm">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Partner</label>
+                    <select
+                      formControlName="partnerId"
+                      class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                      <option [value]="''">None</option>
+                      @for (partner of partners; track partner.id) {
+                        <option [value]="partner.id">{{ partner.name }}</option>
+                      }
+                    </select>
+                  </div>
                 </div>
               </div>
             }
 
-            @if (file.transactionHistory && file.transactionHistory.length > 0) {
-              <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Transaction History</h3>
-                <div class="overflow-x-auto">
-                  <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead class="bg-gray-50 dark:bg-gray-700">
-                      <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Partner</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Timestamp</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                      @for (transaction of file.transactionHistory; track transaction.id) {
+            @if (editing) {
+              <div class="mt-6 flex justify-end space-x-3">
+                <button
+                  (click)="cancelEditing()"
+                  [disabled]="saving"
+                  class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                  Cancel
+                </button>
+                <button
+                  (click)="saveChanges()"
+                  [disabled]="saving"
+                  class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                  @if (saving) {
+                    <span class="flex items-center">
+                      <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Saving...
+                    </span>
+                  } @else {
+                    Save Changes
+                  }
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 shadow-lg overflow-hidden sm:rounded-lg">
+          <div class="px-6 py-6 sm:px-8">
+            <div class="mb-6">
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Details</h2>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                You can view agreement and transaction details of your data.
+              </p>
+            </div>
+
+            <div class="mb-6">
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Agreement</h3>
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    @if (file.agreements && file.agreements.length > 0) {
+                      @for (agreement of file.agreements; track agreement.id) {
                         <tr>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ transaction.type }}</td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ transaction.partnerName || 'N/A' }}</td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ formatDate(transaction.timestamp) }}</td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                            {{ formatDate(agreement.createdAt) }}
+                          </td>
                           <td class="px-6 py-4 whitespace-nowrap">
-                            <span [class]="getTransactionStatusClass(transaction.status)">
-                              {{ transaction.status }}
+                            <span [class]="getAgreementStatusClass(agreement.status)">
+                              {{ agreement.status }}
                             </span>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button
+                              (click)="downloadAgreement(agreement.id)"
+                              class="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300">
+                              View/Download
+                            </button>
                           </td>
                         </tr>
                       }
-                    </tbody>
-                  </table>
-                </div>
+                    } @else {
+                      <tr>
+                        <td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                          No agreements available
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
               </div>
-            }
+            </div>
+
+            <div class="mb-6">
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Transaction History</h3>
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    @if (file.transactionHistory && file.transactionHistory.length > 0) {
+                      @for (transaction of file.transactionHistory; track transaction.id) {
+                        <tr>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ transaction.type }}</td>
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <span [class]="getTransactionStatusClass(transaction.status)">
+                              {{ transaction.status || '-' }}
+                            </span>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            {{ transaction.timestamp ? formatDate(transaction.timestamp) : '-' }}
+                          </td>
+                        </tr>
+                      }
+                    } @else {
+                      <tr>
+                        <td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                          No transaction history available
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       </div>

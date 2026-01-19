@@ -133,22 +133,22 @@ export class FilesSectionComponent implements OnInit {
   }
 
   uploadFiles(): void {
-    if (this.selectedFiles.length === 0) return;
+    if (this.selectedFiles.length === 0 || !this.participantId) return;
 
     this.uploading = true;
     const uploadMetadata = this.uploadForm.value;
-    const uploadPromises = this.selectedFiles.map(file =>
-      this.fileAssetService.uploadFile(this.participantId!, file, uploadMetadata).toPromise()
-    );
 
-    Promise.all(uploadPromises).then(() => {
-      this.uploading = false;
-      this.closeUploadDialog();
-      this.loadFiles();
-      this.notificationService.showSuccess('Success', 'Files uploaded successfully');
-    }).catch(() => {
-      this.uploading = false;
-      this.notificationService.showError('Error', 'Failed to upload files');
+    this.fileAssetService.uploadFiles(this.participantId, this.selectedFiles, uploadMetadata).subscribe({
+      next: () => {
+        this.uploading = false;
+        this.closeUploadDialog();
+        this.loadFiles();
+        this.notificationService.showSuccess('Success', 'Files uploaded successfully');
+      },
+      error: () => {
+        this.uploading = false;
+        this.notificationService.showError('Error', 'Failed to upload files');
+      }
     });
   }
 

@@ -6,6 +6,7 @@ import { FileAssetService } from '../../core/services/file-asset.service';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../shared/services/notification.service';
 import { FileAsset } from '../../core/models/file-asset.model';
+import { formatFileSize } from '../../shared/utils/format.utils';
 
 @Component({
   selector: 'app-explore-detail',
@@ -14,6 +15,8 @@ import { FileAsset } from '../../core/models/file-asset.model';
   templateUrl: './explore-detail.component.html'
 })
 export class ExploreDetailComponent implements OnInit {
+  formatFileSize = formatFileSize;
+  
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private fileAssetService = inject(FileAssetService);
@@ -95,11 +98,4 @@ export class ExploreDetailComponent implements OnInit {
     });
   }
 
-  formatFileSize(bytes: number): string {
-    if (!bytes) return 'N/A';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-  }
 }

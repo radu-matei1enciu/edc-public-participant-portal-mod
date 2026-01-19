@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FileAssetService } from '../../../core/services/file-asset.service';
 import { FileAsset } from '../../../core/models/file-asset.model';
 import { NotificationService } from '../../../shared/services/notification.service';
+import { formatFileSize } from '../../../shared/utils/format.utils';
 
 @Component({
   selector: 'app-file-details',
@@ -11,6 +12,8 @@ import { NotificationService } from '../../../shared/services/notification.servi
   templateUrl: './file-details.component.html',
   })
 export class FileDetailsComponent implements OnInit {
+  formatFileSize = formatFileSize;
+  
   @Input() participantId: number | null = null;
   @Input() fileId: string = '';
   @Output() close = new EventEmitter<void>();
@@ -78,11 +81,4 @@ export class FileDetailsComponent implements OnInit {
     });
   }
 
-  formatFileSize(bytes: number): string {
-    if (!bytes) return 'N/A';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-  }
 }

@@ -10,6 +10,7 @@ export interface FileAsset {
   updatedAt?: string;
   size?: number;
   type?: string;
+  access?: 'public' | 'restricted' | 'private';
   accessRestrictions?: AccessRestriction[];
   agreements?: Agreement[];
   transactionHistory?: Transaction[];

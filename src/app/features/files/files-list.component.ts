@@ -1,16 +1,18 @@
 import { Component, OnInit, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { Observable, interval, startWith, switchMap, catchError, of, debounceTime, distinctUntilChanged } from 'rxjs';
+import { Observable, interval, startWith, switchMap, catchError, of, debounceTime, distinctUntilChanged, firstValueFrom } from 'rxjs';
 import { FileAssetService } from '../../core/services/file-asset.service';
+import { UseCaseService } from '../../core/services/use-case.service';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../shared/services/notification.service';
 import { UserPreferencesService, UserPreferences } from '../../core/services/user-preferences.service';
 import { FileAsset } from '../../core/models/file-asset.model';
 import { UseCase } from '../../core/models/use-case.model';
 import { UserProfile } from '../../core/models/participant.model';
+import { formatFileSize } from '../../shared/utils/format.utils';
 
 @Component({
   selector: 'app-files-list',
@@ -19,12 +21,16 @@ import { UserProfile } from '../../core/models/participant.model';
   templateUrl: './files-list.component.html',
   })
 export class FilesListComponent implements OnInit {
+  formatFileSize = formatFileSize;
+  
   private fileAssetService = inject(FileAssetService);
+  private useCaseService = inject(UseCaseService);
   private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
   private preferencesService = inject(UserPreferencesService);
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
+  private router = inject(Router);
 
   files: FileAsset[] = [];
   filteredFiles: FileAsset[] = [];
@@ -36,11 +42,7 @@ export class FilesListComponent implements OnInit {
   itemsPerPage = 10;
   userProfile: UserProfile | null = null;
   participantId: number | null = null;
-  showUploadDialog = false;
-  uploadStep = 1;
-  selectedFiles: File[] = [];
-  uploadForm!: FormGroup;
-  uploading = false;
+  showExploreSelection = false;
 
   constructor() {
     this.filterForm = this.fb.group({
@@ -93,7 +95,7 @@ export class FilesListComponent implements OnInit {
   }
 
   loadUseCases(): void {
-    this.fileAssetService.getUseCases().subscribe({
+    this.useCaseService.getUseCases().subscribe({
       next: (useCases) => {
         this.useCases = useCases;
       },
@@ -102,6 +104,7 @@ export class FilesListComponent implements OnInit {
       }
     });
   }
+
 
   loadFiles(): void {
     if (!this.participantId) return;
@@ -154,63 +157,31 @@ export class FilesListComponent implements OnInit {
     }
   }
 
-  closeUploadDialog(): void {
-    this.showUploadDialog = false;
-    this.uploadStep = 1;
-    this.selectedFiles = [];
-    if (this.uploadForm) {
-      this.uploadForm.reset();
-    }
+  openExploreSelection(): void {
+    this.showExploreSelection = true;
   }
 
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files) {
-      this.selectedFiles = Array.from(input.files);
-    }
+  closeExploreSelection(): void {
+    this.showExploreSelection = false;
   }
 
-  nextStep(): void {
-    if (this.canProceed()) {
-      this.uploadStep++;
-    }
+  openUploadSection(): void {
+    this.showExploreSelection = false;
+    this.router.navigate(['/files/upload']);
   }
 
-  previousStep(): void {
-    if (this.uploadStep > 1) {
-      this.uploadStep--;
-    }
+  openSearchNetwork(): void {
+    this.showExploreSelection = false;
+    this.router.navigate(['/explore']);
   }
 
-  canProceed(): boolean {
-    if (this.uploadStep === 1) {
-      return this.selectedFiles.length > 0;
-    }
-    if (this.uploadStep === 2) {
-      return !!this.uploadForm?.get('useCase')?.value;
-    }
-    return true;
+
+  getUseCaseLabel(useCaseId?: string): string {
+    if (!useCaseId) return 'N/A';
+    const useCase = this.useCases.find(uc => uc.id === useCaseId);
+    return useCase ? useCase.label : useCaseId;
   }
 
-  uploadFiles(): void {
-    if (this.selectedFiles.length === 0 || !this.participantId) return;
-
-    this.uploading = true;
-    const uploadMetadata = this.uploadForm.value;
-    const uploadPromises = this.selectedFiles.map(file =>
-      this.fileAssetService.uploadFile(this.participantId!, file, uploadMetadata).toPromise()
-    );
-
-    Promise.all(uploadPromises).then(() => {
-      this.uploading = false;
-      this.closeUploadDialog();
-      this.loadFiles();
-      this.notificationService.showSuccess('Success', 'Files uploaded successfully');
-    }).catch(() => {
-      this.uploading = false;
-      this.notificationService.showError('Error', 'Failed to upload files');
-    });
-  }
 
   formatDate(dateString: string): string {
     if (!dateString) return 'N/A';

@@ -53,8 +53,7 @@ export class AuthGuard implements CanActivate, CanActivateChild {
 
         return of(true);
       }),
-      catchError(error => {
-        console.error('Auth guard error:', error);
+      catchError(() => {
         this.redirectToLogin(state.url);
         return of(false);
       })
