@@ -48,11 +48,7 @@ export class SuccessComponent implements OnInit {
   }
 
   goToLogin(): void {
-    if (this.authService.isAuthEnabled()) {
-      localStorage.setItem('returnUrl', '/dashboard');
-      this.authService.login();
-    } else {
-      this.router.navigate(['/dashboard']);
-    }
+    localStorage.setItem('returnUrl', '/dashboard');
+    this.authService.login();
   }
 }

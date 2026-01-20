@@ -14,7 +14,6 @@ import { map } from 'rxjs/operators';
 })
 export class LandingComponent implements OnInit {
   isAuthenticated$: Observable<boolean>;
-  isAuthEnabled: boolean = false;
   showAdminPortal$: Observable<boolean>;
   showUserDashboard$: Observable<boolean>;
 
@@ -38,10 +37,8 @@ export class LandingComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.isAuthEnabled = this.authService.isAuthEnabled();
-    
     this.authService.currentUser$.subscribe(user => {
-      if (user && this.isAuthEnabled) {
+      if (user) {
         const returnUrl = localStorage.getItem('returnUrl');
         if (returnUrl) {
           localStorage.removeItem('returnUrl');

@@ -28,10 +28,6 @@ export class AuthGuard implements CanActivate, CanActivateChild {
   }
 
   private checkAuth(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
-    if (!this.authService.isAuthEnabled()) {
-      return of(true);
-    }
-
     const isLoggedIn = this.authService.isAuthenticated();
     
     if (!isLoggedIn) {
@@ -40,37 +36,6 @@ export class AuthGuard implements CanActivate, CanActivateChild {
       return of(false);
     }
 
-    const requiredRoles = route.data['roles'] as string[];
-    if (requiredRoles && requiredRoles.length > 0) {
-      const hasRequiredRole = this.authService.hasAnyRole(requiredRoles);
-      if (!hasRequiredRole) {
-        this.router.navigate(['/role-error']);
-        return of(false);
-      }
-    }
-
     return of(true);
-  }
-}
-
-@Injectable({
-  providedIn: 'root'
-})
-export class RoleGuard implements CanActivate {
-  private authService = inject(AuthService);
-
-  canActivate(route: ActivatedRouteSnapshot): Observable<boolean> {
-    const requiredRoles = route.data['roles'] as string[];
-    
-    if (!requiredRoles || requiredRoles.length === 0) {
-      return of(true);
-    }
-
-    if (!this.authService.isAuthEnabled()) {
-      return of(true);
-    }
-
-    const hasRequiredRole = this.authService.hasAnyRole(requiredRoles);
-    return of(hasRequiredRole);
   }
 }

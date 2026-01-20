@@ -3,21 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
-export interface KeycloakInitOptions {
-  onLoad?: 'login-required' | 'check-sso';
-  checkLoginIframe?: boolean;
-  pkceMethod?: 'S256';
-  storageKey?: string;
-  enableLogging?: boolean;
-  flow?: 'standard' | 'implicit' | 'hybrid';
-  adapter?: 'default' | 'cordova' | 'cordova-native';
-  redirectUri?: string;
-  silentCheckSsoRedirectUri?: string;
-  checkLoginIframeInterval?: number;
-  responseMode?: 'query' | 'fragment';
-  timeSkew?: number;
-}
-
 export interface AppConfig {
   production: boolean;
   apiUrl: string;
@@ -29,26 +14,6 @@ export interface AppConfig {
     enableAnalytics: boolean;
     enableDebugMode: boolean;
     enableDevMode: boolean;
-  };
-  auth: {
-    enableAuth: boolean;
-    tokenKey: string;
-    roles?: {
-      admin: string;
-      participant: string;
-    };
-    keycloak?: {
-      url: string;
-      realm: string;
-      clientId: string;
-      initOptions: {
-        onLoad: 'login-required' | 'check-sso';
-        checkLoginIframe: boolean;
-        pkceMethod: 'S256';
-        storageKey?: string;
-      };
-      bearerExcludedUrls: string[];
-    };
   };
   upload?: {
     maxFileSize: number;
@@ -75,16 +40,13 @@ export class ConfigService {
 
     return this.http.get<AppConfig>(document.baseURI +'assets/config/config.json').pipe(
       tap(config => {
-        if (config.auth?.keycloak?.initOptions) {
-          config.auth.keycloak.initOptions.storageKey = this.getStorageKey();
-        }
         this.configSubject.next(config);
         this.configLoaded = true;
       }),
       catchError(() => {
         const fallbackConfig: AppConfig = {
           production: false,
-          apiUrl: 'http://localhost:3001/ui',
+          apiUrl: 'http://localhost:3001/api/ui',
           defaultServiceProviderId: 1,
           appName: 'EDC Participant Portal',
           version: '1.0.0',
@@ -93,26 +55,6 @@ export class ConfigService {
             enableAnalytics: false,
             enableDebugMode: true,
             enableDevMode: true
-          },
-          auth: {
-            enableAuth: false,
-            tokenKey: 'auth_token',
-            roles: {
-              admin: 'EDC_ADMIN',
-              participant: 'EDC_USER_PARTICIPANT',
-            },
-            keycloak: {
-              url: 'http://localhost:8080',
-              realm: 'edc',
-              clientId: 'edc-participant-portal',
-              initOptions: {
-                onLoad: 'check-sso',
-                checkLoginIframe: false,
-                pkceMethod: 'S256',
-                storageKey: this.getStorageKey()
-              },
-              bearerExcludedUrls: ['/assets']
-            }
           }
         };
         this.configSubject.next(fallbackConfig);
@@ -138,11 +80,6 @@ export class ConfigService {
   }
 
   getApiUrl(): string {
-    return this.config?.apiUrl || 'http://localhost:3001/v1';
-  }
-
-  private getStorageKey(): string {
-    const clientId = 'edc-customers';
-    return `kc-${clientId}`;
+    return this.config?.apiUrl || 'http://localhost:3001/api/ui';
   }
 }

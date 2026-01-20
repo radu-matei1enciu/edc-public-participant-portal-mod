@@ -553,6 +553,12 @@ async function handleCreateParticipant(req, res, providerId, tenantId) {
   }
 }
 
+function handleGetTenants(req, res, providerId) {
+  const providerTenants = tenants.filter(t => t.providerId === parseInt(providerId));
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(providerTenants));
+}
+
 function handleGetTenant(req, res, providerId, tenantId) {
   const tenant = tenants.find(t => t.id === parseInt(tenantId) && t.providerId === parseInt(providerId));
   if (tenant) {
@@ -1179,8 +1185,12 @@ const server = http.createServer(async (req, res) => {
 
   if (method === 'GET' && (path === '/api/ui/dataspaces' || path === '/v1/dataspaces')) {
     handleGetDataspaces(req, res);
+  } else if (method === 'GET' && (path.match(/^\/api\/ui\/service-providers\/(\d+)\/tenants$/) || path.match(/^\/v1\/service-providers\/(\d+)\/tenants$/))) {
+    const match = path.match(/service-providers\/(\d+)\/tenants$/);
+    const providerId = match ? match[1] : path.split('/')[path.startsWith('/v1') ? 2 : 4];
+    handleGetTenants(req, res, providerId);
   } else if (method === 'POST' && (path.match(/^\/api\/ui\/service-providers\/(\d+)\/tenants$/) || path.match(/^\/v1\/service-providers\/(\d+)\/tenants$/))) {
-    const match = path.match(/\/(\d+)\/tenants$/);
+    const match = path.match(/service-providers\/(\d+)\/tenants$/);
     const providerId = match ? match[1] : path.split('/')[path.startsWith('/v1') ? 2 : 4];
     await handleRegisterTenant(req, res, providerId);
   } else if (method === 'POST' && (path.match(/^\/api\/ui\/service-providers\/(\d+)\/tenants\/(\d+)\/participants$/) || path.match(/^\/v1\/service-providers\/(\d+)\/tenants\/(\d+)\/participants$/))) {
@@ -1317,6 +1327,7 @@ server.listen(PORT, () => {
   console.log(`  POST /v1/participants - Register new participant`);
   console.log(`  GET  /v1/participants - List participants`);
   console.log(`  GET  /api/ui/dataspaces or /v1/dataspaces - List dataspaces`);
+  console.log(`  GET  /api/ui/service-providers/:providerId/tenants or /v1/service-providers/:providerId/tenants - List tenants`);
   console.log(`  POST /api/ui/service-providers/:providerId/tenants or /v1/service-providers/:providerId/tenants - Register tenant`);
   console.log(`  POST /api/ui/service-providers/:providerId/tenants/:tenantId/participants or /v1/service-providers/:providerId/tenants/:tenantId/participants - Create participant`);
   console.log(`  GET  /api/ui/service-providers/:providerId/tenants/:tenantId or /v1/service-providers/:providerId/tenants/:tenantId - Get tenant`);

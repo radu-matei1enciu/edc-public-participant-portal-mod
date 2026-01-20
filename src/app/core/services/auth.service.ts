@@ -81,16 +81,9 @@ export class AuthService implements OnDestroy {
     return selected?.participantId || null;
   }
 
-  isAuthEnabled(): boolean {
-    return true;
-  }
 
   isAuthenticated(): boolean {
     return this.isAuthenticatedSubject.value;
-  }
-
-  isAuthenticatedSync(): boolean {
-    return this.isAuthenticated();
   }
 
   getCurrentUser(): AuthUser | null {
@@ -99,10 +92,6 @@ export class AuthService implements OnDestroy {
 
   getToken(): string | null {
     return null;
-  }
-
-  hasAnyRole(roles: string[]): boolean {
-    return true;
   }
 
   getPostLoginBehavior(): 'admin-portal' | 'user-dashboard' {

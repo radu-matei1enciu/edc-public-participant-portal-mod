@@ -6,23 +6,23 @@
           <h1 class="text-2xl font-bold text-gray-900">DataSpace Portal</h1>
         </div>
         <nav class="hidden md:flex space-x-8">
-          <a href="#features" class="text-gray-600 hover:text-primary-600 transition-colors">Features</a>
-          <a href="#how-it-works" class="text-gray-600 hover:text-primary-600 transition-colors">How It Works</a>
-          <a href="#contact" class="text-gray-600 hover:text-primary-600 transition-colors">Contact</a>
+          <span class="text-gray-600 cursor-default">Features</span>
+          <span class="text-gray-600 cursor-default">How It Works</span>
+          <span class="text-gray-600 cursor-default">Contact</span>
         </nav>
         <div class="flex items-center space-x-4">
-          <button *ngIf="!isAuthEnabled || !(isAuthenticated$ | async)" 
+          <button *ngIf="!(isAuthenticated$ | async)" 
                   (click)="navigateToSignUp()"
                   class="btn-primary">
             Sign Up
           </button>
-          <button *ngIf="isAuthEnabled && !(isAuthenticated$ | async)" 
+          <button *ngIf="!(isAuthenticated$ | async)" 
                   (click)="login()"
                   class="btn-outline">
             Login
           </button>
           
-          <div *ngIf="isAuthEnabled && (isAuthenticated$ | async) && (showUserDashboard$ | async)" 
+          <div *ngIf="(isAuthenticated$ | async) && (showUserDashboard$ | async)" 
                class="flex items-center space-x-4">
             <span class="text-sm text-gray-600">User</span>
             <button (click)="goToDashboard()" class="btn-primary">

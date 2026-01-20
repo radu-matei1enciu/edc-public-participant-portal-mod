@@ -5,6 +5,7 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TenantService } from '../../core/services/tenant.service';
 import { ConfigService } from '../../core/services/config.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ModalService } from '../../core/services/modal.service';
 import { TenantResource, ParticipantResource } from '../../core/models/tenant.model';
 import { SelectedParticipant } from '../../core/models/auth.model';
 
@@ -28,6 +29,7 @@ export class LoginComponent implements OnInit {
   private configService = inject(ConfigService);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private modalService = inject(ModalService);
 
   tenants: TenantResource[] = [];
   participantOptions: ParticipantOption[] = [];
@@ -129,5 +131,15 @@ export class LoginComponent implements OnInit {
 
   cancel(): void {
     this.router.navigate(['/']);
+  }
+
+  private showErrorModalAndRedirect(): void {
+    this.modalService.alert({
+      title: 'Error',
+      message: 'An error occurred while loading participants. You will be redirected to the landing page.',
+      confirmText: 'OK'
+    }).then(() => {
+      this.router.navigate(['/']);
+    });
   }
 }

@@ -1,6 +1,6 @@
 {
   "production": false,
-  "apiUrl": "http://localhost:3001/v1",
+  "apiUrl": "http://localhost:3001/api/ui",
   "appName": "DataSpace Portal",
   "version": "1.0.0",
   "features": {
@@ -20,27 +20,5 @@
       "image/png"
     ]
   },
-  "auth": {
-    "enableAuth": false,
-    "tokenKey": "auth_token",
-    "roles": {
-      "admin": "EDC_ADMIN",
-      "participant": "EDC_USER_PARTICIPANT",
-      "validRoles": ["EDC_ADMIN", "EDC_USER_PARTICIPANT"]
-    },
-    "keycloak": {
-      "url": "https://identity.example.com",
-      "realm": "edc",
-      "clientId": "edc-provisioning-customers-portal-fe",
-      "initOptions": {
-        "onLoad": "login-required",
-        "checkLoginIframe": false,
-        "pkceMethod": "S256"
-      },
-      "bearerExcludedUrls": [
-        "/assets",
-        "/favicon.ico"
-      ]
-    }
-  }
+  "defaultServiceProviderId": 1
 }

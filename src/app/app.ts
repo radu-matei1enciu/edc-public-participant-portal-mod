@@ -46,7 +46,7 @@ export class App implements OnInit, OnDestroy {
       const hideShellPaths = ['/', '/customers', '/customers/', '/registration', '/customers/registration', '/success', '/customers/success', '/login', '/customers/login', '/role-error', '/customers/role-error'];
       this.showAppShell = !hideShellPaths.includes(url) && !url.startsWith('/customers/registration') && !url.startsWith('/customers/success') && !url.startsWith('/customers/login') && !url.startsWith('/login');
       
-      if (this.authService.isAuthEnabled() && this.authService.isAuthenticatedSync()) {
+      if (this.authService.isAuthenticated()) {
         this.loadUserProfile();
         
         const returnUrl = localStorage.getItem('returnUrl');
@@ -75,7 +75,7 @@ export class App implements OnInit, OnDestroy {
   }
 
   private loadUserProfile(): void {
-    if (this.authService.isAuthEnabled() && this.authService.isAuthenticatedSync()) {
+    if (this.authService.isAuthenticated()) {
       this.authService.loadUserProfile().subscribe({
         next: (profile) => {
           this.userProfile = profile;
