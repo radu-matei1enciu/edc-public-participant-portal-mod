@@ -61,8 +61,8 @@ export class LoginComponent implements OnInit {
       },
       error: (error) => {
         this.isLoading = false;
-        this.errorMessage = 'Failed to load participants. Please try again.';
         console.error('Error loading tenants:', error);
+        this.showErrorModalAndRedirect();
       }
     });
   }
@@ -137,7 +137,8 @@ export class LoginComponent implements OnInit {
     this.modalService.alert({
       title: 'Error',
       message: 'An error occurred while loading participants. You will be redirected to the landing page.',
-      confirmText: 'OK'
+      confirmText: 'OK',
+      size: 'md'
     }).then(() => {
       this.router.navigate(['/']);
     });
