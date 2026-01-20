@@ -48,11 +48,12 @@ export class SuccessComponent implements OnInit {
   }
 
   goToLogin(): void {
-    const currentUser = this.authService.getCurrentUser();
-    if (currentUser && this.authService.isAdmin()) {
-      this.authService.logout()
+    if (this.authService.isAuthEnabled()) {
+      localStorage.setItem('returnUrl', '/dashboard');
+      const redirectUri = `${window.location.origin}/customers/dashboard`;
+      this.authService.login(redirectUri);
     } else {
-      this.router.navigate(['/']);
+      this.router.navigate(['/dashboard']);
     }
   }
 }

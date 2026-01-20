@@ -52,11 +52,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return;
     }
     
-    if (!this.authService.hasValidRoles()) {
-      this.router.navigate(['/role-error']);
-      return;
-    }
-    
     this.loadUserProfile();
     this.loadUseCases();
   }

@@ -41,27 +41,6 @@ export class TenantService {
   }
 
 
-  registerTenantAndParticipant(
-    providerId: number,
-    tenantRegistration: NewTenantRegistration,
-    participantIdentifier: string
-  ): Observable<{ tenant: TenantResource; participant: ParticipantResource }> {
-    return this.registerTenant(providerId, tenantRegistration).pipe(
-      switchMap(tenant => 
-        this.participantService.createParticipantByTenant(
-          providerId,
-          tenant.id,
-          participantIdentifier,
-          tenantRegistration.dataspaceInfos
-        ).pipe(
-          map(participant => ({
-            tenant,
-            participant
-          }))
-        )
-      )
-    );
-  }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'An unknown error occurred';

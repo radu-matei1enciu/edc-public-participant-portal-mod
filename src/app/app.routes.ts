@@ -4,18 +4,15 @@ import { AuthGuard } from './core/guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
-    loadComponent: () => import('./features/landing/landing.component').then(m => m.LandingComponent),
-    canActivate: [AuthGuard]
+    loadComponent: () => import('./features/landing/landing.component').then(m => m.LandingComponent)
   },
   {
     path: 'registration',
-    loadComponent: () => import('./features/registration/registration.component').then(m => m.RegistrationComponent),
-    canActivate: [AuthGuard]
+    loadComponent: () => import('./features/registration/registration.component').then(m => m.RegistrationComponent)
   },
   {
     path: 'success',
-    loadComponent: () => import('./features/success/success.component').then(m => m.SuccessComponent),
-    canActivate: [AuthGuard]
+    loadComponent: () => import('./features/success/success.component').then(m => m.SuccessComponent)
   },
   {
     path: 'dashboard',

@@ -16,8 +16,14 @@ export class RoleErrorComponent implements OnInit {
   private authService = inject(AuthService);
 
   ngOnInit(): void {
-    this.roleError = this.authService.getRoleError();
     this.currentUser = this.authService.getCurrentUser();
+    if (!this.currentUser) {
+      this.roleError = 'No user found';
+    } else if (!this.currentUser.roles || this.currentUser.roles.length === 0) {
+      this.roleError = 'No roles assigned to user';
+    } else {
+      this.roleError = null;
+    }
   }
 
   logout(): void {

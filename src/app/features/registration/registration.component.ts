@@ -9,7 +9,7 @@ import { NotificationService } from '../../shared/services/notification.service'
 import { ModalService } from '../../core/services/modal.service';
 import { ParticipantRegistrationRequest, ParticipantMetadata, UserMetadata, UploadedDocument } from '../../core/models/participant.model';
 import { DataspaceResource } from '../../core/models/ecosystem.model';
-import { NewTenantRegistration, NewDataspaceInfo } from '../../core/models/tenant.model';
+import { NewTenantRegistration, NewDataspaceInfo, TenantResource, ParticipantResource, NewParticipantDeployment } from '../../core/models/tenant.model';
 import { ConfigService } from '../../core/services/config.service';
 import { AuthService } from '../../core/services/auth.service';
 import { formatFileSize } from '../../shared/utils/format.utils';
@@ -35,6 +35,7 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
   private authService = inject(AuthService);
   private dataspaceService = inject(DataspaceService);
   private tenantService = inject(TenantService);
+  private participantService = inject(ParticipantService);
   private notificationService = inject(NotificationService);
   private modalService = inject(ModalService);
 
@@ -59,7 +60,6 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
 
   constructor(
     private fb: FormBuilder,
-    private participantService: ParticipantService,
     private router: Router
   ) {
     this.registrationForm = this.createForm();
@@ -401,27 +401,74 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
         return;
       }
 
+      const participantIdentifier = formValue.companyIdentifier || formValue.participantName.toLowerCase().replace(/\s+/g, '-');
+      
       const tenantRegistration: NewTenantRegistration = {
         tenantName: formValue.participantName,
         dataspaceInfos: [
           {
             dataspaceId: dataspaceId,
             agreementTypes: [],
-            roles: ['PARTICIPANT']
+            roles: []
           }
         ]
       };
 
-      this.tenantService.registerTenantAndParticipant(providerId, tenantRegistration, formValue.companyIdentifier || formValue.participantName.toLowerCase().replace(/\s+/g, '-')).subscribe({
-        next: (response) => {
-          this.isLoading = false;
-          this.successMessage = `Registration completed successfully! The company "${response.tenant.name}" has been registered.`;
+      this.tenantService.registerTenant(providerId, tenantRegistration).subscribe({
+        next: (tenant: TenantResource) => {
+          if (!tenant.participants || tenant.participants.length === 0) {
+            this.isLoading = false;
+            this.modalService.alert({
+              title: 'Registration Error',
+              message: 'Tenant created but no participant was found. Please contact support.',
+              confirmText: 'OK'
+            }).then(() => {
+              this.router.navigate(['/']);
+            });
+            return;
+          }
 
-          this.router.navigate(['/success'], {
-            queryParams: {
-              tenantId: response.tenant.id.toString(),
-              participantId: response.participant.id.toString(),
-              participantName: response.tenant.name
+          const participant = tenant.participants[0];
+          const deployment: NewParticipantDeployment = {
+            participantId: participant.id,
+            identifier: participantIdentifier
+          };
+
+          this.participantService.deployParticipant(
+            providerId,
+            tenant.id,
+            participant.id,
+            deployment
+          ).subscribe({
+            next: () => {
+              this.isLoading = false;
+              this.successMessage = `Registration completed successfully! The company "${tenant.name}" has been registered.`;
+
+              this.router.navigate(['/success'], {
+                queryParams: {
+                  tenantId: tenant.id.toString(),
+                  participantId: participant.id.toString(),
+                  participantName: tenant.name
+                }
+              });
+            },
+            error: (deploymentError) => {
+              this.isLoading = false;
+
+              let errorMessage = 'Participant deployment failed. Please try again.';
+              if (deploymentError.error?.message) {
+                errorMessage = deploymentError.error.message;
+              } else if (deploymentError.message) {
+                errorMessage = deploymentError.message;
+              }
+
+              this.modalService.alert({
+                title: 'Deployment Error',
+                message: errorMessage,
+                confirmText: 'OK'
+              }).then(() => {
+                this.router.navigate(['/']);
+              });
             }
           });
         },
@@ -439,6 +486,8 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
             title: 'Registration Error',
             message: errorMessage,
             confirmText: 'OK'
+          }).then(() => {
+            this.router.navigate(['/']);
           });
         }
       });

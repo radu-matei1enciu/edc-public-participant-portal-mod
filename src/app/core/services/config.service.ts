@@ -36,7 +36,6 @@ export interface AppConfig {
     roles?: {
       admin: string;
       participant: string;
-      validRoles: string[];
     };
     keycloak?: {
       url: string;
@@ -101,7 +100,6 @@ export class ConfigService {
             roles: {
               admin: 'EDC_ADMIN',
               participant: 'EDC_USER_PARTICIPANT',
-              validRoles: ['EDC_ADMIN', 'EDC_USER_PARTICIPANT']
             },
             keycloak: {
               url: 'http://localhost:8080',

@@ -468,12 +468,34 @@ async function handleRegisterTenant(req, res, providerId) {
   try {
     const body = await parseBody(req);
     const tenantId = tenants.length + 1;
+    const participantId = participants.length + 1;
+    
+    const dataspaceInfos = body.dataspaceInfos || [];
+    const dataspaceInfoList = dataspaceInfos.map((dsInfo, index) => ({
+      dataspaceId: dsInfo.dataspaceId,
+      agreementTypes: dsInfo.agreementTypes || [],
+      roles: dsInfo.roles || [],
+      id: index + 1
+    }));
+    
+    const newParticipant = {
+      id: participantId,
+      identifier: `participant-${participantId}`,
+      agents: [
+        { id: 1, type: 'CONTROL_PLANE', state: 'PENDING' },
+        { id: 2, type: 'CREDENTIAL_SERVICE', state: 'PENDING' },
+        { id: 3, type: 'DATA_PLANE', state: 'PENDING' }
+      ],
+      dataspaceInfos: dataspaceInfoList
+    };
+    
+    participants.push(newParticipant);
     
     const newTenant = {
       id: tenantId,
       providerId: parseInt(providerId),
       name: body.tenantName,
-      participants: []
+      participants: [newParticipant]
     };
     
     tenants.push(newTenant);

@@ -45,6 +45,22 @@ export class App implements OnInit, OnDestroy {
       const url = event.urlAfterRedirects.split('?')[0];
       const hideShellPaths = ['/', '/customers', '/customers/', '/registration', '/customers/registration', '/success', '/customers/success', '/role-error', '/customers/role-error'];
       this.showAppShell = !hideShellPaths.includes(url) && !url.startsWith('/customers/registration') && !url.startsWith('/customers/success');
+      
+      if (this.authService.isAuthEnabled() && this.authService.isAuthenticatedSync()) {
+        const returnUrl = localStorage.getItem('returnUrl');
+        if (returnUrl) {
+          localStorage.removeItem('returnUrl');
+          const cleanReturnUrl = returnUrl.startsWith('/customers/') ? returnUrl.replace('/customers', '') : returnUrl;
+          if (cleanReturnUrl !== url) {
+            this.router.navigate([cleanReturnUrl]);
+          }
+        } else {
+          const behavior = this.authService.getPostLoginBehavior();
+          if (behavior === 'user-dashboard' && (url === '/' || url === '/customers' || url === '/customers/')) {
+            this.router.navigate(['/dashboard']);
+          }
+        }
+      }
     });
 
     const currentUrl = this.router.url.split('?')[0];

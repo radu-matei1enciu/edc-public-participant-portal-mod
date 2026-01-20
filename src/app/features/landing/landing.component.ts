@@ -40,21 +40,17 @@ export class LandingComponent implements OnInit {
   ngOnInit(): void {
     this.isAuthEnabled = this.authService.isAuthEnabled();
     
-    if (this.isAuthEnabled && !this.authService.isAuthenticated()) {
-      this.authService.login();
-      return;
-    }
-    
     this.authService.currentUser$.subscribe(user => {
       if (user && this.isAuthEnabled) {
-        if (!this.authService.hasValidRoles()) {
-          this.router.navigate(['/role-error']);
-          return;
-        }
-        
-        const behavior = this.authService.getPostLoginBehavior();
-        if (behavior === 'user-dashboard') {
-          this.router.navigate(['/dashboard']);
+        const returnUrl = localStorage.getItem('returnUrl');
+        if (returnUrl) {
+          localStorage.removeItem('returnUrl');
+          this.router.navigate([returnUrl]);
+        } else {
+          const behavior = this.authService.getPostLoginBehavior();
+          if (behavior === 'user-dashboard') {
+            this.router.navigate(['/dashboard']);
+          }
         }
       }
     });

@@ -160,40 +160,10 @@ export class AuthService implements OnDestroy {
     return user?.roles?.includes(participantRole) || false;
   }
 
-  hasValidRoles(): boolean {
-    const user = this.getCurrentUser();
-    if (!user || !user.roles || user.roles.length === 0) {
-      return false;
-    }
-
-    const validRoles = this.configService.config?.auth?.roles?.validRoles || ['EDC_ADMIN', 'EDC_USER_PARTICIPANT'];
-    return validRoles.some(role => user.roles.includes(role));
-  }
-
   hasAnyRole(roles: string[]): boolean {
     const user = this.getCurrentUser();
     if (!user || !user.roles) return false;
     return roles.some(role => user.roles.includes(role));
-  }
-
-  getRoleError(): string | null {
-    const user = this.getCurrentUser();
-    if (!user) {
-      return 'No user found';
-    }
-
-    if (!user.roles || user.roles.length === 0) {
-      return 'No roles assigned to user';
-    }
-
-    const validRoles = this.configService.config?.auth?.roles?.validRoles || ['EDC_ADMIN', 'EDC_USER_PARTICIPANT'];
-    const hasValidRole = validRoles.some(role => user.roles.includes(role));
-
-    if (!hasValidRole) {
-      return `Invalid roles: ${user.roles.join(', ')}. Expected: ${validRoles.join(' or ')}`;
-    }
-
-    return null;
   }
 
   getPostLoginBehavior(): 'admin-portal' | 'user-dashboard' {
@@ -205,8 +175,12 @@ export class AuthService implements OnDestroy {
     return 'admin-portal';
   }
 
-  login(): Observable<boolean> {
-    return from(this.keycloakService.login()).pipe(
+  login(redirectUri?: string): Observable<boolean> {
+    const redirectUrl = redirectUri || `${window.location.origin}/customers/`;
+    
+    return from(this.keycloakService.login({
+      redirectUri: redirectUrl
+    })).pipe(
         switchMap(() => from(this.syncAuthState())),
         map(() => this.isAuthenticatedSync()),
         catchError(() => {
