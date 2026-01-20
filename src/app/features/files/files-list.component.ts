@@ -144,9 +144,17 @@ export class FilesListComponent implements OnInit {
     };
     
     if (!this.participantId) return;
-    this.fileAssetService.getFiles(this.participantId, filters).subscribe({
+
+    this.redlineService.listFiles(1, 1, 1).subscribe({
       next: (files) => {
-        this.files = files;
+        this.files = files.map(file => {
+          return {
+            name: file.fileName,
+            id: file.fileId,
+            type: file.contentType,
+            uploadedAt: file.uploadDateIso
+          } as FileAsset
+        });
         this.applyFilters();
         this.loading = false;
       },
