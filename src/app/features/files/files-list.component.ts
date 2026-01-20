@@ -1,41 +1,29 @@
-import { Component, OnInit, inject, DestroyRef } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import {
-  Observable,
-  interval,
-  startWith,
-  switchMap,
-  catchError,
-  of,
-  debounceTime,
-  distinctUntilChanged,
-  firstValueFrom,
-  from
-} from 'rxjs';
-import { FileAssetService } from '../../core/services/file-asset.service';
-import { UseCaseService } from '../../core/services/use-case.service';
-import { AuthService } from '../../core/services/auth.service';
-import { NotificationService } from '../../shared/services/notification.service';
-import { UserPreferencesService, UserPreferences } from '../../core/services/user-preferences.service';
-import { FileAsset } from '../../core/models/file-asset.model';
-import { UseCase } from '../../core/models/use-case.model';
-import { UserProfile } from '../../core/models/participant.model';
-import { formatFileSize } from '../../shared/utils/format.utils';
+import {Component, DestroyRef, inject, OnInit} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {CommonModule} from '@angular/common';
+import {Router} from '@angular/router';
+import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
+import {debounceTime, distinctUntilChanged, Observable} from 'rxjs';
+import {UseCaseService} from '../../core/services/use-case.service';
+import {AuthService} from '../../core/services/auth.service';
+import {NotificationService} from '../../shared/services/notification.service';
+import {UserPreferences, UserPreferencesService} from '../../core/services/user-preferences.service';
+import {FileAsset} from '../../core/models/file-asset.model';
+import {UseCase} from '../../core/models/use-case.model';
+import {UserProfile} from '../../core/models/participant.model';
+import {formatFileSize} from '../../shared/utils/format.utils';
 import {RedlineUIService} from "../../core/redline";
+import {FileDetailComponent} from "./file-detail.component";
 
 @Component({
   selector: 'app-files-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FileDetailComponent],
   templateUrl: './files-list.component.html',
   })
 export class FilesListComponent implements OnInit {
   formatFileSize = formatFileSize;
   
-  private fileAssetService = inject(FileAssetService);
   private useCaseService = inject(UseCaseService);
   private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
@@ -48,6 +36,7 @@ export class FilesListComponent implements OnInit {
 
   files: FileAsset[] = [];
   filteredFiles: FileAsset[] = [];
+  selectedFile?: FileAsset;
   useCases: UseCase[] = [];
   filterForm: FormGroup;
   loading = false;

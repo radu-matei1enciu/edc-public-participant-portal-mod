@@ -1,20 +1,20 @@
-import { Component, OnInit, inject, DestroyRef } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { forkJoin, of } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
-import { FileAssetService } from '../../core/services/file-asset.service';
-import { UseCaseService } from '../../core/services/use-case.service';
-import { PartnerService } from '../../core/services/partner.service';
-import { AuthService } from '../../core/services/auth.service';
-import { NotificationService } from '../../shared/services/notification.service';
-import { ModalService } from '../../core/services/modal.service';
-import { FileAsset } from '../../core/models/file-asset.model';
-import { UseCase } from '../../core/models/use-case.model';
-import { Partner } from '../../core/models/partner.model';
-import { formatFileSize } from '../../shared/utils/format.utils';
+import {Component, DestroyRef, EventEmitter, inject, Input, OnInit, Output} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {CommonModule} from '@angular/common';
+import {ActivatedRoute} from '@angular/router';
+import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
+import {forkJoin, of} from 'rxjs';
+import {catchError, switchMap} from 'rxjs/operators';
+import {FileAssetService} from '../../core/services/file-asset.service';
+import {UseCaseService} from '../../core/services/use-case.service';
+import {PartnerService} from '../../core/services/partner.service';
+import {AuthService} from '../../core/services/auth.service';
+import {NotificationService} from '../../shared/services/notification.service';
+import {ModalService} from '../../core/services/modal.service';
+import {FileAsset} from '../../core/models/file-asset.model';
+import {UseCase} from '../../core/models/use-case.model';
+import {Partner} from '../../core/models/partner.model';
+import {formatFileSize} from '../../shared/utils/format.utils';
 
 @Component({
   selector: 'app-file-detail',
@@ -26,7 +26,6 @@ export class FileDetailComponent implements OnInit {
   formatFileSize = formatFileSize;
   
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
   private fileAssetService = inject(FileAssetService);
   private useCaseService = inject(UseCaseService);
   private partnerService = inject(PartnerService);
@@ -35,7 +34,10 @@ export class FileDetailComponent implements OnInit {
   private modalService = inject(ModalService);
   private destroyRef = inject(DestroyRef);
 
-  file: FileAsset | null = null;
+  @Input() file: FileAsset | null = null;
+  @Output() closeDetails = new EventEmitter<void>();
+
+
   loading = true;
   participantId: number | null = null;
   editing = false;
@@ -66,19 +68,10 @@ export class FileDetailComponent implements OnInit {
             )
           : of([] as Partner[]);
         
-        const file$ = fileId && this.participantId
-          ? this.fileAssetService.getFileDetails(this.participantId, fileId).pipe(
-              catchError(() => {
-                this.notificationService.showError('Error', 'Failed to load file details');
-                return of(null);
-              })
-            )
-          : of(null);
-
         return forkJoin({
           useCases: useCases$,
           partners: partners$,
-          file: file$
+          file: of(this.file)
         });
       }),
       takeUntilDestroyed(this.destroyRef)
@@ -101,7 +94,7 @@ export class FileDetailComponent implements OnInit {
 
 
   goBack(): void {
-    this.router.navigate(['/files']);
+    this.closeDetails.emit();
   }
 
   downloadAgreement(agreementId: string): void {
