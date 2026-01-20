@@ -480,12 +480,8 @@ async function handleRegisterTenant(req, res, providerId) {
     
     const newParticipant = {
       id: participantId,
-      identifier: `participant-${participantId}`,
-      agents: [
-        { id: 1, type: 'CONTROL_PLANE', state: 'PENDING' },
-        { id: 2, type: 'CREDENTIAL_SERVICE', state: 'PENDING' },
-        { id: 3, type: 'DATA_PLANE', state: 'PENDING' }
-      ],
+      identifier: body.tenantName,
+      agents: [],
       dataspaceInfos: dataspaceInfoList
     };
     

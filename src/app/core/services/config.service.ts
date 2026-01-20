@@ -7,6 +7,7 @@ export interface AppConfig {
   production: boolean;
   apiUrl: string;
   defaultServiceProviderId?: number;
+  participantIdentifierPrefix?: string;
   appName: string;
   version: string;
   features: {

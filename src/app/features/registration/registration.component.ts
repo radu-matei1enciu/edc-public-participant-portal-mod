@@ -12,7 +12,7 @@ import { DataspaceResource } from '../../core/models/ecosystem.model';
 import { NewTenantRegistration, NewDataspaceInfo, TenantResource, ParticipantResource, NewParticipantDeployment } from '../../core/models/tenant.model';
 import { ConfigService } from '../../core/services/config.service';
 import { AuthService } from '../../core/services/auth.service';
-import { formatFileSize } from '../../shared/utils/format.utils';
+import { formatFileSize, normalizeTenantNameForDns } from '../../shared/utils/format.utils';
 
 @Component({
   selector: 'app-registration',
@@ -400,8 +400,6 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
         this.isLoading = false;
         return;
       }
-
-      const participantIdentifier = formValue.companyIdentifier || formValue.participantName.toLowerCase().replace(/\s+/g, '-');
       
       const tenantRegistration: NewTenantRegistration = {
         tenantName: formValue.participantName,
@@ -429,9 +427,13 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
           }
 
           const participant = tenant.participants[0];
+          const identifierPrefix = this.configService.config?.participantIdentifierPrefix || '';
+          const normalizedTenantName = normalizeTenantNameForDns(tenant.name);
+          const fullIdentifier = identifierPrefix + normalizedTenantName;
+          
           const deployment: NewParticipantDeployment = {
             participantId: participant.id,
-            identifier: participantIdentifier
+            identifier: fullIdentifier
           };
 
           this.participantService.deployParticipant(

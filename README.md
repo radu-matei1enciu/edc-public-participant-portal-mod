@@ -92,6 +92,7 @@ Key configuration options:
 
 - `apiUrl` - Base URL for your EDC backend API (e.g., `"http://localhost:3001/api/ui"`)
 - `defaultServiceProviderId` - Preconfigured service provider ID used in all API requests (e.g., `1`)
+- `participantIdentifierPrefix` - Prefix used to compose the `identifier` field in the POST deployment request. The full identifier is constructed as `{participantIdentifierPrefix}{tenantName}` (e.g., `"did:web:identityhub.edc-v.svc.cluster.local%3A7083:sample"`)
 - `appName` - Application display name
 - `auth.enableAuth` - Enable/disable authentication (currently always enabled for demo)
 - `auth.tokenKey` - Key for storing auth token in localStorage (not used in simulated auth)
@@ -104,6 +105,7 @@ Key configuration options:
   "production": false,
   "apiUrl": "http://localhost:3001/api/ui",
   "defaultServiceProviderId": 1,
+  "participantIdentifierPrefix": "did:web:identityhub.edc-v.svc.cluster.local%3A7083:",
   "appName": "EDC Participant Portal",
   "auth": {
     "enableAuth": true,
@@ -123,6 +125,7 @@ Key configuration options:
   "production": true,
   "apiUrl": "https://api.production.com/api/ui",
   "defaultServiceProviderId": 1,
+  "participantIdentifierPrefix": "did:web:identityhub.edc-v.svc.cluster.local%3A7083:",
   "appName": "EDC Participant Portal",
   "auth": {
     "enableAuth": true,
