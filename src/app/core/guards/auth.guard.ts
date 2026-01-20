@@ -1,8 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { CanActivate, CanActivateChild, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
-import { Observable, of, from } from 'rxjs';
-import { map, catchError, switchMap } from 'rxjs/operators';
-import { KeycloakService } from 'keycloak-angular';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 import { ConfigService } from '../services/config.service';
 
@@ -10,7 +9,6 @@ import { ConfigService } from '../services/config.service';
   providedIn: 'root'
 })
 export class AuthGuard implements CanActivate, CanActivateChild {
-  private keycloakService = inject(KeycloakService);
   private authService = inject(AuthService);
   private configService = inject(ConfigService);
   private router = inject(Router);
@@ -34,42 +32,24 @@ export class AuthGuard implements CanActivate, CanActivateChild {
       return of(true);
     }
 
-    const isLoggedIn = this.keycloakService.isLoggedIn();
-    return of(isLoggedIn).pipe(
-      switchMap(isLoggedIn => {
-        if (!isLoggedIn) {
-          this.redirectToLogin(state.url);
-          return of(false);
-        }
-
-        const requiredRoles = route.data['roles'] as string[];
-        if (requiredRoles && requiredRoles.length > 0) {
-          const hasRequiredRole = this.authService.hasAnyRole(requiredRoles);
-          if (!hasRequiredRole) {
-            this.router.navigate(['/role-error']);
-            return of(false);
-          }
-        }
-
-        return of(true);
-      }),
-      catchError(() => {
-        this.redirectToLogin(state.url);
-        return of(false);
-      })
-    );
-  }
-
-  private redirectToLogin(returnUrl: string): void {
-    if (returnUrl && returnUrl !== '/') {
-      localStorage.setItem('returnUrl', returnUrl);
+    const isLoggedIn = this.authService.isAuthenticated();
+    
+    if (!isLoggedIn) {
+      localStorage.setItem('returnUrl', state.url);
+      this.router.navigate(['/login']);
+      return of(false);
     }
 
-    const redirectUrl = `${window.location.origin}/customers/`;
+    const requiredRoles = route.data['roles'] as string[];
+    if (requiredRoles && requiredRoles.length > 0) {
+      const hasRequiredRole = this.authService.hasAnyRole(requiredRoles);
+      if (!hasRequiredRole) {
+        this.router.navigate(['/role-error']);
+        return of(false);
+      }
+    }
 
-    this.keycloakService.login({
-      redirectUri: redirectUrl
-    });
+    return of(true);
   }
 }
 

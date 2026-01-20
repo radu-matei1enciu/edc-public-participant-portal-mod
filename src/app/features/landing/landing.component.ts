@@ -65,7 +65,7 @@ export class LandingComponent implements OnInit {
   }
 
   login(): void {
-    this.authService.login();
+    this.router.navigate(['/login']);
   }
 
   logout(): void {

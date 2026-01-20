@@ -32,6 +32,14 @@ export class TenantService {
     );
   }
 
+  getTenants(providerId: number): Observable<TenantResource[]> {
+    return this.http.get<TenantResource[]>(
+      `${this.baseUrl}/service-providers/${providerId}/tenants`
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   getTenant(providerId: number, tenantId: number): Observable<TenantResource> {
     return this.http.get<TenantResource>(
       `${this.baseUrl}/service-providers/${providerId}/tenants/${tenantId}`

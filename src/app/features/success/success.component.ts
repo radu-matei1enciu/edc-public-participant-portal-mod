@@ -50,8 +50,7 @@ export class SuccessComponent implements OnInit {
   goToLogin(): void {
     if (this.authService.isAuthEnabled()) {
       localStorage.setItem('returnUrl', '/dashboard');
-      const redirectUri = `${window.location.origin}/customers/dashboard`;
-      this.authService.login(redirectUri);
+      this.authService.login();
     } else {
       this.router.navigate(['/dashboard']);
     }

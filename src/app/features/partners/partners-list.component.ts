@@ -29,11 +29,8 @@ export class PartnersListComponent implements OnInit {
   currentPage = 1;
   itemsPerPage = 10;
   userProfile: UserProfile | null = null;
-  participantId: number | null = null;
   dataspaces: DataspaceResource[] = [];
   selectedDataspaceId: number | null = null;
-  providerId: number = 1;
-  tenantId: number = 1;
 
   private partnerService = inject(PartnerService);
   private authService = inject(AuthService);
@@ -50,7 +47,6 @@ export class PartnersListComponent implements OnInit {
       dataspaceId: ['']
     });
     this.preferences$ = this.preferencesService.preferences$;
-    this.providerId = this.configService.config?.defaultServiceProviderId || 1;
   }
 
   ngOnInit(): void {
@@ -59,8 +55,6 @@ export class PartnersListComponent implements OnInit {
     this.authService.loadUserProfile().subscribe({
       next: (profile) => {
         this.userProfile = profile;
-        this.participantId = profile.participant.id;
-        this.tenantId = profile.participant.id;
         if (this.selectedDataspaceId) {
           this.loadPartners();
         }
@@ -111,15 +105,10 @@ export class PartnersListComponent implements OnInit {
   }
 
   loadPartners(): void {
-    if (!this.participantId || !this.selectedDataspaceId) return;
+    if (!this.selectedDataspaceId) return;
     
     this.loading = true;
-    this.partnerService.getPartners(
-      this.providerId,
-      this.tenantId,
-      this.participantId,
-      this.selectedDataspaceId
-    ).subscribe({
+    this.partnerService.getPartners(this.selectedDataspaceId).subscribe({
       next: (partners) => {
         this.partners = partners;
         this.applyFilters();

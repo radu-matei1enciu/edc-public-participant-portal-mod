@@ -23,12 +23,10 @@ export class MembershipDetailComponent implements OnInit {
 
   membership: Membership | null = null;
   loading = true;
-  participantId: number | null = null;
 
   ngOnInit(): void {
     this.authService.loadUserProfile().subscribe({
-      next: (profile) => {
-        this.participantId = profile.participant.id;
+      next: () => {
         this.loadMembership();
       },
       error: () => {
@@ -44,8 +42,8 @@ export class MembershipDetailComponent implements OnInit {
     ).subscribe({
       next: (params) => {
         const membershipId = params['id'];
-        if (membershipId && this.participantId) {
-          this.membershipService.getMembershipDetails(this.participantId, membershipId).subscribe({
+        if (membershipId) {
+          this.membershipService.getMembershipDetails(membershipId).subscribe({
             next: (membership) => {
               this.membership = membership;
               this.loading = false;

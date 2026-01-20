@@ -126,6 +126,7 @@ export interface UserProfile {
     did?: string;
     host?: string;
     status?: string;
+    identifier?: string;
   };
 }
 

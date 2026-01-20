@@ -11,7 +11,6 @@ import { NotificationService } from '../../../shared/services/notification.servi
   templateUrl: './membership-details.component.html',
   })
 export class MembershipDetailsComponent implements OnInit {
-  @Input() participantId: number | null = null;
   @Input() membershipId: string = '';
   @Output() close = new EventEmitter<void>();
 
@@ -22,15 +21,14 @@ export class MembershipDetailsComponent implements OnInit {
   private notificationService = inject(NotificationService);
 
   ngOnInit(): void {
-    if (this.participantId && this.membershipId) {
+    if (this.membershipId) {
       this.loadMembership();
     }
   }
 
   loadMembership(): void {
-    if (!this.participantId) return;
     this.loading = true;
-    this.membershipService.getMembershipDetails(this.participantId, this.membershipId).subscribe({
+    this.membershipService.getMembershipDetails(this.membershipId).subscribe({
       next: (membership) => {
         this.membership = membership;
         this.loading = false;

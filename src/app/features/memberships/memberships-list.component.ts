@@ -47,7 +47,6 @@ export class MembershipsListComponent implements OnInit {
     this.authService.loadUserProfile().subscribe({
       next: (profile) => {
         this.userProfile = profile;
-        this.participantId = profile.participant.id;
         this.loadMemberships();
       },
       error: () => {
@@ -82,12 +81,9 @@ export class MembershipsListComponent implements OnInit {
         return interval(intervalMs).pipe(
           startWith(0),
           switchMap(() => {
-            if (this.participantId) {
-              return this.membershipService.getMemberships(this.participantId).pipe(
-                catchError(() => of([]))
-              );
-            }
-            return of([]);
+            return this.membershipService.getMemberships().pipe(
+              catchError(() => of([]))
+            );
           })
         );
       }),
@@ -105,10 +101,8 @@ export class MembershipsListComponent implements OnInit {
   }
 
   loadMemberships(): void {
-    if (!this.participantId) return;
-    
     this.loading = true;
-    this.membershipService.getMemberships(this.participantId).subscribe({
+    this.membershipService.getMemberships().subscribe({
       next: (memberships) => {
         this.memberships = memberships;
         this.applyFilters();

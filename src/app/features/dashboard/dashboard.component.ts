@@ -89,11 +89,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   loadStats(): void {
-    if (!this.userProfile?.participant?.id) return;
-
-    const participantId = this.userProfile.participant.id;
-
-    this.membershipService.getMemberships(participantId).subscribe({
+    this.membershipService.getMemberships().subscribe({
       next: (memberships) => {
         this.membershipsCount = memberships.length;
         this.recentMemberships = [...memberships].reverse().slice(0, 6);
@@ -101,12 +97,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
     });
 
-
-    this.fileAssetService.getFiles(participantId).subscribe({
-      next: (files) => {
-        this.filesCount = files.length;
-        this.lastUpdateTime = new Date();
-      }
-    });
+    if (this.userProfile?.participant?.id) {
+      this.fileAssetService.getFiles(this.userProfile.participant.id).subscribe({
+        next: (files) => {
+          this.filesCount = files.length;
+          this.lastUpdateTime = new Date();
+        }
+      });
+    }
   }
 }

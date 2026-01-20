@@ -4,9 +4,9 @@ A self-service portal for companies to register and manage their participation i
 
 ## Overview
 
-This portal enables companies to register themselves as participants in an EDC-based dataspace. The registration process collects company information, creates user accounts, and initiates the provisioning workflow. Once registered, users can access their dashboard to view their company details, manage credentials, and monitor their participation status.
+This portal enables companies to register themselves as participants in an EDC-based dataspace. The registration process collects company information, creates tenant and participant records, and initiates the provisioning workflow. Once registered, users can access their dashboard to view their company details, manage credentials, and monitor their participation status.
 
-The portal is built with Angular 20 and TailwindCSS. It supports both authenticated and unauthenticated modes, with optional Keycloak integration for enterprise identity management.
+The portal is built with Angular 20 and TailwindCSS. It uses a simulated authentication mechanism for demo purposes, where users select a participant from available tenants, and the selection is persisted in the browser's localStorage.
 
 ## Prerequisites
 
@@ -54,55 +54,33 @@ npm run watch
 
 ## API Requirements
 
-This portal expects a REST API that follows the EDC participant registration pattern. The backend should provide these endpoints:
+This portal expects a REST API that follows the EDC participant registration pattern. The backend should provide these endpoints following the OpenAPI specification:
 
-### Participant Registration
+### Tenant and Participant Registration
 
-- `POST /v1/participants` - Register a new participant with company and user information
-  - Request body includes participant metadata (company name, description, contact info) and user account details
-  - Returns participant ID, user ID, and registration status
+- `GET /api/ui/service-providers/{serviceProviderId}/tenants` - List all tenants for a service provider
+- `POST /api/ui/service-providers/{serviceProviderId}/tenants` - Register a new tenant (automatically creates a participant)
+- `POST /api/ui/service-providers/{serviceProviderId}/tenants/{tenantId}/participants/{participantId}/deployments` - Deploy a participant
 
 ### Participant Management
 
-- `GET /v1/participants/:participantId` - Get participant details
-- `GET /v1/participants/me` - Get current user's participant profile (requires authentication)
-- `PATCH /v1/participants/:participantId` - Update participant metadata
-- `DELETE /v1/participants/:participantId` - Delete a participant account
+- `GET /api/ui/service-providers/{serviceProviderId}/tenants/{tenantId}/participants/{participantId}` - Get participant details
+- `GET /api/ui/dataspaces` - List available dataspaces
 
-### Credentials
+### Partners and Memberships
 
-- `GET /v1/participants/:participantId/credentials` - List participant credentials
-- `POST /v1/participants/:participantId/credentials` - Request new credentials
-  - Supports MembershipCredential and DataProcessorCredential types
+- `GET /api/ui/service-providers/{serviceProviderId}/tenants/{tenantId}/participants/{participantId}/partners/{dataspaceId}` - List partners for a dataspace
+- `GET /api/ui/service-providers/{serviceProviderId}/tenants/{tenantId}/participants/{participantId}/memberships` - List memberships
 
-### Response Format
+### Files
 
-The registration API should return data in this format:
+- `GET /api/ui/participants/{participantId}/files` - List participant files
+- `POST /api/ui/participants/{participantId}/files` - Upload files
+- `GET /api/ui/participants/{participantId}/files/{fileId}` - Get file details
 
-```json
-{
-  "participant": {
-    "id": "string",
-    "name": "string",
-    "description": "string",
-    "did": "string",
-    "host": "string",
-    "currentOperation": "PROVISION_IN_PROGRESS" | "ACTIVE" | "ERROR",
-    "metadata": {},
-    "createdAt": "ISO8601 timestamp"
-  },
-  "user": {
-    "id": "string",
-    "username": "string",
-    "metadata": {
-      "firstName": "string",
-      "lastName": "string",
-      "email": "string",
-      "role": "ADMIN"
-    }
-  }
-}
-```
+All API endpoints follow the pattern `/api/ui/service-providers/{serviceProviderId}/tenants/{tenantId}/participants/{participantId}/...` where:
+- `serviceProviderId` is preconfigured in `config.json` as `defaultServiceProviderId`
+- `tenantId` and `participantId` are obtained from the selected participant stored in localStorage
 
 ## Configuration
 
@@ -112,209 +90,46 @@ Configuration is managed through JSON files in `src/assets/config/`:
 
 Key configuration options:
 
-- `apiUrl` - Base URL for your EDC backend API
+- `apiUrl` - Base URL for your EDC backend API (e.g., `"http://localhost:3001/api/ui"`)
+- `defaultServiceProviderId` - Preconfigured service provider ID used in all API requests (e.g., `1`)
 - `appName` - Application display name
-- `auth.enableAuth` - Enable/disable authentication
-- `auth.keycloak` - Keycloak settings (URL, realm, clientId)
-- `auth.roles` - Role definitions for authorization
-- `features.enableDevMode` - Enable development mode with pre-populated forms
-- `features.enableDebugMode` - Enable debug logging
+- `auth.enableAuth` - Enable/disable authentication (currently always enabled for demo)
+- `auth.tokenKey` - Key for storing auth token in localStorage (not used in simulated auth)
+- `auth.roles` - Role definitions (kept for compatibility, not actively used)
 
-The configuration file is loaded at application startup. If the file cannot be loaded, the application falls back to default development settings.
-
-### Keycloak Configuration
-
-To enable authentication via Keycloak, you need to configure the `auth` section in the `config.json` file. Below is a detailed guide for each parameter.
-
-#### Enabling Authentication
-
-To activate Keycloak, set `auth.enableAuth` to `true`:
-
-```json
-{
-  "auth": {
-    "enableAuth": true,
-    ...
-  }
-}
-```
-
-When `enableAuth` is `false`, the portal operates in open registration mode without authentication.
-
-#### Keycloak Configuration
-
-The complete Keycloak configuration is located in the `auth.keycloak` section:
-
-```json
-{
-  "auth": {
-    "enableAuth": true,
-    "keycloak": {
-      "url": "https://identity.example.com",
-      "realm": "edc",
-      "clientId": "edc-provisioning-customers-portal-fe",
-      "initOptions": {
-        "onLoad": "login-required",
-        "checkLoginIframe": false,
-        "pkceMethod": "S256"
-      },
-      "bearerExcludedUrls": [
-        "/assets",
-        "/favicon.ico"
-      ]
-    }
-  }
-}
-```
-
-##### Configuration Parameters
-
-**`url`** (string, required)
-- Base URL of the Keycloak server (without `/auth` or `/realms`)
-- Development example: `"http://localhost:8080"`
-- Production example: `"https://identity.example.com"`
-
-**`realm`** (string, required)
-- Name of the Keycloak realm to use
-- The realm must already be configured in Keycloak
-- Example: `"edc"`
-
-**`clientId`** (string, required)
-- Application Client ID configured in Keycloak
-- Must exactly match the Client ID configured in the Keycloak realm
-- Example: `"edc-provisioning-customers-portal-fe"`
-
-**`initOptions`** (object, required)
-- Initialization options for the Keycloak client
-
-  **`onLoad`** (string, required)
-  - Behavior when the application loads
-  - Possible values:
-    - `"login-required"`: Always requires login when the application starts
-    - `"check-sso"`: Checks if the user is already authenticated without showing the login page if not necessary
-  - Recommendation: use `"login-required"` in production, `"check-sso"` in development
-
-  **`checkLoginIframe`** (boolean, required)
-  - Enables periodic authentication status checking via hidden iframe
-  - Set to `false` to avoid issues with cookie security policies (SameSite)
-  - Recommendation: `false` for most cases
-
-  **`pkceMethod`** (string, required)
-  - PKCE (Proof Key for Code Exchange) method for OAuth2 security
-  - Recommended value: `"S256"` (uses SHA-256)
-  - Improves authentication flow security
-
-**`bearerExcludedUrls`** (array of strings, optional)
-- List of URL paths that should not include the Bearer token in HTTP requests
-- Useful for excluding static resources or public endpoints
-- Example: `["/assets", "/favicon.ico"]`
-- Requests to these URLs will not include the `Authorization` header
-
-#### Role Configuration
-
-The `auth.roles` section defines the roles used by the application:
-
-```json
-{
-  "auth": {
-    "roles": {
-      "admin": "EDC_ADMIN",
-      "participant": "EDC_USER_PARTICIPANT",
-      "validRoles": ["EDC_ADMIN", "EDC_USER_PARTICIPANT"]
-    }
-  }
-}
-```
-
-**`admin`** (string)
-- Administrator role name as defined in Keycloak
-- Users with this role have full access to the portal
-
-**`participant`** (string)
-- Participant role name as defined in Keycloak
-- Standard role for registered users
-
-**`validRoles`** (array of strings)
-- List of all valid roles recognized by the application
-- Users must have at least one of these roles to access the portal
-- Roles not in this list are ignored
-
-#### Server-Side Keycloak Configuration
-
-To configure Keycloak on the server side, you can use the `keycloak-setup.json` file included in the project as a reference. This file contains:
-
-- **Realm**: Realm configuration with name and display name
-- **Client**: OIDC client configuration with:
-  - `publicClient: true` (does not require client secret)
-  - `standardFlowEnabled: true` (enables Authorization Code Flow)
-  - `pkce.code.challenge.method: "S256"` (enables PKCE with SHA-256)
-  - Configured Redirect URIs and Web Origins
-- **Roles**: Realm role definitions (`EDC_ADMIN`, `EDC_USER_PARTICIPANT`)
-- **Users**: Example users for testing
-
-To import this configuration into Keycloak:
-
-1. Access the Keycloak administration console
-2. Select the realm or create a new one
-3. Go to **Realm Settings** → **Partial Import**
-4. Upload the `keycloak-setup.json` file
-5. Verify that the Client ID matches the one configured in `config.json`
-
-#### Development Configuration Example
+### Development Configuration Example
 
 ```json
 {
   "production": false,
-  "apiUrl": "http://localhost:3001/v1",
+  "apiUrl": "http://localhost:3001/api/ui",
+  "defaultServiceProviderId": 1,
+  "appName": "EDC Participant Portal",
   "auth": {
     "enableAuth": true,
-    "keycloak": {
-      "url": "http://localhost:8080",
-      "realm": "edc",
-      "clientId": "edc-participant-portal",
-      "initOptions": {
-        "onLoad": "check-sso",
-        "checkLoginIframe": false,
-        "pkceMethod": "S256"
-      },
-      "bearerExcludedUrls": ["/assets"]
-    },
+    "tokenKey": "auth_token",
     "roles": {
       "admin": "EDC_ADMIN",
-      "participant": "EDC_USER_PARTICIPANT",
-      "validRoles": ["EDC_ADMIN", "EDC_USER_PARTICIPANT"]
+      "participant": "EDC_USER_PARTICIPANT"
     }
   }
 }
 ```
 
-#### Production Configuration Example
+### Production Configuration Example
 
 ```json
 {
   "production": true,
-  "apiUrl": "https://api.production.com/v1",
+  "apiUrl": "https://api.production.com/api/ui",
+  "defaultServiceProviderId": 1,
+  "appName": "EDC Participant Portal",
   "auth": {
     "enableAuth": true,
-    "keycloak": {
-      "url": "https://identity.production.com",
-      "realm": "edc-production",
-      "clientId": "edc-provisioning-customers-portal-fe",
-      "initOptions": {
-        "onLoad": "login-required",
-        "checkLoginIframe": false,
-        "pkceMethod": "S256"
-      },
-      "bearerExcludedUrls": [
-        "/assets",
-        "/favicon.ico",
-        "/config.json"
-      ]
-    },
+    "tokenKey": "auth_token",
     "roles": {
       "admin": "EDC_ADMIN",
-      "participant": "EDC_USER_PARTICIPANT",
-      "validRoles": ["EDC_ADMIN", "EDC_USER_PARTICIPANT"]
+      "participant": "EDC_USER_PARTICIPANT"
     }
   }
 }
@@ -322,24 +137,84 @@ To import this configuration into Keycloak:
 
 ## Authentication
 
-The portal supports optional Keycloak integration for authentication. When enabled, users must authenticate before accessing protected routes. The authentication flow uses PKCE (Proof Key for Code Exchange) for security.
+The portal uses a **simulated authentication mechanism** for demo purposes. This approach allows testing the application without requiring a full identity provider setup.
 
-Keycloak configuration includes:
-- Identity provider URL
-- Realm name
-- Client ID
-- Login flow behavior (login-required or check-sso)
+### How It Works
 
-When authentication is disabled, the portal operates in open registration mode where anyone can register without prior authentication.
+1. **Participant Selection**: When a user clicks "Login" or "Access Portal", they are redirected to the login page (`/login`).
+
+2. **Tenant and Participant Listing**: The login page fetches all available tenants for the configured service provider using:
+   ```
+   GET /api/ui/service-providers/{serviceProviderId}/tenants
+   ```
+   This endpoint returns a list of tenants, each containing one or more participants.
+
+3. **Participant Selection**: The user can search and select a participant from the list. The UI displays:
+   - Tenant name
+   - Participant identifier
+   - A combined display name (e.g., "Company Name - participant-identifier")
+
+4. **Local Storage Persistence**: Once a participant is selected and the user clicks "Login", the following information is saved in the browser's `localStorage`:
+   ```typescript
+   {
+     tenantId: number,
+     participantId: number,
+     tenantName: string,
+     participantIdentifier: string
+   }
+   ```
+   This data is stored under the key `selected_participant`.
+
+5. **API Request Context**: For all subsequent API requests, the frontend automatically includes:
+   - `serviceProviderId` from `config.json` (`defaultServiceProviderId`)
+   - `tenantId` from the selected participant in localStorage
+   - `participantId` from the selected participant in localStorage
+
+   These values are used to construct API endpoints following the pattern:
+   ```
+   /api/ui/service-providers/{serviceProviderId}/tenants/{tenantId}/participants/{participantId}/...
+   ```
+
+6. **Logout**: When the user logs out, the `selected_participant` entry is removed from localStorage, and the user is redirected to the landing page.
+
+### Important Notes
+
+- **Demo Only**: This authentication mechanism is intended for demonstration and development purposes only. In a production environment, you should replace it with a proper identity provider (e.g., Keycloak, OAuth2, SAML).
+
+- **Browser-Only Persistence**: The authentication state is stored only in the browser's localStorage. This means:
+  - The selection persists across page refreshes within the same browser
+  - The selection is lost when the browser's localStorage is cleared
+  - The selection is browser-specific (not shared across devices or browsers)
+
+- **No Server-Side Validation**: The backend does not validate the authentication state. The frontend simply includes the `tenantId` and `participantId` in API requests. In production, you should implement proper authentication tokens and server-side validation.
+
+### Example API Request Flow
+
+1. User selects participant with:
+   - `tenantId: 1`
+   - `participantId: 5`
+   - `serviceProviderId: 1` (from config)
+
+2. Frontend makes API call to list memberships:
+   ```
+   GET /api/ui/service-providers/1/tenants/1/participants/5/memberships
+   ```
+
+3. Frontend makes API call to list partners for dataspace 2:
+   ```
+   GET /api/ui/service-providers/1/tenants/1/participants/5/partners/2
+   ```
+
+All API requests automatically include the correct IDs from the selected participant and configuration.
 
 ## Features
 
-- **Self-Service Registration**: Multi-step registration form for company and user information
-- **User Dashboard**: View company details, participant status, and credentials
+- **Self-Service Registration**: Multi-step registration form for company and dataspace selection
+- **Participant Selection**: User-friendly interface to select from available tenants and participants
+- **User Dashboard**: View company details, memberships, partners, and files
 - **Credential Management**: Request and view company credentials
-- **Account Settings**: Manage account information and delete account
+- **Account Settings**: Manage account information
 - **Responsive Design**: Works on desktop, tablet, and mobile devices
-- **Role-Based Access**: Support for different user roles (admin, participant)
 
 ## Project Structure
 
@@ -347,21 +222,34 @@ When authentication is disabled, the portal operates in open registration mode w
 src/app/
 ├── core/                    # Core services, models, guards, interceptors
 │   ├── services/            # Business logic services
-│   │   ├── auth.service.ts
+│   │   ├── auth.service.ts  # Authentication service (simulated login)
 │   │   ├── config.service.ts
+│   │   ├── tenant.service.ts
 │   │   ├── participant.service.ts
-│   │   └── participant-data.service.ts
+│   │   ├── dataspace.service.ts
+│   │   ├── partner.service.ts
+│   │   ├── membership.service.ts
+│   │   └── file-asset.service.ts
 │   ├── models/              # TypeScript interfaces and types
+│   │   ├── auth.model.ts    # SelectedParticipant interface
+│   │   ├── tenant.model.ts
+│   │   ├── participant.model.ts
+│   │   └── ...
 │   ├── guards/              # Route guards
+│   │   └── auth.guard.ts   # Checks for selected participant
 │   ├── interceptors/        # HTTP interceptors
 │   └── init/                # Initialization factories
 ├── features/                # Feature modules
 │   ├── landing/             # Landing page
 │   ├── registration/         # Participant registration
+│   ├── login/               # Participant selection/login
 │   ├── success/             # Registration success page
 │   ├── dashboard/           # User dashboard
 │   ├── settings/            # Account settings
-│   └── role-error/          # Role error page
+│   ├── memberships/         # Memberships management
+│   ├── partners/            # Partners management
+│   ├── files/               # Files management
+│   └── explore/             # Explore remote files
 └── shared/                  # Shared components and utilities
     ├── components/           # Reusable components
     ├── services/            # Shared services
@@ -372,7 +260,7 @@ src/app/
 
 The project uses Angular 20 with standalone components. Services are provided at the root level for dependency injection. State management is handled through RxJS Observables and BehaviorSubjects.
 
-The mock server (`mock-server/`) provides a simple JSON-based API for development and testing. It includes endpoints for participant registration and credential management.
+The mock server (`mock-server/`) provides a simple JSON-based API for development and testing. It includes endpoints for tenant registration, participant management, and other EDC operations.
 
 ### Development Mode
 
@@ -394,7 +282,7 @@ After building, the `dist/edc-public-participant-portal/browser` folder contains
 - Deploy to cloud storage services (S3, Azure Blob, etc.)
 - Integrate into containerized deployments (Docker, Kubernetes)
 
-Make sure to configure the `apiUrl` in your production config to point to your EDC backend. For containerized deployments, you may want to use environment-specific configuration files or environment variables.
+Make sure to configure the `apiUrl` and `defaultServiceProviderId` in your production config to point to your EDC backend. For containerized deployments, you may want to use environment-specific configuration files or environment variables.
 
 ### Docker
 
@@ -419,4 +307,3 @@ Contributions are welcome. Please feel free to submit a Pull Request.
 ## Support
 
 For issues and questions, please open an issue on the project repository.
-

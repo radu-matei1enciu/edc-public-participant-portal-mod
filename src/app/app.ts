@@ -43,10 +43,12 @@ export class App implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe((event: NavigationEnd) => {
       const url = event.urlAfterRedirects.split('?')[0];
-      const hideShellPaths = ['/', '/customers', '/customers/', '/registration', '/customers/registration', '/success', '/customers/success', '/role-error', '/customers/role-error'];
-      this.showAppShell = !hideShellPaths.includes(url) && !url.startsWith('/customers/registration') && !url.startsWith('/customers/success');
+      const hideShellPaths = ['/', '/customers', '/customers/', '/registration', '/customers/registration', '/success', '/customers/success', '/login', '/customers/login', '/role-error', '/customers/role-error'];
+      this.showAppShell = !hideShellPaths.includes(url) && !url.startsWith('/customers/registration') && !url.startsWith('/customers/success') && !url.startsWith('/customers/login') && !url.startsWith('/login');
       
       if (this.authService.isAuthEnabled() && this.authService.isAuthenticatedSync()) {
+        this.loadUserProfile();
+        
         const returnUrl = localStorage.getItem('returnUrl');
         if (returnUrl) {
           localStorage.removeItem('returnUrl');
@@ -60,21 +62,31 @@ export class App implements OnInit, OnDestroy {
             this.router.navigate(['/dashboard']);
           }
         }
+      } else {
+        this.userProfile = null;
       }
     });
 
     const currentUrl = this.router.url.split('?')[0];
-    const hideShellPaths = ['/', '/customers', '/customers/', '/registration', '/customers/registration', '/success', '/customers/success', '/role-error', '/customers/role-error'];
-    this.showAppShell = !hideShellPaths.includes(currentUrl) && !currentUrl.startsWith('/customers/registration') && !currentUrl.startsWith('/customers/success');
+    const hideShellPaths = ['/', '/customers', '/customers/', '/registration', '/customers/registration', '/success', '/customers/success', '/login', '/customers/login', '/role-error', '/customers/role-error'];
+    this.showAppShell = !hideShellPaths.includes(currentUrl) && !currentUrl.startsWith('/customers/registration') && !currentUrl.startsWith('/customers/success') && !currentUrl.startsWith('/customers/login') && !currentUrl.startsWith('/login');
 
-    this.authService.loadUserProfile().subscribe({
-      next: (profile) => {
-        this.userProfile = profile;
-      },
-      error: () => {
-        this.userProfile = null;
-      }
-    });
+    this.loadUserProfile();
+  }
+
+  private loadUserProfile(): void {
+    if (this.authService.isAuthEnabled() && this.authService.isAuthenticatedSync()) {
+      this.authService.loadUserProfile().subscribe({
+        next: (profile) => {
+          this.userProfile = profile;
+        },
+        error: () => {
+          this.userProfile = null;
+        }
+      });
+    } else {
+      this.userProfile = null;
+    }
   }
 
   toggleTheme(): void {
@@ -116,20 +128,41 @@ export class App implements OnInit, OnDestroy {
   }
 
   getUserInitials(): string {
-    if (!this.userProfile?.user) return 'U';
-    const user = this.userProfile.user;
-    const firstName = user.metadata?.firstName || '';
-    const lastName = user.metadata?.lastName || '';
-    const name = `${firstName} ${lastName}`.trim() || user.username;
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    if (this.userProfile?.user) {
+      const user = this.userProfile.user;
+      const firstName = user.metadata?.firstName || '';
+      const lastName = user.metadata?.lastName || '';
+      const name = `${firstName} ${lastName}`.trim() || user.username;
+      if (name) {
+        return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      }
+    }
+    
+    const selected = this.authService.getSelectedParticipant();
+    if (selected) {
+      const name = selected.tenantName || selected.participantIdentifier || 'U';
+      return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    }
+    
+    return 'U';
   }
 
   getUserDisplayName(): string {
-    if (!this.userProfile?.user) return 'User';
-    const user = this.userProfile.user;
-    const firstName = user.metadata?.firstName || '';
-    const lastName = user.metadata?.lastName || '';
-    return `${firstName} ${lastName}`.trim() || user.username;
+    if (this.userProfile?.user) {
+      const user = this.userProfile.user;
+      const firstName = user.metadata?.firstName || '';
+      const lastName = user.metadata?.lastName || '';
+      const name = `${firstName} ${lastName}`.trim();
+      if (name) return name;
+      if (user.username) return user.username;
+    }
+    
+    const selected = this.authService.getSelectedParticipant();
+    if (selected) {
+      return selected.tenantName || selected.participantIdentifier || 'User';
+    }
+    
+    return 'User';
   }
 
   getUserEmail(): string {

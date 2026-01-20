@@ -15,15 +15,11 @@ import { NotificationService } from '../../../shared/services/notification.servi
   templateUrl: './partners-section.component.html',
   })
 export class PartnersSectionComponent implements OnInit {
-  @Input() participantId: number | null = null;
-
   partners: Partner[] = [];
   dataspaces: DataspaceResource[] = [];
   selectedDataspaceId: number | null = null;
   loading = false;
   filterForm!: FormGroup;
-  providerId: number = 1;
-  tenantId: number = 1;
 
   private partnerService = inject(PartnerService);
   private dataspaceService = inject(DataspaceService);
@@ -36,7 +32,6 @@ export class PartnersSectionComponent implements OnInit {
       dataspaceId: ['']
     });
     
-    this.providerId = this.configService.config?.defaultServiceProviderId || 1;
     this.loadDataspaces();
 
   }
@@ -67,17 +62,11 @@ export class PartnersSectionComponent implements OnInit {
   }
 
   loadPartners(): void {
-    if (!this.participantId || !this.selectedDataspaceId) return;
+    if (!this.selectedDataspaceId) return;
     
     this.loading = true;
-    this.tenantId = this.participantId;
     
-    this.partnerService.getPartners(
-      this.providerId,
-      this.tenantId,
-      this.participantId,
-      this.selectedDataspaceId
-    ).subscribe({
+    this.partnerService.getPartners(this.selectedDataspaceId).subscribe({
       next: (partners) => {
         this.partners = partners;
         this.loading = false;
