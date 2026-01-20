@@ -167,13 +167,13 @@ function handleGetParticipantById(req, res, id) {
 }
 
 function handleGetMe(req, res) {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    res.writeHead(401, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Token di autenticazione richiesto' }));
-    return;
-  }
+  // const authHeader = req.headers.authorization;
+  //
+  // if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  //   res.writeHead(401, { 'Content-Type': 'application/json' });
+  //   res.end(JSON.stringify({ error: 'Token di autenticazione richiesto' }));
+  //   return;
+  // }
 
   const mockResponse = {
     user: {

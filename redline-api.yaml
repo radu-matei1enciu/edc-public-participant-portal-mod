@@ -1,0 +1,884 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+  - url: http://localhost:8081
+    description: Generated server url
+tags:
+  - name: Public
+    description: Public endpoints for health checks and system information
+  - name: Redline UI
+    description: UI API for managing dataspaces, service providers, tenants, and
+      participants
+paths:
+  /api/ui/service-providers:
+    get:
+      tags:
+        - Redline UI
+      summary: Get all service providers
+      description: Retrieves a list of all registered service providers
+      operationId: getServiceProviders
+      responses:
+        "200":
+          description: Successfully retrieved service providers
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ServiceProviderResource"
+    post:
+      tags:
+        - Redline UI
+      summary: Create a new service provider
+      description: Registers a new service provider in the system
+      operationId: createServiceProvider
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewServiceProvider"
+        required: true
+      responses:
+        "200":
+          description: Service provider successfully created
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/ServiceProviderResource"
+        "400":
+          description: Invalid service provider data
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/ServiceProviderResource"
+  "/api/ui/service-providers/{serviceProviderId}/tenants":
+    post:
+      tags:
+        - Redline UI
+      summary: Register a new tenant
+      description: Registers a new tenant under a specific service provider. A
+        participant profile is also created.
+      operationId: registerTenant
+      parameters:
+        - name: serviceProviderId
+          in: path
+          description: Database ID of the service provider
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewTenantRegistration"
+        required: true
+      responses:
+        "200":
+          description: Tenant successfully registered
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/TenantResource"
+        "400":
+          description: Invalid tenant registration data
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/TenantResource"
+        "404":
+          description: Service provider not found
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/TenantResource"
+  "/api/ui/service-providers/{serviceProviderId}/tenants/{tenantId}/participants/{participantId}/deployments":
+    post:
+      tags:
+        - Redline UI
+      summary: Deploy a participant
+      description: Deploys a participant for a tenant. This will trigger the creation
+        of resources in the dataspace.
+      operationId: deployParticipant
+      parameters:
+        - name: serviceProviderId
+          in: path
+          description: Database ID of the service provider
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: tenantId
+          in: path
+          description: Database ID of the tenant
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: participantId
+          in: path
+          description: Database ID of the participant
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewParticipantDeployment"
+        required: true
+      responses:
+        "200":
+          description: Participant successfully deployed
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/ParticipantResource"
+        "400":
+          description: Invalid deployment data
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/ParticipantResource"
+        "404":
+          description: Service provider, tenant, or participant not found
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/ParticipantResource"
+  "/api/ui/service-providers/{providerId}/tenants/{tenantId}/participants/{participantId}/files":
+    get:
+      tags:
+        - Redline UI
+      summary: List files
+      description: Retrieves a list of all files associated with a specific participant
+      operationId: listFiles
+      parameters:
+        - name: participantId
+          in: path
+          description: Database ID of the participant
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: tenantId
+          in: path
+          description: Database ID of the tenant
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: providerId
+          in: path
+          description: Database ID of the service provider
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Successfully retrieved file list
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FileResource"
+        "404":
+          description: Service provider, tenant, or participant not found
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FileResource"
+    post:
+      tags:
+        - Redline UI
+      summary: Upload a file
+      description: Uploads a file for a specific participant with associated metadata
+      operationId: uploadFile
+      parameters:
+        - name: participantId
+          in: path
+          description: Database ID of the participant
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: tenantId
+          in: path
+          description: Database ID of the tenant
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: providerId
+          in: path
+          description: Database ID of the service provider
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: File successfully uploaded
+        "400":
+          description: Invalid file or metadata
+        "404":
+          description: Service provider, tenant, or participant not found
+        "500":
+          description: Internal server error during file upload
+  "/api/ui/service-providers/{providerId}/tenants/{tenantId}/participants/{participantId}/catalog":
+    post:
+      tags:
+        - Redline UI
+      summary: Request catalog
+      description: Requests a catalog from a counter-party participant
+      operationId: requestCatalog
+      parameters:
+        - name: Cache-Control
+          in: header
+          required: false
+          schema:
+            type: string
+            default: no-cache
+        - name: providerId
+          in: path
+          description: Database ID of the service provider
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: tenantId
+          in: path
+          description: Database ID of the tenant
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: participantId
+          in: path
+          description: Database ID of the participant
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: counterPartyIdentifier
+          in: query
+          description: Identifier of the counter-party to request catalog from
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successfully retrieved catalog
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/Catalog"
+        "400":
+          description: Invalid counter-party identifier
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/Catalog"
+        "404":
+          description: Service provider, tenant, or participant not found
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/Catalog"
+  "/api/ui/service-providers/{serviceProviderId}/tenants/{tenantId}":
+    get:
+      tags:
+        - Redline UI
+      summary: Get tenant details
+      description: Retrieves detailed information about a specific tenant
+      operationId: getTenant
+      parameters:
+        - name: serviceProviderId
+          in: path
+          description: Database ID of the service provider
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: tenantId
+          in: path
+          description: Database ID of the tenant
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Successfully retrieved tenant details
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/TenantResource"
+        "404":
+          description: Service provider or tenant not found
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/TenantResource"
+  "/api/ui/service-providers/{serviceProviderId}/tenants/{tenantId}/participants/{participantId}":
+    get:
+      tags:
+        - Redline UI
+      summary: Get participant details
+      description: Retrieves detailed information about a specific participant
+      operationId: getParticipant
+      parameters:
+        - name: serviceProviderId
+          in: path
+          description: Database ID of the service provider
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: tenantId
+          in: path
+          description: Database ID of the tenant
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: participantId
+          in: path
+          description: Database ID of the participant
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Successfully retrieved participant details
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/ParticipantResource"
+        "404":
+          description: Service provider, tenant, or participant not found
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/ParticipantResource"
+  "/api/ui/service-providers/{providerId}/tenants/{tenantId}/participants/{participantId}/transfer-processes":
+    get:
+      tags:
+        - Redline UI
+      summary: List transfer processes
+      description: Retrieves a list of all transfer processes associated with a
+        specific participant
+      operationId: listTransferProcesses
+      parameters:
+        - name: providerId
+          in: path
+          description: Database ID of the service provider
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: tenantId
+          in: path
+          description: Database ID of the tenant
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: participantId
+          in: path
+          description: Database ID of the participant
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Successfully retrieved transfer process list. May be empty.
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransferProcess"
+        "404":
+          description: Service provider, tenant, or participant not found
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransferProcess"
+        "500":
+          description: Internal server error occurred while processing the request
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransferProcess"
+  "/api/ui/service-providers/{providerId}/tenants/{tenantId}/participants/{participantId}/partners/{dataspaceId}":
+    get:
+      tags:
+        - Redline UI
+      summary: Get partner references
+      description: Retrieves a list of partner references for a participant in a
+        specific dataspace
+      operationId: getPartners
+      parameters:
+        - name: providerId
+          in: path
+          description: Database ID of the service provider
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: tenantId
+          in: path
+          description: Database ID of the tenant
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: participantId
+          in: path
+          description: Database ID of the participant
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: dataspaceId
+          in: path
+          description: Database ID of the dataspace
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Successfully retrieved partner references
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PartnerReferenceResource"
+        "404":
+          description: Service provider, tenant, participant, or dataspace not found
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PartnerReferenceResource"
+  "/api/ui/service-providers/{providerId}/tenants/{tenantId}/participants/{participantId}/contracts":
+    get:
+      tags:
+        - Redline UI
+      summary: List transfer processes
+      description: Retrieves a list of all contracts (pending and agreed-on)
+        associated with a specific participant
+      operationId: listContracts
+      parameters:
+        - name: providerId
+          in: path
+          description: Database ID of the service provider
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: tenantId
+          in: path
+          description: Database ID of the tenant
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: participantId
+          in: path
+          description: Database ID of the participant
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Successfully retrieved contracts list. May be empty.
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Contract"
+        "404":
+          description: Service provider, tenant, or participant not found
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Contract"
+        "500":
+          description: Internal server error occurred while processing the request
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Contract"
+  /api/ui/dataspaces:
+    get:
+      tags:
+        - Redline UI
+      summary: Get all dataspaces
+      description: Retrieves a list of all available dataspaces
+      operationId: getDataspaces
+      responses:
+        "200":
+          description: Successfully retrieved dataspaces
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DataspaceResource"
+  /api/public/info:
+    get:
+      tags:
+        - Public
+      summary: System information
+      description: Returns basic information about the Redline API
+      operationId: info
+      responses:
+        "200":
+          description: Successfully retrieved system information
+          content:
+            "*/*":
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+  /api/public/health:
+    get:
+      tags:
+        - Public
+      summary: Health check
+      description: Returns the health status of the application
+      operationId: health
+      responses:
+        "200":
+          description: Application is healthy
+          content:
+            "*/*":
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+components:
+  schemas:
+    NewServiceProvider:
+      type: object
+      properties:
+        name:
+          type: string
+    ServiceProviderResource:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+    NewDataspaceInfo:
+      type: object
+      properties:
+        dataspaceId:
+          type: integer
+          format: int64
+        agreementTypes:
+          type: array
+          items:
+            type: string
+        roles:
+          type: array
+          items:
+            type: string
+    NewTenantRegistration:
+      type: object
+      properties:
+        tenantName:
+          type: string
+        dataspaceInfos:
+          type: array
+          items:
+            $ref: "#/components/schemas/NewDataspaceInfo"
+      description: Tenant registration details
+    DataspaceInfo:
+      type: object
+      properties:
+        dataspaceId:
+          type: integer
+          format: int64
+        agreementTypes:
+          type: array
+          items:
+            type: string
+        roles:
+          type: array
+          items:
+            type: string
+        id:
+          type: integer
+          format: int64
+    ParticipantResource:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        identifier:
+          type: string
+        agents:
+          type: array
+          items:
+            $ref: "#/components/schemas/VPAResource"
+        dataspaceInfos:
+          type: array
+          items:
+            $ref: "#/components/schemas/DataspaceInfo"
+    TenantResource:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        providerId:
+          type: integer
+          format: int64
+        name:
+          type: string
+        participants:
+          type: array
+          items:
+            $ref: "#/components/schemas/ParticipantResource"
+    VPAResource:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          type: string
+          enum:
+            - CONTROL_PLANE
+            - CREDENTIAL_SERVICE
+            - DATA_PLANE
+        state:
+          type: string
+          enum:
+            - INITIAL
+            - PENDING
+            - ACTIVE
+            - DISPOSING
+            - DISPOSED
+            - LOCKED
+            - OFFLINE
+            - ERROR
+    NewParticipantDeployment:
+      type: object
+      properties:
+        participantId:
+          type: integer
+          format: int64
+        identifier:
+          type: string
+    Catalog:
+      type: object
+      properties:
+        "@id":
+          type: string
+        "@type":
+          type: string
+        dataset:
+          type: array
+          items:
+            $ref: "#/components/schemas/Dataset"
+        service:
+          type: array
+          items:
+            $ref: "#/components/schemas/DataService"
+        participantId:
+          type: string
+        "@context":
+          type: array
+          items:
+            type: string
+    Constraint:
+      type: object
+      properties:
+        leftOperand:
+          type: string
+        operator:
+          type: string
+        rightOperand:
+          type: string
+    DataService:
+      type: object
+      properties:
+        "@id":
+          type: string
+        "@type":
+          type: string
+        endpointDescription:
+          type: string
+        endpointURL:
+          type: string
+    Dataset:
+      type: object
+      properties:
+        "@id":
+          type: string
+        "@type":
+          type: string
+        hasPolicy:
+          type: array
+          items:
+            $ref: "#/components/schemas/Offer"
+        distribution:
+          type: array
+          items:
+            $ref: "#/components/schemas/Distribution"
+        description:
+          type: string
+    Distribution:
+      type: object
+      properties:
+        "@type":
+          type: string
+        format:
+          type: string
+        accessService:
+          $ref: "#/components/schemas/DataService"
+    Offer:
+      type: object
+      properties:
+        "@id":
+          type: string
+        "@type":
+          type: string
+        permission:
+          type: array
+          items:
+            $ref: "#/components/schemas/Permission"
+    Permission:
+      type: object
+      properties:
+        action:
+          type: string
+        constraint:
+          type: array
+          items:
+            $ref: "#/components/schemas/Constraint"
+    TransferProcess:
+      type: object
+      properties:
+        type:
+          type: string
+        protocol:
+          type: string
+        correlationId:
+          type: string
+        counterPartyAddress:
+          type: string
+        dataDestination:
+          type: object
+          additionalProperties:
+            type: object
+        assetId:
+          type: string
+        contractId:
+          type: string
+        contentDataAddress:
+          type: object
+          additionalProperties:
+            type: object
+        privateProperties:
+          type: object
+          additionalProperties:
+            type: object
+        transferType:
+          type: string
+        dataPlaneId:
+          type: string
+        dataplaneMetadata:
+          type: object
+          additionalProperties:
+            type: object
+    PartnerReferenceResource:
+      type: object
+      properties:
+        identifier:
+          type: string
+        nickname:
+          type: string
+    FileResource:
+      type: object
+      properties:
+        fileId:
+          type: string
+        fileName:
+          type: string
+        contentType:
+          type: string
+        uploadDateIso:
+          type: string
+    Contract:
+      type: object
+      properties:
+        counterParty:
+          type: string
+        type:
+          type: string
+        agreementId:
+          type: string
+        assetId:
+          type: string
+        signingDate:
+          type: string
+          format: date-time
+        consumer:
+          type: string
+        provider:
+          type: string
+        policy:
+          type: object
+          additionalProperties:
+            type: object
+        pending:
+          type: boolean
+    DataspaceResource:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
