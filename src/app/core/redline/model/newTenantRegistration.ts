@@ -10,9 +10,6 @@
 import { NewDataspaceInfo } from './newDataspaceInfo';
 
 
-/**
- * Tenant registration details
- */
 export interface NewTenantRegistration { 
     tenantName?: string;
     dataspaceInfos?: Array<NewDataspaceInfo>;

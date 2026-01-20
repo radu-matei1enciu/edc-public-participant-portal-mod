@@ -11,6 +11,7 @@ import { ModalService } from '../../core/services/modal.service';
 import { UseCase } from '../../core/models/use-case.model';
 import { Partner } from '../../core/models/partner.model';
 import { formatFileSize } from '../../shared/utils/format.utils';
+import {RedlineUIService} from "../../core/redline";
 
 @Component({
   selector: 'app-file-upload',
@@ -30,6 +31,7 @@ export class FileUploadComponent implements OnInit {
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
+  private redlineService = inject(RedlineUIService);
 
   participantId: number | null = null;
 
@@ -180,18 +182,15 @@ export class FileUploadComponent implements OnInit {
     });
 
     if (!confirmed) {
-      return; 
+      return;
     }
 
     this.uploading = true;
     const uploadMetadata = this.uploadForm.value;
 
-    this.fileAssetService.uploadFiles(this.participantId, this.selectedFiles, {
-      useCase: uploadMetadata.useCase || undefined,
-      partnerId: uploadMetadata.partnerId || undefined,
-      description: '',
-      dataspace: undefined
-    }).subscribe({
+
+    const metadata = {name: 'test'}
+    this.redlineService.uploadFile(1, 1, 1, JSON.stringify(metadata),this.selectedFiles[0]).subscribe({
       next: () => {
         this.uploading = false;
         this.notificationService.showSuccess('Success', `Successfully uploaded ${this.selectedFiles.length} file(s)`);
@@ -202,6 +201,24 @@ export class FileUploadComponent implements OnInit {
         this.notificationService.showError('Error', error.message || 'Failed to upload files');
       }
     });
+
+    //
+    // this.fileAssetService.uploadFiles(this.participantId, this.selectedFiles, {
+    //   useCase: uploadMetadata.useCase || undefined,
+    //   partnerId: uploadMetadata.partnerId || undefined,
+    //   description: '',
+    //   dataspace: undefined
+    // }).subscribe({
+    //   next: () => {
+    //     this.uploading = false;
+    //     this.notificationService.showSuccess('Success', `Successfully uploaded ${this.selectedFiles.length} file(s)`);
+    //     this.router.navigate(['/files']);
+    //   },
+    //   error: (error) => {
+    //     this.uploading = false;
+    //     this.notificationService.showError('Error', error.message || 'Failed to upload files');
+    //   }
+    // });
   }
 
   closeUpload(): void {

@@ -23,7 +23,7 @@ paths:
         "200":
           description: Successfully retrieved service providers
           content:
-            "*/*":
+            application/json:
               schema:
                 type: array
                 items:
@@ -44,13 +44,13 @@ paths:
         "200":
           description: Service provider successfully created
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/ServiceProviderResource"
         "400":
           description: Invalid service provider data
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/ServiceProviderResource"
   "/api/ui/service-providers/{serviceProviderId}/tenants":
@@ -79,19 +79,19 @@ paths:
         "200":
           description: Tenant successfully registered
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/TenantResource"
         "400":
           description: Invalid tenant registration data
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/TenantResource"
         "404":
           description: Service provider not found
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/TenantResource"
   "/api/ui/service-providers/{serviceProviderId}/tenants/{tenantId}/participants/{participantId}/deployments":
@@ -134,19 +134,19 @@ paths:
         "200":
           description: Participant successfully deployed
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/ParticipantResource"
         "400":
           description: Invalid deployment data
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/ParticipantResource"
         "404":
           description: Service provider, tenant, or participant not found
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/ParticipantResource"
   "/api/ui/service-providers/{providerId}/tenants/{tenantId}/participants/{participantId}/files":
@@ -182,7 +182,7 @@ paths:
         "200":
           description: Successfully retrieved file list
           content:
-            "*/*":
+            application/json:
               schema:
                 type: array
                 items:
@@ -190,7 +190,7 @@ paths:
         "404":
           description: Service provider, tenant, or participant not found
           content:
-            "*/*":
+            application/json:
               schema:
                 type: array
                 items:
@@ -229,8 +229,11 @@ paths:
             schema:
               required:
                 - file
+                - metadata
               type: object
               properties:
+                metadata:
+                  type: string
                 file:
                   type: string
                   format: binary
@@ -288,19 +291,19 @@ paths:
         "200":
           description: Successfully retrieved catalog
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/Catalog"
         "400":
           description: Invalid counter-party identifier
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/Catalog"
         "404":
           description: Service provider, tenant, or participant not found
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/Catalog"
   "/api/ui/service-providers/{serviceProviderId}/tenants/{tenantId}":
@@ -329,13 +332,13 @@ paths:
         "200":
           description: Successfully retrieved tenant details
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/TenantResource"
         "404":
           description: Service provider or tenant not found
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/TenantResource"
   "/api/ui/service-providers/{serviceProviderId}/tenants/{tenantId}/participants/{participantId}":
@@ -371,13 +374,13 @@ paths:
         "200":
           description: Successfully retrieved participant details
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/ParticipantResource"
         "404":
           description: Service provider, tenant, or participant not found
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/ParticipantResource"
   "/api/ui/service-providers/{providerId}/tenants/{tenantId}/participants/{participantId}/transfer-processes":
@@ -414,7 +417,7 @@ paths:
         "200":
           description: Successfully retrieved transfer process list. May be empty.
           content:
-            "*/*":
+            application/json:
               schema:
                 type: array
                 items:
@@ -422,7 +425,7 @@ paths:
         "404":
           description: Service provider, tenant, or participant not found
           content:
-            "*/*":
+            application/json:
               schema:
                 type: array
                 items:
@@ -430,7 +433,7 @@ paths:
         "500":
           description: Internal server error occurred while processing the request
           content:
-            "*/*":
+            application/json:
               schema:
                 type: array
                 items:
@@ -476,7 +479,7 @@ paths:
         "200":
           description: Successfully retrieved partner references
           content:
-            "*/*":
+            application/json:
               schema:
                 type: array
                 items:
@@ -484,7 +487,7 @@ paths:
         "404":
           description: Service provider, tenant, participant, or dataspace not found
           content:
-            "*/*":
+            application/json:
               schema:
                 type: array
                 items:
@@ -523,7 +526,7 @@ paths:
         "200":
           description: Successfully retrieved contracts list. May be empty.
           content:
-            "*/*":
+            application/json:
               schema:
                 type: array
                 items:
@@ -531,7 +534,7 @@ paths:
         "404":
           description: Service provider, tenant, or participant not found
           content:
-            "*/*":
+            application/json:
               schema:
                 type: array
                 items:
@@ -539,7 +542,7 @@ paths:
         "500":
           description: Internal server error occurred while processing the request
           content:
-            "*/*":
+            application/json:
               schema:
                 type: array
                 items:
@@ -555,7 +558,7 @@ paths:
         "200":
           description: Successfully retrieved dataspaces
           content:
-            "*/*":
+            application/json:
               schema:
                 type: array
                 items:
@@ -630,7 +633,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/NewDataspaceInfo"
-      description: Tenant registration details
     DataspaceInfo:
       type: object
       properties:

@@ -3,7 +3,18 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { Observable, interval, startWith, switchMap, catchError, of, debounceTime, distinctUntilChanged, firstValueFrom } from 'rxjs';
+import {
+  Observable,
+  interval,
+  startWith,
+  switchMap,
+  catchError,
+  of,
+  debounceTime,
+  distinctUntilChanged,
+  firstValueFrom,
+  from
+} from 'rxjs';
 import { FileAssetService } from '../../core/services/file-asset.service';
 import { UseCaseService } from '../../core/services/use-case.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -13,6 +24,7 @@ import { FileAsset } from '../../core/models/file-asset.model';
 import { UseCase } from '../../core/models/use-case.model';
 import { UserProfile } from '../../core/models/participant.model';
 import { formatFileSize } from '../../shared/utils/format.utils';
+import {RedlineUIService} from "../../core/redline";
 
 @Component({
   selector: 'app-files-list',
@@ -31,6 +43,8 @@ export class FilesListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private router = inject(Router);
+
+  private redlineService = inject(RedlineUIService);
 
   files: FileAsset[] = [];
   filteredFiles: FileAsset[] = [];
@@ -53,7 +67,7 @@ export class FilesListComponent implements OnInit {
     this.preferences$ = this.preferencesService.preferences$;
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.authService.loadUserProfile().subscribe({
       next: (profile) => {
         this.userProfile = profile;
@@ -92,6 +106,19 @@ export class FilesListComponent implements OnInit {
     ).subscribe(() => {
       this.applyFilters();
     });
+
+
+    // const observable = this.redlineService.createServiceProvider({name: 'isst'});
+    // const sp = await firstValueFrom(observable);
+    // const tenant = await firstValueFrom(this.redlineService.registerTenant(sp.id!, {
+    //   dataspaceInfos: [{dataspaceId: 1}],
+    //   tenantName: 'dst'
+    // }));
+    // const files = await firstValueFrom(this.redlineService.listFiles(tenant.participants![0].id!, tenant.id!, tenant.providerId!))
+    // console.log(files);
+    // console.log('SP', sp.id);
+    // console.log('Tenant', tenant.id);
+    // console.log('participant', tenant.participants![0].id!);
   }
 
   loadUseCases(): void {

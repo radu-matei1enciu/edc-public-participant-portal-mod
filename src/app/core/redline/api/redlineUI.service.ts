@@ -66,10 +66,10 @@ export class RedlineUIService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public createServiceProvider(newServiceProvider: NewServiceProvider, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<ServiceProviderResource>;
-    public createServiceProvider(newServiceProvider: NewServiceProvider, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ServiceProviderResource>>;
-    public createServiceProvider(newServiceProvider: NewServiceProvider, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ServiceProviderResource>>;
-    public createServiceProvider(newServiceProvider: NewServiceProvider, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public createServiceProvider(newServiceProvider: NewServiceProvider, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<ServiceProviderResource>;
+    public createServiceProvider(newServiceProvider: NewServiceProvider, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ServiceProviderResource>>;
+    public createServiceProvider(newServiceProvider: NewServiceProvider, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ServiceProviderResource>>;
+    public createServiceProvider(newServiceProvider: NewServiceProvider, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (newServiceProvider === null || newServiceProvider === undefined) {
             throw new Error('Required parameter newServiceProvider was null or undefined when calling createServiceProvider.');
         }
@@ -77,7 +77,7 @@ export class RedlineUIService extends BaseService {
         let localVarHeaders = this.defaultHeaders;
 
         const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
-            '*/*'
+            'application/json'
         ]);
         if (localVarHttpHeaderAcceptSelected !== undefined) {
             localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
@@ -136,10 +136,10 @@ export class RedlineUIService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public deployParticipant(serviceProviderId: number, tenantId: number, participantId: number, newParticipantDeployment: NewParticipantDeployment, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<ParticipantResource>;
-    public deployParticipant(serviceProviderId: number, tenantId: number, participantId: number, newParticipantDeployment: NewParticipantDeployment, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ParticipantResource>>;
-    public deployParticipant(serviceProviderId: number, tenantId: number, participantId: number, newParticipantDeployment: NewParticipantDeployment, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ParticipantResource>>;
-    public deployParticipant(serviceProviderId: number, tenantId: number, participantId: number, newParticipantDeployment: NewParticipantDeployment, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public deployParticipant(serviceProviderId: number, tenantId: number, participantId: number, newParticipantDeployment: NewParticipantDeployment, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<ParticipantResource>;
+    public deployParticipant(serviceProviderId: number, tenantId: number, participantId: number, newParticipantDeployment: NewParticipantDeployment, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ParticipantResource>>;
+    public deployParticipant(serviceProviderId: number, tenantId: number, participantId: number, newParticipantDeployment: NewParticipantDeployment, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ParticipantResource>>;
+    public deployParticipant(serviceProviderId: number, tenantId: number, participantId: number, newParticipantDeployment: NewParticipantDeployment, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (serviceProviderId === null || serviceProviderId === undefined) {
             throw new Error('Required parameter serviceProviderId was null or undefined when calling deployParticipant.');
         }
@@ -156,7 +156,7 @@ export class RedlineUIService extends BaseService {
         let localVarHeaders = this.defaultHeaders;
 
         const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
-            '*/*'
+            'application/json'
         ]);
         if (localVarHttpHeaderAcceptSelected !== undefined) {
             localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
@@ -211,15 +211,15 @@ export class RedlineUIService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getDataspaces(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<Array<DataspaceResource>>;
-    public getDataspaces(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<DataspaceResource>>>;
-    public getDataspaces(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<DataspaceResource>>>;
-    public getDataspaces(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public getDataspaces(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<DataspaceResource>>;
+    public getDataspaces(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<DataspaceResource>>>;
+    public getDataspaces(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<DataspaceResource>>>;
+    public getDataspaces(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
         const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
-            '*/*'
+            'application/json'
         ]);
         if (localVarHttpHeaderAcceptSelected !== undefined) {
             localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
@@ -267,10 +267,10 @@ export class RedlineUIService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getParticipant(serviceProviderId: number, tenantId: number, participantId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<ParticipantResource>;
-    public getParticipant(serviceProviderId: number, tenantId: number, participantId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ParticipantResource>>;
-    public getParticipant(serviceProviderId: number, tenantId: number, participantId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ParticipantResource>>;
-    public getParticipant(serviceProviderId: number, tenantId: number, participantId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public getParticipant(serviceProviderId: number, tenantId: number, participantId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<ParticipantResource>;
+    public getParticipant(serviceProviderId: number, tenantId: number, participantId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ParticipantResource>>;
+    public getParticipant(serviceProviderId: number, tenantId: number, participantId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ParticipantResource>>;
+    public getParticipant(serviceProviderId: number, tenantId: number, participantId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (serviceProviderId === null || serviceProviderId === undefined) {
             throw new Error('Required parameter serviceProviderId was null or undefined when calling getParticipant.');
         }
@@ -284,7 +284,7 @@ export class RedlineUIService extends BaseService {
         let localVarHeaders = this.defaultHeaders;
 
         const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
-            '*/*'
+            'application/json'
         ]);
         if (localVarHttpHeaderAcceptSelected !== undefined) {
             localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
@@ -333,10 +333,10 @@ export class RedlineUIService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getPartners(providerId: number, tenantId: number, participantId: number, dataspaceId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<Array<PartnerReferenceResource>>;
-    public getPartners(providerId: number, tenantId: number, participantId: number, dataspaceId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<PartnerReferenceResource>>>;
-    public getPartners(providerId: number, tenantId: number, participantId: number, dataspaceId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<PartnerReferenceResource>>>;
-    public getPartners(providerId: number, tenantId: number, participantId: number, dataspaceId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public getPartners(providerId: number, tenantId: number, participantId: number, dataspaceId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<PartnerReferenceResource>>;
+    public getPartners(providerId: number, tenantId: number, participantId: number, dataspaceId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<PartnerReferenceResource>>>;
+    public getPartners(providerId: number, tenantId: number, participantId: number, dataspaceId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<PartnerReferenceResource>>>;
+    public getPartners(providerId: number, tenantId: number, participantId: number, dataspaceId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (providerId === null || providerId === undefined) {
             throw new Error('Required parameter providerId was null or undefined when calling getPartners.');
         }
@@ -353,7 +353,7 @@ export class RedlineUIService extends BaseService {
         let localVarHeaders = this.defaultHeaders;
 
         const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
-            '*/*'
+            'application/json'
         ]);
         if (localVarHttpHeaderAcceptSelected !== undefined) {
             localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
@@ -398,15 +398,15 @@ export class RedlineUIService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getServiceProviders(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<Array<ServiceProviderResource>>;
-    public getServiceProviders(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<ServiceProviderResource>>>;
-    public getServiceProviders(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<ServiceProviderResource>>>;
-    public getServiceProviders(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public getServiceProviders(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<ServiceProviderResource>>;
+    public getServiceProviders(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<ServiceProviderResource>>>;
+    public getServiceProviders(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<ServiceProviderResource>>>;
+    public getServiceProviders(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
         const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
-            '*/*'
+            'application/json'
         ]);
         if (localVarHttpHeaderAcceptSelected !== undefined) {
             localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
@@ -453,10 +453,10 @@ export class RedlineUIService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getTenant(serviceProviderId: number, tenantId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<TenantResource>;
-    public getTenant(serviceProviderId: number, tenantId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<TenantResource>>;
-    public getTenant(serviceProviderId: number, tenantId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<TenantResource>>;
-    public getTenant(serviceProviderId: number, tenantId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public getTenant(serviceProviderId: number, tenantId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<TenantResource>;
+    public getTenant(serviceProviderId: number, tenantId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<TenantResource>>;
+    public getTenant(serviceProviderId: number, tenantId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<TenantResource>>;
+    public getTenant(serviceProviderId: number, tenantId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (serviceProviderId === null || serviceProviderId === undefined) {
             throw new Error('Required parameter serviceProviderId was null or undefined when calling getTenant.');
         }
@@ -467,7 +467,7 @@ export class RedlineUIService extends BaseService {
         let localVarHeaders = this.defaultHeaders;
 
         const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
-            '*/*'
+            'application/json'
         ]);
         if (localVarHttpHeaderAcceptSelected !== undefined) {
             localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
@@ -515,10 +515,10 @@ export class RedlineUIService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public listContracts(providerId: number, tenantId: number, participantId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<Array<Contract>>;
-    public listContracts(providerId: number, tenantId: number, participantId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<Contract>>>;
-    public listContracts(providerId: number, tenantId: number, participantId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<Contract>>>;
-    public listContracts(providerId: number, tenantId: number, participantId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public listContracts(providerId: number, tenantId: number, participantId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<Contract>>;
+    public listContracts(providerId: number, tenantId: number, participantId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<Contract>>>;
+    public listContracts(providerId: number, tenantId: number, participantId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<Contract>>>;
+    public listContracts(providerId: number, tenantId: number, participantId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (providerId === null || providerId === undefined) {
             throw new Error('Required parameter providerId was null or undefined when calling listContracts.');
         }
@@ -532,7 +532,7 @@ export class RedlineUIService extends BaseService {
         let localVarHeaders = this.defaultHeaders;
 
         const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
-            '*/*'
+            'application/json'
         ]);
         if (localVarHttpHeaderAcceptSelected !== undefined) {
             localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
@@ -580,10 +580,10 @@ export class RedlineUIService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public listFiles(participantId: number, tenantId: number, providerId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<Array<FileResource>>;
-    public listFiles(participantId: number, tenantId: number, providerId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<FileResource>>>;
-    public listFiles(participantId: number, tenantId: number, providerId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<FileResource>>>;
-    public listFiles(participantId: number, tenantId: number, providerId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public listFiles(participantId: number, tenantId: number, providerId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<FileResource>>;
+    public listFiles(participantId: number, tenantId: number, providerId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<FileResource>>>;
+    public listFiles(participantId: number, tenantId: number, providerId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<FileResource>>>;
+    public listFiles(participantId: number, tenantId: number, providerId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (participantId === null || participantId === undefined) {
             throw new Error('Required parameter participantId was null or undefined when calling listFiles.');
         }
@@ -597,7 +597,7 @@ export class RedlineUIService extends BaseService {
         let localVarHeaders = this.defaultHeaders;
 
         const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
-            '*/*'
+            'application/json'
         ]);
         if (localVarHttpHeaderAcceptSelected !== undefined) {
             localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
@@ -645,10 +645,10 @@ export class RedlineUIService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public listTransferProcesses(providerId: number, tenantId: number, participantId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<Array<TransferProcess>>;
-    public listTransferProcesses(providerId: number, tenantId: number, participantId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<TransferProcess>>>;
-    public listTransferProcesses(providerId: number, tenantId: number, participantId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<TransferProcess>>>;
-    public listTransferProcesses(providerId: number, tenantId: number, participantId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public listTransferProcesses(providerId: number, tenantId: number, participantId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<TransferProcess>>;
+    public listTransferProcesses(providerId: number, tenantId: number, participantId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<TransferProcess>>>;
+    public listTransferProcesses(providerId: number, tenantId: number, participantId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<TransferProcess>>>;
+    public listTransferProcesses(providerId: number, tenantId: number, participantId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (providerId === null || providerId === undefined) {
             throw new Error('Required parameter providerId was null or undefined when calling listTransferProcesses.');
         }
@@ -662,7 +662,7 @@ export class RedlineUIService extends BaseService {
         let localVarHeaders = this.defaultHeaders;
 
         const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
-            '*/*'
+            'application/json'
         ]);
         if (localVarHttpHeaderAcceptSelected !== undefined) {
             localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
@@ -709,10 +709,10 @@ export class RedlineUIService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public registerTenant(serviceProviderId: number, newTenantRegistration: NewTenantRegistration, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<TenantResource>;
-    public registerTenant(serviceProviderId: number, newTenantRegistration: NewTenantRegistration, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<TenantResource>>;
-    public registerTenant(serviceProviderId: number, newTenantRegistration: NewTenantRegistration, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<TenantResource>>;
-    public registerTenant(serviceProviderId: number, newTenantRegistration: NewTenantRegistration, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public registerTenant(serviceProviderId: number, newTenantRegistration: NewTenantRegistration, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<TenantResource>;
+    public registerTenant(serviceProviderId: number, newTenantRegistration: NewTenantRegistration, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<TenantResource>>;
+    public registerTenant(serviceProviderId: number, newTenantRegistration: NewTenantRegistration, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<TenantResource>>;
+    public registerTenant(serviceProviderId: number, newTenantRegistration: NewTenantRegistration, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (serviceProviderId === null || serviceProviderId === undefined) {
             throw new Error('Required parameter serviceProviderId was null or undefined when calling registerTenant.');
         }
@@ -723,7 +723,7 @@ export class RedlineUIService extends BaseService {
         let localVarHeaders = this.defaultHeaders;
 
         const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
-            '*/*'
+            'application/json'
         ]);
         if (localVarHttpHeaderAcceptSelected !== undefined) {
             localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
@@ -783,10 +783,10 @@ export class RedlineUIService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public requestCatalog(providerId: number, tenantId: number, participantId: number, counterPartyIdentifier: string, cacheControl?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<Catalog>;
-    public requestCatalog(providerId: number, tenantId: number, participantId: number, counterPartyIdentifier: string, cacheControl?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Catalog>>;
-    public requestCatalog(providerId: number, tenantId: number, participantId: number, counterPartyIdentifier: string, cacheControl?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Catalog>>;
-    public requestCatalog(providerId: number, tenantId: number, participantId: number, counterPartyIdentifier: string, cacheControl?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: '*/*', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public requestCatalog(providerId: number, tenantId: number, participantId: number, counterPartyIdentifier: string, cacheControl?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Catalog>;
+    public requestCatalog(providerId: number, tenantId: number, participantId: number, counterPartyIdentifier: string, cacheControl?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Catalog>>;
+    public requestCatalog(providerId: number, tenantId: number, participantId: number, counterPartyIdentifier: string, cacheControl?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Catalog>>;
+    public requestCatalog(providerId: number, tenantId: number, participantId: number, counterPartyIdentifier: string, cacheControl?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (providerId === null || providerId === undefined) {
             throw new Error('Required parameter providerId was null or undefined when calling requestCatalog.');
         }
@@ -817,7 +817,7 @@ export class RedlineUIService extends BaseService {
         }
 
         const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
-            '*/*'
+            'application/json'
         ]);
         if (localVarHttpHeaderAcceptSelected !== undefined) {
             localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
@@ -862,15 +862,16 @@ export class RedlineUIService extends BaseService {
      * @param participantId Database ID of the participant
      * @param tenantId Database ID of the tenant
      * @param providerId Database ID of the service provider
+     * @param metadata 
      * @param file 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public uploadFile(participantId: number, tenantId: number, providerId: number, file: Blob, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
-    public uploadFile(participantId: number, tenantId: number, providerId: number, file: Blob, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
-    public uploadFile(participantId: number, tenantId: number, providerId: number, file: Blob, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
-    public uploadFile(participantId: number, tenantId: number, providerId: number, file: Blob, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public uploadFile(participantId: number, tenantId: number, providerId: number, metadata: string, file: Blob, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
+    public uploadFile(participantId: number, tenantId: number, providerId: number, metadata: string, file: Blob, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
+    public uploadFile(participantId: number, tenantId: number, providerId: number, metadata: string, file: Blob, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
+    public uploadFile(participantId: number, tenantId: number, providerId: number, metadata: string, file: Blob, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (participantId === null || participantId === undefined) {
             throw new Error('Required parameter participantId was null or undefined when calling uploadFile.');
         }
@@ -879,6 +880,9 @@ export class RedlineUIService extends BaseService {
         }
         if (providerId === null || providerId === undefined) {
             throw new Error('Required parameter providerId was null or undefined when calling uploadFile.');
+        }
+        if (metadata === null || metadata === undefined) {
+            throw new Error('Required parameter metadata was null or undefined when calling uploadFile.');
         }
         if (file === null || file === undefined) {
             throw new Error('Required parameter file was null or undefined when calling uploadFile.');
@@ -915,6 +919,9 @@ export class RedlineUIService extends BaseService {
             localVarFormParams = new HttpParams({encoder: this.encoder});
         }
 
+        if (metadata !== undefined) {
+            localVarFormParams = localVarFormParams.append('metadata', <any>metadata) as any || localVarFormParams;
+        }
         if (file !== undefined) {
             localVarFormParams = localVarFormParams.append('file', <any>file) as any || localVarFormParams;
         }
