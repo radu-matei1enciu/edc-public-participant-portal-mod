@@ -14,5 +14,6 @@ export interface FileResource {
     fileName?: string;
     contentType?: string;
     uploadDateIso?: string;
+    metadata?: { [key: string]: object; };
 }
 

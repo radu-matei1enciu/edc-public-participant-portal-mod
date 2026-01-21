@@ -3,7 +3,7 @@ info:
   title: OpenAPI definition
   version: v0
 servers:
-  - url: http://localhost:8081
+  - url: http://redline.localhost
     description: Generated server url
 tags:
   - name: Public
@@ -852,6 +852,10 @@ components:
           type: string
         uploadDateIso:
           type: string
+        metadata:
+          type: object
+          additionalProperties:
+            type: object
     Contract:
       type: object
       properties:
