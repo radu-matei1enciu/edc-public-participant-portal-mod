@@ -1,0 +1,8 @@
+{
+  "/api/ui": {
+    "target": "http://redline.localhost",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

@@ -1,6 +1,6 @@
 {
   "production": false,
-  "apiUrl": "http://localhost:3001/api/ui",
+  "apiUrl": "http://redline.localhost/api/ui",
   "appName": "DataSpace Portal",
   "version": "1.0.0",
   "features": {
@@ -20,5 +20,6 @@
       "image/png"
     ]
   },
-  "defaultServiceProviderId": 1
+  "defaultServiceProviderId": 1,
+  "participantIdentifierPrefix": "did:web:identityhub.edc-v.svc.cluster.local%3A7083:"
 }
