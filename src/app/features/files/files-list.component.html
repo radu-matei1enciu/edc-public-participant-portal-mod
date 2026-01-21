@@ -58,28 +58,6 @@
   </form>
 
   
-  <div class="mb-4 flex items-center justify-between">
-    <div class="text-sm text-gray-500 dark:text-gray-400">
-      Showing {{ filteredFiles.length }} of {{ files.length }} files
-      @if (preferences$ | async; as prefs) {
-        <span class="ml-2">
-          (page size: {{ prefs.defaultPageSize }})
-        </span>
-      }
-    </div>
-    @if (preferences$ | async; as prefs) {
-      <div class="text-sm text-gray-500 dark:text-gray-400">
-        @if (prefs.autoRefreshInterval > 0) {
-          <div class="flex items-center space-x-2">
-            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span>Auto-refresh: {{ prefs.autoRefreshInterval }}s</span>
-          </div>
-        }
-      </div>
-    }
-  </div>
-
-  
   <div class="mt-8 flow-root">
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
       <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
@@ -124,7 +102,7 @@
                 </tr>
               } @else {
                 @if (filteredFiles.length > 0) {
-                  @for (file of getPaginatedFiles(); track file.id) {
+                  @for (file of filteredFiles; track file.id) {
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
                       <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm font-medium text-gray-900 dark:text-white">{{ file.name.split('.')[0] }}</div>
@@ -211,27 +189,6 @@
       </div>
     </div>
   </div>
-
-  
-  @if (getTotalPages() > 1) {
-    <div class="mt-6 flex items-center justify-between">
-      <div class="flex items-center space-x-2">
-        <button (click)="previousPage()" 
-                [disabled]="currentPage === 1"
-                class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
-          Previous
-        </button>
-        <span class="text-sm text-gray-700 dark:text-gray-300">
-          Page {{ currentPage }} of {{ getTotalPages() }}
-        </span>
-        <button (click)="nextPage()" 
-                [disabled]="currentPage === getTotalPages()"
-                class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
-          Next
-        </button>
-      </div>
-    </div>
-  }
 
   
   @if (showExploreSelection) {

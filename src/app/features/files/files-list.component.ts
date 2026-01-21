@@ -42,8 +42,6 @@ export class FilesListComponent implements OnInit {
   filterForm: FormGroup;
   loading = false;
   preferences$: Observable<UserPreferences>;
-  currentPage = 1;
-  itemsPerPage = 10;
   userProfile: UserProfile | null = null;
   participantId: number | null = null;
   showExploreSelection = false;
@@ -71,13 +69,6 @@ export class FilesListComponent implements OnInit {
       error: () => {
         this.notificationService.showError('Error', 'Failed to load user profile');
       }
-    });
-
-    this.preferences$.pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(prefs => {
-      this.itemsPerPage = prefs.defaultPageSize || 10;
-      this.currentPage = 1;
     });
 
     this.filterForm.get('searchTerm')?.valueChanges.pipe(
@@ -173,30 +164,8 @@ export class FilesListComponent implements OnInit {
     if (this.originFilter && this.originFilter !== 'All Origins') {
       this.filteredFiles = this.filteredFiles.filter(file => file.origin === this.originFilter);
     }
-    this.currentPage = 1;
   }
 
-  getPaginatedFiles(): FileAsset[] {
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    return this.filteredFiles.slice(start, end);
-  }
-
-  getTotalPages(): number {
-    return Math.ceil(this.filteredFiles.length / this.itemsPerPage);
-  }
-
-  previousPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-    }
-  }
-
-  nextPage(): void {
-    if (this.currentPage < this.getTotalPages()) {
-      this.currentPage++;
-    }
-  }
 
   openExploreSelection(): void {
     this.showExploreSelection = true;
