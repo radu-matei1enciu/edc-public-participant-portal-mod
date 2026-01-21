@@ -10,11 +10,9 @@ import {NotificationService} from '../../shared/services/notification.service';
 import {UserPreferences, UserPreferencesService} from '../../core/services/user-preferences.service';
 import {FileAsset} from '../../core/models/file-asset.model';
 import {UseCase} from '../../core/models/use-case.model';
-import {UserProfile} from '../../core/models/participant.model';
 import {formatFileSize} from '../../shared/utils/format.utils';
 import {RedlineUIService} from "../../core/redline";
 import {FileDetailComponent} from "./file-detail.component";
-import {PartnerService} from "../../core/services/partner.service";
 
 @Component({
   selector: 'app-files-list',
@@ -42,8 +40,6 @@ export class FilesListComponent implements OnInit {
   filterForm: FormGroup;
   loading = false;
   preferences$: Observable<UserPreferences>;
-  userProfile: UserProfile | null = null;
-  participantId: number | null = null;
   showExploreSelection = false;
   searchText?: string;
   useCaseFilter?: string;
@@ -59,17 +55,8 @@ export class FilesListComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    this.authService.loadUserProfile().subscribe({
-      next: (profile) => {
-        this.userProfile = profile;
-        this.participantId = profile.participant.id;
-        this.loadUseCases();
-        this.loadFiles();
-      },
-      error: () => {
-        this.notificationService.showError('Error', 'Failed to load user profile');
-      }
-    });
+    this.loadUseCases();
+    this.loadFiles();
 
     this.filterForm.get('searchTerm')?.valueChanges.pipe(
       debounceTime(300),
@@ -109,20 +96,11 @@ export class FilesListComponent implements OnInit {
 
 
   loadFiles(): void {
-    if (!this.participantId) return;
-    
     this.loading = true;
-    const filters = {
-      search: this.filterForm.get('searchTerm')?.value || undefined,
-      useCase: this.filterForm.get('useCaseFilter')?.value || undefined,
-      origin: this.filterForm.get('originFilter')?.value || undefined
-    };
-    
-    if (!this.participantId) return;
 
     const userIds = this.authService.getCurrentUserIds();
     if (!userIds) {
-      this.notificationService.showError('Error', 'Can not get the current participant');
+      this.notificationService.showError('Error', 'Failed to load the user profile.');
       return;
     }
     this.redlineService.listFiles(userIds.participantId, userIds.tenantId, userIds.providerId).subscribe({
