@@ -189,7 +189,12 @@ export class FileUploadComponent implements OnInit {
     const uploadMetadata = this.uploadForm.value;
 
 
-    const metadata = {name: 'test'}
+    const metadata = {
+      useCase: uploadMetadata.useCase,
+      partnerId: uploadMetadata.partnerId,
+      size: this.selectedFiles[0].size,
+      type: 'local'
+    }
     this.redlineService.uploadFile(1, 1, 1, JSON.stringify(metadata),this.selectedFiles[0]).subscribe({
       next: () => {
         this.uploading = false;
