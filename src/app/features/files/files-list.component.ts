@@ -48,6 +48,9 @@ export class FilesListComponent implements OnInit {
   userProfile: UserProfile | null = null;
   participantId: number | null = null;
   showExploreSelection = false;
+  searchText?: string;
+  useCaseFilter?: string;
+  originFilter?: string;
 
   constructor() {
     this.filterForm = this.fb.group({
@@ -82,34 +85,25 @@ export class FilesListComponent implements OnInit {
       debounceTime(300),
       distinctUntilChanged(),
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe(() => {
+    ).subscribe(value => {
+      this.searchText = (value as string).toLowerCase();
       this.applyFilters();
     });
 
     this.filterForm.get('useCaseFilter')?.valueChanges.pipe(
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe(() => {
+    ).subscribe(value => {
+      this.useCaseFilter = value;
       this.applyFilters();
     });
 
     this.filterForm.get('originFilter')?.valueChanges.pipe(
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe(() => {
+    ).subscribe(value => {
+      this.originFilter = value;
       this.applyFilters();
     });
 
-
-    // const observable = this.redlineService.createServiceProvider({name: 'isst'});
-    // const sp = await firstValueFrom(observable);
-    // const tenant = await firstValueFrom(this.redlineService.registerTenant(sp.id!, {
-    //   dataspaceInfos: [{dataspaceId: 1}],
-    //   tenantName: 'dst'
-    // }));
-    // const files = await firstValueFrom(this.redlineService.listFiles(tenant.participants![0].id!, tenant.id!, tenant.providerId!))
-    // console.log(files);
-    // console.log('SP', sp.id);
-    // console.log('Tenant', tenant.id);
-    // console.log('participant', tenant.participants![0].id!);
   }
 
   loadUseCases(): void {
@@ -166,6 +160,20 @@ export class FilesListComponent implements OnInit {
 
   applyFilters(): void {
     this.filteredFiles = [...this.files];
+    if (this.searchText) {
+      this.filteredFiles = this.filteredFiles.filter(file => {
+        return file.name.toLowerCase().includes(this.searchText!) ||
+            file.useCase?.toLowerCase().includes(this.searchText!) ||
+            file.type?.toLowerCase().includes(this.searchText!) ||
+            file.origin.toLowerCase().includes(this.searchText!)
+      })
+    }
+    if (this.useCaseFilter && this.useCaseFilter !== 'All Use Cases') {
+      this.filteredFiles = this.filteredFiles.filter(file => file.useCase === this.useCaseFilter);
+    }
+    if (this.originFilter && this.originFilter !== 'All Origins') {
+      this.filteredFiles = this.filteredFiles.filter(file => file.origin === this.originFilter);
+    }
     this.currentPage = 1;
   }
 
