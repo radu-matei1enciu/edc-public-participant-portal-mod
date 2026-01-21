@@ -194,7 +194,7 @@ export class FileUploadComponent implements OnInit {
       useCase: uploadMetadata.useCase,
       partnerId: uploadMetadata.partnerId,
       size: this.selectedFiles[0].size,
-      type: 'owned'
+      origin: 'owned'
     }
     this.redlineService.uploadFile(userIds.participantId, userIds.tenantId, userIds.providerId, JSON.stringify(metadata),this.selectedFiles[0]).subscribe({
       next: () => {

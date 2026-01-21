@@ -151,6 +151,7 @@ export class FilesListComponent implements OnInit {
             uploadedAt: file.uploadDateIso,
             useCase: file.metadata?.['useCase'] ?? '',
             size: file.metadata?.['size'] ?? 0,
+            origin: file.metadata?.['origin'] ?? 'owned',
           } as FileAsset
         });
         this.applyFilters();
