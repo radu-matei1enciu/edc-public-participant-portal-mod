@@ -14,6 +14,7 @@ import {UserProfile} from '../../core/models/participant.model';
 import {formatFileSize} from '../../shared/utils/format.utils';
 import {RedlineUIService} from "../../core/redline";
 import {FileDetailComponent} from "./file-detail.component";
+import {PartnerService} from "../../core/services/partner.service";
 
 @Component({
   selector: 'app-files-list',
@@ -31,6 +32,7 @@ export class FilesListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private router = inject(Router);
+  private partnerService = inject(PartnerService);
 
   private redlineService = inject(RedlineUIService);
 
@@ -134,7 +136,12 @@ export class FilesListComponent implements OnInit {
     
     if (!this.participantId) return;
 
-    this.redlineService.listFiles(1, 1, 1).subscribe({
+    const userIds = this.partnerService.getCurrentUserIds();
+    if (!userIds) {
+      this.notificationService.showError('Error', 'Can not get the current participant');
+      return;
+    }
+    this.redlineService.listFiles(userIds.participantId, userIds.tenantId, userIds.providerId).subscribe({
       next: (files) => {
         this.files = files.map(file => {
           return {

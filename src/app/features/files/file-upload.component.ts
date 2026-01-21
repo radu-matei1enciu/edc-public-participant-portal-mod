@@ -189,13 +189,14 @@ export class FileUploadComponent implements OnInit {
     const uploadMetadata = this.uploadForm.value;
 
 
+    const userIds = this.partnerService.getCurrentUserIds()!;
     const metadata = {
       useCase: uploadMetadata.useCase,
       partnerId: uploadMetadata.partnerId,
       size: this.selectedFiles[0].size,
-      type: 'local'
+      type: 'owned'
     }
-    this.redlineService.uploadFile(1, 1, 1, JSON.stringify(metadata),this.selectedFiles[0]).subscribe({
+    this.redlineService.uploadFile(userIds.participantId, userIds.tenantId, userIds.providerId, JSON.stringify(metadata),this.selectedFiles[0]).subscribe({
       next: () => {
         this.uploading = false;
         this.notificationService.showSuccess('Success', `Successfully uploaded ${this.selectedFiles.length} file(s)`);
