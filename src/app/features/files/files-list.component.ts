@@ -32,7 +32,6 @@ export class FilesListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private router = inject(Router);
-  private partnerService = inject(PartnerService);
 
   private redlineService = inject(RedlineUIService);
 
@@ -130,7 +129,7 @@ export class FilesListComponent implements OnInit {
     
     if (!this.participantId) return;
 
-    const userIds = this.partnerService.getCurrentUserIds();
+    const userIds = this.authService.getCurrentUserIds();
     if (!userIds) {
       this.notificationService.showError('Error', 'Can not get the current participant');
       return;

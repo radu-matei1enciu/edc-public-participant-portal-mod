@@ -189,7 +189,7 @@ export class FileUploadComponent implements OnInit {
     const uploadMetadata = this.uploadForm.value;
 
 
-    const userIds = this.partnerService.getCurrentUserIds()!;
+    const userIds = this.authService.getCurrentUserIds()!;
     const metadata = {
       useCase: uploadMetadata.useCase,
       partnerId: uploadMetadata.partnerId,

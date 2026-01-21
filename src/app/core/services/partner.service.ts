@@ -18,20 +18,9 @@ export class PartnerService {
     return this.configService.config?.apiUrl || 'http://localhost:3001/api/ui';
   }
 
-  getCurrentUserIds(): { providerId: number; tenantId: number; participantId: number } | null {
-    const providerId = this.configService.config?.defaultServiceProviderId || 1;
-    const tenantId = this.authService.getTenantId();
-    const participantId = this.authService.getParticipantId();
-
-    if (!tenantId || !participantId) {
-      return null;
-    }
-
-    return { providerId, tenantId, participantId };
-  }
 
   getPartners(dataspaceId: number): Observable<Partner[]> {
-    const ids = this.getCurrentUserIds();
+    const ids = this.authService.getCurrentUserIds();
     if (!ids) {
       return of([]);
     }
@@ -53,7 +42,7 @@ export class PartnerService {
   }
 
   getPartnersByParticipant(participantId: number): Observable<Partner[]> {
-    const ids = this.getCurrentUserIds();
+    const ids = this.authService.getCurrentUserIds();
     if (!ids) {
       return of([]);
     }
