@@ -112,6 +112,7 @@ export class FilesListComponent implements OnInit {
             type: file.contentType,
             uploadedAt: file.uploadDateIso,
             useCase: file.metadata?.['useCase'] ?? '',
+            useCaseLabel: this.getUseCaseLabel((file.metadata?.['useCase'] as unknown as string) ?? ''),
             size: file.metadata?.['size'] ?? 0,
             origin: file.metadata?.['origin'] ?? 'owned',
           } as FileAsset
