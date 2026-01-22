@@ -70,6 +70,9 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: false
+          build-args: |
+            BASIC_AUTH_USER=${{ secrets.BASIC_AUTH_USER }}
+            BASIC_AUTH_PASS=${{ secrets.BASIC_AUTH_PASS }}
 
       - name: Generate artifact attestation
         if: ${{ github.event.repository.public }}

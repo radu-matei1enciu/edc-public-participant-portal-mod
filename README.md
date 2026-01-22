@@ -289,15 +289,60 @@ Make sure to configure the `apiUrl` and `defaultServiceProviderId` in your produ
 
 ### Docker
 
-A Dockerfile is included for containerized deployments. Build the image:
+A Dockerfile is included for containerized deployments. Build and run the image:
 
 ```bash
+# Build the Docker image
+npm run docker:build
+# Or manually:
 docker build -t edc-participant-portal .
+
+# Run the container (Basic Auth will be active)
+npm run docker:run
+# Or manually:
+docker run -p 8080:80 edc-participant-portal
 ```
+
+The application will be available at http://localhost:8080 with Basic Authentication enabled.
+
+**Note**: The Basic Auth is only active when running through Docker/nginx. When using `ng serve` for development, Basic Auth is not applied.
 
 ### Nginx
 
 An nginx configuration template is provided in `nginx/templates/nginx.conf.template`. This can be used with environment variable substitution for flexible deployment configurations.
+
+#### Basic Authentication
+
+The nginx configuration includes Basic Authentication to protect the application. The `.htpasswd` file is **generated during Docker build** using build arguments.
+
+**For Local Development**:
+- Default credentials: `admin` / `password`
+- The Dockerfile uses default values if no build args are provided
+
+**For Production (GitHub Actions Pipeline)**:
+
+The Docker build uses GitHub Secrets to generate the `.htpasswd` file. Configure these secrets in your GitHub repository:
+
+1. Go to **Settings** → **Secrets and variables** → **Actions**
+2. Add the following secrets:
+   - `BASIC_AUTH_USER`: The username for Basic Auth
+   - `BASIC_AUTH_PASS`: The password for Basic Auth
+
+The GitHub Actions workflow will automatically pass these secrets as build arguments to the Docker build, ensuring secure credentials in production.
+
+- Never commit `.htpasswd` to the repository (it's in `.gitignore`)
+- The default `admin/password` credentials are only for local development
+
+**Manual Build with Custom Credentials**:
+
+If you need to build locally with custom credentials:
+```bash
+docker build \
+  --build-arg BASIC_AUTH_USER=myuser \
+  --build-arg BASIC_AUTH_PASS=mypassword \
+  -t edc-participant-portal .
+```
+
 
 ## License
 
