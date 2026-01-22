@@ -3,7 +3,7 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {CommonModule} from '@angular/common';
 import {Router} from '@angular/router';
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
-import {debounceTime, distinctUntilChanged, Observable} from 'rxjs';
+import {debounceTime, distinctUntilChanged, firstValueFrom, Observable} from 'rxjs';
 import {UseCaseService} from '../../core/services/use-case.service';
 import {AuthService} from '../../core/services/auth.service';
 import {NotificationService} from '../../shared/services/notification.service';
@@ -13,6 +13,7 @@ import {UseCase} from '../../core/models/use-case.model';
 import {formatFileSize} from '../../shared/utils/format.utils';
 import {RedlineUIService} from "../../core/redline";
 import {FileDetailComponent} from "./file-detail.component";
+import {PartnerService} from "../../core/services/partner.service";
 
 @Component({
   selector: 'app-files-list',
@@ -30,7 +31,7 @@ export class FilesListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private router = inject(Router);
-
+  private readonly partnerService = inject(PartnerService)
   private redlineService = inject(RedlineUIService);
 
   files: FileAsset[] = [];
@@ -95,7 +96,7 @@ export class FilesListComponent implements OnInit {
   }
 
 
-  loadFiles(): void {
+  async loadFiles(): Promise<void> {
     this.loading = true;
 
     const userIds = this.authService.getCurrentUserIds();
@@ -103,28 +104,38 @@ export class FilesListComponent implements OnInit {
       this.notificationService.showError('Error', 'Failed to load the user profile.');
       return;
     }
-    this.redlineService.listFiles(userIds.participantId, userIds.tenantId, userIds.providerId).subscribe({
-      next: (files) => {
-        this.files = files.map(file => {
-          return {
-            name: file.fileName,
-            id: file.fileId,
-            type: file.contentType,
-            uploadedAt: file.uploadDateIso,
-            useCase: file.metadata?.['useCase'] ?? '',
-            useCaseLabel: this.getUseCaseLabel((file.metadata?.['useCase'] as unknown as string) ?? ''),
-            size: file.metadata?.['size'] ?? 0,
-            origin: file.metadata?.['origin'] ?? 'owned',
-          } as FileAsset
-        });
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-        this.notificationService.showError('Error', 'Failed to load files');
+    try {
+      const redlineFiles = await firstValueFrom(this.redlineService.listFiles(userIds.participantId, userIds.tenantId, userIds.providerId));
+      for (const file of redlineFiles) {
+        const useCaseId = file.metadata?.['useCase'] as unknown as string;
+        const partnerId = file.metadata?.['partnerId'] as unknown as string;
+        let partnerName = '';
+        if (partnerId) {
+          partnerName = (await firstValueFrom(this.partnerService.getPartnerReference(1, partnerId)))?.name ?? '';
+        }
+        this.files.push({
+          name: file.fileName ?? '',
+          id: file.fileId ?? '',
+          type: file.contentType,
+          uploadedAt: file.uploadDateIso ?? '',
+          useCase: useCaseId ?? '',
+          useCaseLabel: this.useCases.find(uc => uc.id === useCaseId)?.label ?? '',
+          size: file.metadata?.['size'] as unknown as number ?? 0,
+          origin: file.metadata?.['origin'] as unknown as 'owned' | 'remote' ?? 'owned',
+          accessRestrictions: partnerId ? [
+            {
+              partnerId: partnerId,
+              partnerName: partnerName
+            }
+          ] : []
+        })
       }
-    });
+      this.applyFilters();
+      this.loading = false;
+    } catch (error) {
+      this.loading = false;
+      this.notificationService.showError('Error', 'Failed to load files');
+    }
   }
 
   applyFilters(): void {
