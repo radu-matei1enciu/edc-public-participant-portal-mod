@@ -11,7 +11,7 @@ import {UserPreferences, UserPreferencesService} from '../../core/services/user-
 import {FileAsset} from '../../core/models/file-asset.model';
 import {UseCase} from '../../core/models/use-case.model';
 import {formatFileSize} from '../../shared/utils/format.utils';
-import {RedlineUIService} from "../../core/redline";
+import {FileResource, RedlineUIService} from "../../core/redline";
 import {FileDetailComponent} from "./file-detail.component";
 import {PartnerService} from "../../core/services/partner.service";
 
@@ -107,28 +107,7 @@ export class FilesListComponent implements OnInit {
     try {
       const redlineFiles = await firstValueFrom(this.redlineService.listFiles(userIds.participantId, userIds.tenantId, userIds.providerId));
       for (const file of redlineFiles) {
-        const useCaseId = file.metadata?.['useCase'] as unknown as string;
-        const partnerId = file.metadata?.['partnerId'] as unknown as string;
-        let partnerName = '';
-        if (partnerId) {
-          partnerName = (await firstValueFrom(this.partnerService.getPartnerReference(1, partnerId)))?.name ?? '';
-        }
-        this.files.push({
-          name: file.fileName ?? '',
-          id: file.fileId ?? '',
-          type: file.contentType,
-          uploadedAt: file.uploadDateIso ?? '',
-          useCase: useCaseId ?? '',
-          useCaseLabel: this.useCases.find(uc => uc.id === useCaseId)?.label ?? '',
-          size: file.metadata?.['size'] as unknown as number ?? 0,
-          origin: file.metadata?.['origin'] as unknown as 'owned' | 'remote' ?? 'owned',
-          accessRestrictions: partnerId ? [
-            {
-              partnerId: partnerId,
-              partnerName: partnerName
-            }
-          ] : []
-        })
+        await this.addToFiles(file)
       }
       this.applyFilters();
       this.loading = false;
@@ -136,6 +115,31 @@ export class FilesListComponent implements OnInit {
       this.loading = false;
       this.notificationService.showError('Error', 'Failed to load files');
     }
+  }
+
+  private async addToFiles(file: FileResource): Promise<void> {
+    const useCaseId = file.metadata?.['useCase'] as unknown as string;
+    const partnerId = file.metadata?.['partnerId'] as unknown as string;
+    let partnerName = '';
+    if (partnerId) {
+      partnerName = (await firstValueFrom(this.partnerService.getPartnerReference(1, partnerId)))?.name ?? '';
+    }
+    this.files.push({
+      name: file.fileName ?? '',
+      id: file.fileId ?? '',
+      type: file.contentType,
+      uploadedAt: file.uploadDateIso ?? '',
+      useCase: useCaseId ?? '',
+      useCaseLabel: this.useCases.find(uc => uc.id === useCaseId)?.label ?? '',
+      size: file.metadata?.['size'] as unknown as number ?? 0,
+      origin: file.metadata?.['origin'] as unknown as 'owned' | 'remote' ?? 'owned',
+      accessRestrictions: partnerId ? [
+        {
+          partnerId: partnerId,
+          partnerName: partnerName
+        }
+      ] : []
+    });
   }
 
   applyFilters(): void {
