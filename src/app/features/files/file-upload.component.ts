@@ -12,6 +12,8 @@ import { UseCase } from '../../core/models/use-case.model';
 import { Partner } from '../../core/models/partner.model';
 import { formatFileSize } from '../../shared/utils/format.utils';
 import {RedlineUIService} from "../../core/redline";
+import {DataspaceService} from "../../core/services/dataspace.service";
+import {firstValueFrom} from "rxjs";
 
 @Component({
   selector: 'app-file-upload',
@@ -32,6 +34,7 @@ export class FileUploadComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private redlineService = inject(RedlineUIService);
+  private dataspaceService = inject(DataspaceService);
 
   participantId: number | null = null;
 
@@ -82,9 +85,11 @@ export class FileUploadComponent implements OnInit {
     });
   }
 
-  loadPartners(): void {
+  async loadPartners(): Promise<void> {
     if (!this.participantId) return;
-    this.partnerService.getPartnersByParticipant(this.participantId).subscribe({
+    const cx = (await firstValueFrom(this.dataspaceService.getDataspaces()))
+        .find(ds => ds.name.toLowerCase().includes('catena'));
+    this.partnerService.getPartners(cx!.id).subscribe({
       next: (partners) => {
         this.partners = partners;
       },
