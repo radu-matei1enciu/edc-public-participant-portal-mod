@@ -468,7 +468,7 @@ async function handleRegisterTenant(req, res, providerId) {
   try {
     const body = await parseBody(req);
     const tenantId = tenants.length + 1;
-    const participantId = participants.length + 1;
+    const participantId = participants.length;
     
     const dataspaceInfos = body.dataspaceInfos || [];
     const dataspaceInfoList = dataspaceInfos.map((dsInfo, index) => ({
