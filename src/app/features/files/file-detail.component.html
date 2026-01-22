@@ -28,22 +28,22 @@
                   </div>
                 </div>
                 <div class="ml-6">
-                  <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ file.name }}</h1>
+                  <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ file.name.split('.')[0] }}</h1>
                   @if (file.description) {
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ file.description }}</p>
                   }
                 </div>
               </div>
-              @if (!editing) {
-                <button
-                  (click)="startEditing()"
-                  class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                  </svg>
-                  Edit
-                </button>
-              }
+<!--              @if (!editing) {-->
+<!--                <button-->
+<!--                  (click)="startEditing()"-->
+<!--                  class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">-->
+<!--                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
+<!--                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>-->
+<!--                  </svg>-->
+<!--                  Edit-->
+<!--                </button>-->
+<!--              }-->
             </div>
           </div>
 
@@ -70,9 +70,9 @@
               </div>
               @if (file.type) {
                 <div>
-                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Type</dt>
-                  <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                    {{ file.type }}
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">File Type</dt>
+                  <dd class="px-2 inline-flex text-xs leading-5 font-medium rounded bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                    {{ file.name.split('.')[1] | uppercase }}
                   </dd>
                 </div>
               }
@@ -85,29 +85,23 @@
                 </div>
               }
               <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Access</dt>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Type</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                  @if (file.access) {
-                    <span [class]="file.access === 'public' ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : file.access === 'restricted' ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'">
-                      {{ file.access }}
+                  @if (file.origin) {
+                    <span [class]="file.origin === 'owned' ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'">
+                      {{ file.origin | titlecase }}
                     </span>
                   } @else {
                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                      public
-                    </span>
+                      N/A
+                      </span>
                   }
                 </dd>
               </div>
               <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Uploaded</dt>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Date</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">
                   {{ formatDate(file.uploadedAt) }}
-                </dd>
-              </div>
-              <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Modified</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                  {{ formatDate(file.updatedAt || file.uploadedAt) }}
                 </dd>
               </div>
             </dl>

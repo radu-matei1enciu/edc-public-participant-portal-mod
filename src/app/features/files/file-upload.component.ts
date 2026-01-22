@@ -11,6 +11,9 @@ import { ModalService } from '../../core/services/modal.service';
 import { UseCase } from '../../core/models/use-case.model';
 import { Partner } from '../../core/models/partner.model';
 import { formatFileSize } from '../../shared/utils/format.utils';
+import {RedlineUIService} from "../../core/redline";
+import {DataspaceService} from "../../core/services/dataspace.service";
+import {firstValueFrom} from "rxjs";
 
 @Component({
   selector: 'app-file-upload',
@@ -30,6 +33,8 @@ export class FileUploadComponent implements OnInit {
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
+  private redlineService = inject(RedlineUIService);
+  private dataspaceService = inject(DataspaceService);
 
   participantId: number | null = null;
 
@@ -80,9 +85,11 @@ export class FileUploadComponent implements OnInit {
     });
   }
 
-  loadPartners(): void {
+  async loadPartners(): Promise<void> {
     if (!this.participantId) return;
-    this.partnerService.getPartnersByParticipant(this.participantId).subscribe({
+    const cx = (await firstValueFrom(this.dataspaceService.getDataspaces()))
+        .find(ds => ds.name.toLowerCase().includes('catena'));
+    this.partnerService.getPartners(cx!.id).subscribe({
       next: (partners) => {
         this.partners = partners;
       },
@@ -180,18 +187,21 @@ export class FileUploadComponent implements OnInit {
     });
 
     if (!confirmed) {
-      return; 
+      return;
     }
 
     this.uploading = true;
     const uploadMetadata = this.uploadForm.value;
 
-    this.fileAssetService.uploadFiles(this.participantId, this.selectedFiles, {
-      useCase: uploadMetadata.useCase || undefined,
-      partnerId: uploadMetadata.partnerId || undefined,
-      description: '',
-      dataspace: undefined
-    }).subscribe({
+
+    const userIds = this.authService.getCurrentUserIds()!;
+    const metadata = {
+      useCase: uploadMetadata.useCase,
+      partnerId: uploadMetadata.partnerId,
+      size: this.selectedFiles[0].size,
+      origin: 'owned'
+    }
+    this.redlineService.uploadFile(userIds.participantId, userIds.tenantId, userIds.providerId, JSON.stringify(metadata),this.selectedFiles[0]).subscribe({
       next: () => {
         this.uploading = false;
         this.notificationService.showSuccess('Success', `Successfully uploaded ${this.selectedFiles.length} file(s)`);
@@ -202,6 +212,24 @@ export class FileUploadComponent implements OnInit {
         this.notificationService.showError('Error', error.message || 'Failed to upload files');
       }
     });
+
+    //
+    // this.fileAssetService.uploadFiles(this.participantId, this.selectedFiles, {
+    //   useCase: uploadMetadata.useCase || undefined,
+    //   partnerId: uploadMetadata.partnerId || undefined,
+    //   description: '',
+    //   dataspace: undefined
+    // }).subscribe({
+    //   next: () => {
+    //     this.uploading = false;
+    //     this.notificationService.showSuccess('Success', `Successfully uploaded ${this.selectedFiles.length} file(s)`);
+    //     this.router.navigate(['/files']);
+    //   },
+    //   error: (error) => {
+    //     this.uploading = false;
+    //     this.notificationService.showError('Error', error.message || 'Failed to upload files');
+    //   }
+    // });
   }
 
   closeUpload(): void {

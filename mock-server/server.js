@@ -167,13 +167,13 @@ function handleGetParticipantById(req, res, id) {
 }
 
 function handleGetMe(req, res) {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    res.writeHead(401, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Token di autenticazione richiesto' }));
-    return;
-  }
+  // const authHeader = req.headers.authorization;
+  //
+  // if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  //   res.writeHead(401, { 'Content-Type': 'application/json' });
+  //   res.end(JSON.stringify({ error: 'Token di autenticazione richiesto' }));
+  //   return;
+  // }
 
   const mockResponse = {
     user: {
@@ -405,24 +405,15 @@ let files = [
 ];
 
 let useCases = [
-  { id: 'uc-manufacturing', name: 'manufacturing', label: 'Manufacturing Analytics', description: 'Analytics for manufacturing processes' },
-  { id: 'uc-healthcare', name: 'healthcare', label: 'Healthcare Research', description: 'Research data for healthcare' },
-  { id: 'uc-energy', name: 'energy', label: 'Energy Management', description: 'Energy consumption and management' },
-  { id: 'uc-logistics', name: 'logistics', label: 'Logistics Optimization', description: 'Supply chain and logistics optimization' }
+  { id: 'uc-certificate-management', name: 'certificate-management', label: 'Certificate Management', description: 'Manage your certificate sharing with partners' },
 ];
 
 const useCaseToDataspace = {
-  'uc-manufacturing': 'Manufacturing DataSpace',
-  'uc-healthcare': 'Healthcare DataSpace',
-  'uc-energy': 'Energy DataSpace',
-  'uc-logistics': 'Logistics DataSpace'
+  'uc-certificate-management': 'Catena-X',
 };
 
 let dataspaces = [
-  { id: 1, name: 'CatenaX DataSpace' },
-  { id: 2, name: 'Gaia-X DataSpace' },
-  { id: 3, name: 'IDSA DataSpace' },
-  { id: 4, name: 'Manufacturing-X' }
+  { id: 1, name: 'Catena-X' },
 ];
 
 let serviceProviders = [
@@ -468,7 +459,7 @@ async function handleRegisterTenant(req, res, providerId) {
   try {
     const body = await parseBody(req);
     const tenantId = tenants.length + 1;
-    const participantId = participants.length + 1;
+    const participantId = participants.length;
     
     const dataspaceInfos = body.dataspaceInfos || [];
     const dataspaceInfoList = dataspaceInfos.map((dsInfo, index) => ({

@@ -1,29 +1,29 @@
-import { Component, OnInit, inject, DestroyRef } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { Observable, interval, startWith, switchMap, catchError, of, debounceTime, distinctUntilChanged, firstValueFrom } from 'rxjs';
-import { FileAssetService } from '../../core/services/file-asset.service';
-import { UseCaseService } from '../../core/services/use-case.service';
-import { AuthService } from '../../core/services/auth.service';
-import { NotificationService } from '../../shared/services/notification.service';
-import { UserPreferencesService, UserPreferences } from '../../core/services/user-preferences.service';
-import { FileAsset } from '../../core/models/file-asset.model';
-import { UseCase } from '../../core/models/use-case.model';
-import { UserProfile } from '../../core/models/participant.model';
-import { formatFileSize } from '../../shared/utils/format.utils';
+import {Component, DestroyRef, inject, OnInit} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {CommonModule} from '@angular/common';
+import {Router} from '@angular/router';
+import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
+import {debounceTime, distinctUntilChanged, firstValueFrom, Observable} from 'rxjs';
+import {UseCaseService} from '../../core/services/use-case.service';
+import {AuthService} from '../../core/services/auth.service';
+import {NotificationService} from '../../shared/services/notification.service';
+import {UserPreferences, UserPreferencesService} from '../../core/services/user-preferences.service';
+import {FileAsset} from '../../core/models/file-asset.model';
+import {UseCase} from '../../core/models/use-case.model';
+import {formatFileSize} from '../../shared/utils/format.utils';
+import {FileResource, RedlineUIService} from "../../core/redline";
+import {FileDetailComponent} from "./file-detail.component";
+import {PartnerService} from "../../core/services/partner.service";
 
 @Component({
   selector: 'app-files-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FileDetailComponent],
   templateUrl: './files-list.component.html',
   })
 export class FilesListComponent implements OnInit {
   formatFileSize = formatFileSize;
   
-  private fileAssetService = inject(FileAssetService);
   private useCaseService = inject(UseCaseService);
   private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
@@ -31,18 +31,20 @@ export class FilesListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private router = inject(Router);
+  private readonly partnerService = inject(PartnerService)
+  private redlineService = inject(RedlineUIService);
 
   files: FileAsset[] = [];
   filteredFiles: FileAsset[] = [];
+  selectedFile?: FileAsset;
   useCases: UseCase[] = [];
   filterForm: FormGroup;
   loading = false;
   preferences$: Observable<UserPreferences>;
-  currentPage = 1;
-  itemsPerPage = 10;
-  userProfile: UserProfile | null = null;
-  participantId: number | null = null;
   showExploreSelection = false;
+  searchText?: string;
+  useCaseFilter?: string;
+  originFilter?: string;
 
   constructor() {
     this.filterForm = this.fb.group({
@@ -53,45 +55,33 @@ export class FilesListComponent implements OnInit {
     this.preferences$ = this.preferencesService.preferences$;
   }
 
-  ngOnInit(): void {
-    this.authService.loadUserProfile().subscribe({
-      next: (profile) => {
-        this.userProfile = profile;
-        this.participantId = profile.participant.id;
-        this.loadUseCases();
-        this.loadFiles();
-      },
-      error: () => {
-        this.notificationService.showError('Error', 'Failed to load user profile');
-      }
-    });
-
-    this.preferences$.pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(prefs => {
-      this.itemsPerPage = prefs.defaultPageSize || 10;
-      this.currentPage = 1;
-    });
+  async ngOnInit(): Promise<void> {
+    this.loadUseCases();
+    this.loadFiles();
 
     this.filterForm.get('searchTerm')?.valueChanges.pipe(
       debounceTime(300),
       distinctUntilChanged(),
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe(() => {
+    ).subscribe(value => {
+      this.searchText = (value as string).toLowerCase();
       this.applyFilters();
     });
 
     this.filterForm.get('useCaseFilter')?.valueChanges.pipe(
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe(() => {
+    ).subscribe(value => {
+      this.useCaseFilter = value;
       this.applyFilters();
     });
 
     this.filterForm.get('originFilter')?.valueChanges.pipe(
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe(() => {
+    ).subscribe(value => {
+      this.originFilter = value;
       this.applyFilters();
     });
+
   }
 
   loadUseCases(): void {
@@ -106,56 +96,70 @@ export class FilesListComponent implements OnInit {
   }
 
 
-  loadFiles(): void {
-    if (!this.participantId) return;
-    
+  async loadFiles(): Promise<void> {
     this.loading = true;
-    const filters = {
-      search: this.filterForm.get('searchTerm')?.value || undefined,
-      useCase: this.filterForm.get('useCaseFilter')?.value || undefined,
-      origin: this.filterForm.get('originFilter')?.value || undefined
-    };
-    
-    if (!this.participantId) return;
-    this.fileAssetService.getFiles(this.participantId, filters).subscribe({
-      next: (files) => {
-        this.files = files;
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-        this.notificationService.showError('Error', 'Failed to load files');
+
+    const userIds = this.authService.getCurrentUserIds();
+    if (!userIds) {
+      this.notificationService.showError('Error', 'Failed to load the user profile.');
+      return;
+    }
+    try {
+      const redlineFiles = await firstValueFrom(this.redlineService.listFiles(userIds.participantId, userIds.tenantId, userIds.providerId));
+      for (const file of redlineFiles) {
+        await this.addToFiles(file)
       }
+      this.applyFilters();
+      this.loading = false;
+    } catch (error) {
+      this.loading = false;
+      this.notificationService.showError('Error', 'Failed to load files');
+    }
+  }
+
+  private async addToFiles(file: FileResource): Promise<void> {
+    const useCaseId = file.metadata?.['useCase'] as unknown as string;
+    const partnerId = file.metadata?.['partnerId'] as unknown as string;
+    let partnerName = '';
+    if (partnerId) {
+      partnerName = (await firstValueFrom(this.partnerService.getPartnerReference(1, partnerId)))?.name ?? '';
+    }
+    this.files.push({
+      name: file.fileName ?? '',
+      id: file.fileId ?? '',
+      type: file.contentType,
+      uploadedAt: file.uploadDateIso ?? '',
+      useCase: useCaseId ?? '',
+      useCaseLabel: this.useCases.find(uc => uc.id === useCaseId)?.label ?? '',
+      size: file.metadata?.['size'] as unknown as number ?? 0,
+      origin: file.metadata?.['origin'] as unknown as 'owned' | 'remote' ?? 'owned',
+      accessRestrictions: partnerId ? [
+        {
+          partnerId: partnerId,
+          partnerName: partnerName
+        }
+      ] : []
     });
   }
 
   applyFilters(): void {
     this.filteredFiles = [...this.files];
-    this.currentPage = 1;
-  }
-
-  getPaginatedFiles(): FileAsset[] {
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    return this.filteredFiles.slice(start, end);
-  }
-
-  getTotalPages(): number {
-    return Math.ceil(this.filteredFiles.length / this.itemsPerPage);
-  }
-
-  previousPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
+    if (this.searchText) {
+      this.filteredFiles = this.filteredFiles.filter(file => {
+        return file.name.toLowerCase().includes(this.searchText!) ||
+            file.useCase?.toLowerCase().includes(this.searchText!) ||
+            file.type?.toLowerCase().includes(this.searchText!) ||
+            file.origin.toLowerCase().includes(this.searchText!)
+      })
+    }
+    if (this.useCaseFilter && this.useCaseFilter !== 'All Use Cases') {
+      this.filteredFiles = this.filteredFiles.filter(file => file.useCase === this.useCaseFilter);
+    }
+    if (this.originFilter && this.originFilter !== 'All Origins') {
+      this.filteredFiles = this.filteredFiles.filter(file => file.origin === this.originFilter);
     }
   }
 
-  nextPage(): void {
-    if (this.currentPage < this.getTotalPages()) {
-      this.currentPage++;
-    }
-  }
 
   openExploreSelection(): void {
     this.showExploreSelection = true;

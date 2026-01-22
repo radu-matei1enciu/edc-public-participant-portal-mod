@@ -1,3 +1,9 @@
+@if (selectedFile) {
+    <app-file-detail
+            [file]="selectedFile"
+            (closeDetails)="selectedFile = undefined"
+    ></app-file-detail>
+} @else {
 <div class="p-6">
   
   <div class="sm:flex sm:items-center mb-8">
@@ -52,28 +58,6 @@
   </form>
 
   
-  <div class="mb-4 flex items-center justify-between">
-    <div class="text-sm text-gray-500 dark:text-gray-400">
-      Showing {{ filteredFiles.length }} of {{ files.length }} files
-      @if (preferences$ | async; as prefs) {
-        <span class="ml-2">
-          (page size: {{ prefs.defaultPageSize }})
-        </span>
-      }
-    </div>
-    @if (preferences$ | async; as prefs) {
-      <div class="text-sm text-gray-500 dark:text-gray-400">
-        @if (prefs.autoRefreshInterval > 0) {
-          <div class="flex items-center space-x-2">
-            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span>Auto-refresh: {{ prefs.autoRefreshInterval }}s</span>
-          </div>
-        }
-      </div>
-    }
-  </div>
-
-  
   <div class="mt-8 flow-root">
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
       <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
@@ -88,7 +72,7 @@
                   Use Case
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Type
+                  File Type
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Size
@@ -97,13 +81,10 @@
                   Partner
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Access
+                  Type
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Uploaded
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Modified
+                  Date
                 </th>
                 <th scope="col" class="relative px-6 py-3">
                   <span class="sr-only">Actions</span>
@@ -121,10 +102,10 @@
                 </tr>
               } @else {
                 @if (filteredFiles.length > 0) {
-                  @for (file of getPaginatedFiles(); track file.id) {
+                  @for (file of filteredFiles; track file.id) {
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
                       <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900 dark:text-white">{{ file.name }}</div>
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">{{ file.name.split('.')[0] }}</div>
                         @if (file.description) {
                           <div class="text-sm text-gray-500 dark:text-gray-400">{{ file.description }}</div>
                         }
@@ -133,13 +114,9 @@
                         {{ file.useCaseLabel || file.useCase || 'N/A' }}
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        @if (file.type) {
-                          <span class="px-2 inline-flex text-xs leading-5 font-medium rounded bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
-                            {{ file.type }}
-                          </span>
-                        } @else {
-                          <span class="text-gray-400 dark:text-gray-500">N/A</span>
-                        }
+                        <span class="px-2 inline-flex text-xs leading-5 font-medium rounded bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                          {{ file.name.split('.')[1] | uppercase }}
+                        </span>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {{ formatFileSize(file.size) }}
@@ -158,25 +135,22 @@
                         }
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
-                        @if (file.access) {
-                          <span [class]="file.access === 'public' ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : file.access === 'restricted' ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'">
-                            {{ file.access }}
+                        @if (file.origin) {
+                          <span [class]="file.origin === 'owned' ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'">
+                            {{ file.origin | titlecase }}
                           </span>
                         } @else {
                           <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                            public
+                            N/A
                           </span>
                         }
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {{ formatDate(file.uploadedAt) }}
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {{ formatDate(file.updatedAt || file.uploadedAt) }}
-                      </td>
                       <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <a [routerLink]="['/files', file.id]" 
-                           class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-900/30 dark:text-gray-300 dark:hover:bg-gray-900/50 transition-colors duration-200">
+                        <a (click)="selectedFile = file"
+                           class="cursor-pointer inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-900/30 dark:text-gray-300 dark:hover:bg-gray-900/50 transition-colors duration-200">
                           <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
@@ -215,27 +189,6 @@
       </div>
     </div>
   </div>
-
-  
-  @if (getTotalPages() > 1) {
-    <div class="mt-6 flex items-center justify-between">
-      <div class="flex items-center space-x-2">
-        <button (click)="previousPage()" 
-                [disabled]="currentPage === 1"
-                class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
-          Previous
-        </button>
-        <span class="text-sm text-gray-700 dark:text-gray-300">
-          Page {{ currentPage }} of {{ getTotalPages() }}
-        </span>
-        <button (click)="nextPage()" 
-                [disabled]="currentPage === getTotalPages()"
-                class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
-          Next
-        </button>
-      </div>
-    </div>
-  }
 
   
   @if (showExploreSelection) {
@@ -278,3 +231,4 @@
   }
 
 </div>
+}
