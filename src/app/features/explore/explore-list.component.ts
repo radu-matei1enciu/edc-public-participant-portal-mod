@@ -3,7 +3,17 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { Observable, interval, startWith, switchMap, catchError, of, debounceTime, distinctUntilChanged } from 'rxjs';
+import {
+  Observable,
+  interval,
+  startWith,
+  switchMap,
+  catchError,
+  of,
+  debounceTime,
+  distinctUntilChanged,
+  firstValueFrom
+} from 'rxjs';
 import { FileAssetService } from '../../core/services/file-asset.service';
 import { UseCaseService } from '../../core/services/use-case.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -12,6 +22,8 @@ import { UserPreferencesService, UserPreferences } from '../../core/services/use
 import { FileAsset } from '../../core/models/file-asset.model';
 import { UseCase } from '../../core/models/use-case.model';
 import { UserProfile } from '../../core/models/participant.model';
+import {EDCDataOperationsService, TenantOperationsService} from "../../core/redline";
+import {RedlineUser} from "../../core/models/redline-user.model";
 
 @Component({
   selector: 'app-explore-list',
@@ -27,6 +39,8 @@ export class ExploreListComponent implements OnInit {
   private preferencesService = inject(UserPreferencesService);
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
+  private readonly tenantOperationsService = inject(TenantOperationsService)
+  private readonly edcDataOperationsService = inject(EDCDataOperationsService)
 
   files: FileAsset[] = [];
   filteredFiles: FileAsset[] = [];
@@ -37,7 +51,7 @@ export class ExploreListComponent implements OnInit {
   currentPage = 1;
   itemsPerPage = 10;
   userProfile: UserProfile | null = null;
-  participantId: number | null = null;
+  redlineUser?: RedlineUser;
   requestingAccess: string | null = null;
 
   constructor() {
@@ -53,9 +67,9 @@ export class ExploreListComponent implements OnInit {
     this.authService.loadUserProfile().subscribe({
       next: (profile) => {
         this.userProfile = profile;
-        this.participantId = profile.participant.id;
+        this.redlineUser = this.authService.getRedlineUser();
         this.loadUseCases();
-        this.loadFiles();
+        this.loadFiles().then();
       },
       error: () => {
         this.notificationService.showError('Error', 'Failed to load user profile');
@@ -74,19 +88,19 @@ export class ExploreListComponent implements OnInit {
       distinctUntilChanged(),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(() => {
-      this.loadFiles();
+      this.loadFiles().then();
     });
 
     this.filterForm.get('useCaseFilter')?.valueChanges.pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(() => {
-      this.loadFiles();
+      this.loadFiles().then();
     });
 
     this.filterForm.get('companyFilter')?.valueChanges.pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(() => {
-      this.loadFiles();
+      this.loadFiles().then();
     });
   }
 
@@ -101,27 +115,20 @@ export class ExploreListComponent implements OnInit {
     });
   }
 
-  loadFiles(): void {
-    if (!this.participantId) return;
-    
+  async loadFiles(): Promise<void> {
+    if (!this.redlineUser) return;
     this.loading = true;
-    const searchQuery = this.filterForm.get('searchTerm')?.value || '';
-    const filters = {
-      company: this.filterForm.get('companyFilter')?.value || undefined,
-      useCase: this.filterForm.get('useCaseFilter')?.value || undefined
-    };
-    
-    this.fileAssetService.searchFiles(searchQuery, filters).subscribe({
-      next: (files) => {
-        this.files = files;
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-        this.notificationService.showError('Error', 'Failed to search files');
-      }
-    });
+
+    /**
+     * ToDo: Get dataspace ID
+     */
+    const partners = await firstValueFrom(this.tenantOperationsService.getPartners(
+        this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId, 0));
+    console.log('Partners', JSON.stringify(partners))
+    const catalog = await firstValueFrom(this.edcDataOperationsService.requestCatalog(
+        this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId, partners[0].identifier!
+    ))
+    console.log('Catalog', JSON.stringify(catalog))
   }
 
   applyFilters(): void {
@@ -163,19 +170,19 @@ export class ExploreListComponent implements OnInit {
   }
 
   requestAccess(fileId: string): void {
-    if (!this.participantId) return;
+    if (!this.redlineUser) return;
 
-    this.requestingAccess = fileId;
-    this.fileAssetService.requestAccess(this.participantId, fileId).subscribe({
-      next: () => {
-        this.requestingAccess = null;
-        this.notificationService.showSuccess('Success', 'Access request submitted');
-        this.loadFiles();
-      },
-      error: () => {
-        this.requestingAccess = null;
-        this.notificationService.showError('Error', 'Failed to request access');
-      }
-    });
+  //   this.requestingAccess = fileId;
+  //   this.fileAssetService.requestAccess(this.redlineUser, fileId).subscribe({
+  //     next: () => {
+  //       this.requestingAccess = null;
+  //       this.notificationService.showSuccess('Success', 'Access request submitted');
+  //       this.loadFiles();
+  //     },
+  //     error: () => {
+  //       this.requestingAccess = null;
+  //       this.notificationService.showError('Error', 'Failed to request access');
+  //     }
+  //   });
   }
 }

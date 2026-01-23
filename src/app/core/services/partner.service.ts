@@ -20,7 +20,7 @@ export class PartnerService {
 
 
   getPartners(dataspaceId: number): Observable<Partner[]> {
-    const ids = this.authService.getCurrentUserIds();
+    const ids = this.authService.getRedlineUser();
     if (!ids) {
       return of([]);
     }
@@ -42,7 +42,7 @@ export class PartnerService {
   }
 
   getPartnersByParticipant(participantId: number): Observable<Partner[]> {
-    const ids = this.authService.getCurrentUserIds();
+    const ids = this.authService.getRedlineUser();
     if (!ids) {
       return of([]);
     }

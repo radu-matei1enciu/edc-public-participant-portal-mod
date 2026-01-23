@@ -99,7 +99,7 @@ export class FilesListComponent implements OnInit {
   async loadFiles(): Promise<void> {
     this.loading = true;
 
-    const userIds = this.authService.getCurrentUserIds();
+    const userIds = this.authService.getRedlineUser();
     if (!userIds) {
       this.notificationService.showError('Error', 'Failed to load the user profile.');
       return;
