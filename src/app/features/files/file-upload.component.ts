@@ -87,9 +87,12 @@ export class FileUploadComponent implements OnInit {
 
   async loadPartners(): Promise<void> {
     if (!this.participantId) return;
+    const ids = this.authService.getCurrentUserIds();
+    if (!ids) return;
+    
     const cx = (await firstValueFrom(this.dataspaceService.getDataspaces()))
         .find(ds => ds.name.toLowerCase().includes('catena'));
-    this.partnerService.getPartners(cx!.id).subscribe({
+    this.partnerService.getPartners(ids.providerId, ids.tenantId, ids.participantId, cx!.id).subscribe({
       next: (partners) => {
         this.partners = partners;
       },
@@ -161,14 +164,14 @@ export class FileUploadComponent implements OnInit {
       const useCaseId = this.uploadForm.get('useCase')?.value;
       const partnerId = this.uploadForm.get('partnerId')?.value;
       const useCase = this.useCases.find(uc => uc.id === useCaseId);
-      const partner = this.partners.find(p => p.id === partnerId);
+      const partner = this.partners.find(p => p.identifier === partnerId);
       
       return {
         name: file.name,
         size: file.size,
         type: file.type || 'application/octet-stream',
         useCase: useCase?.label,
-        partner: partner?.name
+        partner: partner?.nickname
       };
     });
   }

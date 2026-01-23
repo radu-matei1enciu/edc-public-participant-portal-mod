@@ -72,9 +72,15 @@ export class PartnersSectionComponent implements OnInit {
   loadPartners(): void {
     if (!this.selectedDataspaceId) return;
     
+    const ids = this.authService.getCurrentUserIds();
+    if (!ids) {
+      this.loading = false;
+      return;
+    }
+    
     this.loading = true;
     
-    this.partnerService.getPartners(this.selectedDataspaceId).subscribe({
+    this.partnerService.getPartners(ids.providerId, ids.tenantId, ids.participantId, this.selectedDataspaceId).subscribe({
       next: (partners) => {
         this.partners = partners;
         this.loading = false;

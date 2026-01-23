@@ -401,6 +401,19 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
         return;
       }
       
+      const propertyKeys = [
+        'companyIdentifier', 'description', 'companyType', 'vatNumber', 'fiscalCode',
+        'email', 'phone', 'website', 'country', 'region', 'city', 'address', 'postalCode'
+      ];
+      
+      const properties = propertyKeys.reduce((acc, key) => {
+        const value = formValue[key];
+        if (value) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {} as Record<string, unknown>);
+      
       const tenantRegistration: NewTenantRegistration = {
         tenantName: formValue.participantName,
         dataspaceInfos: [
@@ -409,7 +422,8 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
             agreementTypes: [],
             roles: []
           }
-        ]
+        ],
+        ...(Object.keys(properties).length > 0 && { properties })
       };
 
       this.tenantService.registerTenant(providerId, tenantRegistration).subscribe({

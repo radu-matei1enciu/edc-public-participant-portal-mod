@@ -29,36 +29,39 @@
     @if (partners.length > 0) {
       <div class="p-6">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          @for (partner of partners; track partner.id) {
+          @for (partner of partners; track partner.identifier) {
             <div class="group relative bg-white dark:bg-gray-700 rounded-lg border-2 border-gray-200 dark:border-gray-600 p-5 hover:border-primary-500 dark:hover:border-primary-400 hover:shadow-lg transition-all">
               <div class="flex items-start justify-between">
                 <div class="flex items-center flex-1">
                   <div class="flex-shrink-0">
                     <div class="h-12 w-12 rounded-lg bg-primary-100 dark:bg-primary-900 flex items-center justify-center group-hover:bg-primary-200 dark:group-hover:bg-primary-800 transition-colors">
                       <span class="text-lg font-bold text-primary-600 dark:text-primary-200">
-                        {{ partner.name.charAt(0).toUpperCase() }}
+                        {{ partner.nickname.charAt(0).toUpperCase() }}
                       </span>
                     </div>
                   </div>
                   <div class="ml-4 flex-1 min-w-0">
                     <h4 class="text-base font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 truncate">
-                      {{ partner.name }}
+                      {{ partner.nickname }}
                     </h4>
-                    @if (partner.description) {
-                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-                        {{ partner.description }}
-                      </p>
-                    }
-                    @if (partner.metadata) {
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 font-mono truncate">
+                      {{ partner.identifier }}
+                    </p>
+                    @if (partner.properties) {
                       <div class="mt-2 space-y-1">
-                        @if (partner.metadata.industry) {
+                        @if (partner.properties.industry) {
                           <p class="text-xs text-gray-500 dark:text-gray-400">
-                            Industry: {{ partner.metadata.industry }}
+                            Industry: {{ partner.properties.industry }}
                           </p>
                         }
-                        @if (partner.metadata.country) {
+                        @if (partner.properties.region) {
                           <p class="text-xs text-gray-500 dark:text-gray-400">
-                            Country: {{ partner.metadata.country }}
+                            Region: {{ partner.properties.region }}
+                          </p>
+                        }
+                        @if (partner.properties.status) {
+                          <p class="text-xs text-gray-500 dark:text-gray-400">
+                            Status: {{ partner.properties.status }}
                           </p>
                         }
                       </div>

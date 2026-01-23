@@ -19,38 +19,20 @@ export class PartnerService {
   }
 
 
-  getPartners(dataspaceId: number): Observable<Partner[]> {
-    const ids = this.authService.getCurrentUserIds();
-    if (!ids) {
-      return of([]);
-    }
-
+  getPartners(providerId: number, tenantId: number, participantId: number, dataspaceId: number): Observable<Partner[]> {
     return this.http.get<Partner[]>(
-      `${this.baseUrl}/service-providers/${ids.providerId}/tenants/${ids.tenantId}/participants/${ids.participantId}/partners/${dataspaceId}`
+      `${this.baseUrl}/service-providers/${providerId}/tenants/${tenantId}/participants/${participantId}/partners/${dataspaceId}`
     ).pipe(
       catchError(() => of([]))
     );
   }
 
-  getPartnerReference(dataspaceId: number, partnerIdentifier: string): Observable<Partner | null> {
-    return this.getPartners(dataspaceId).pipe(
+  getPartnerReference(providerId: number, tenantId: number, participantId: number, dataspaceId: number, partnerIdentifier: string): Observable<Partner | null> {
+    return this.getPartners(providerId, tenantId, participantId, dataspaceId).pipe(
       map((partners: Partner[]) => 
-        partners.find(p => (p.identifier || p.id) === partnerIdentifier) || null
+        partners.find(p => p.identifier === partnerIdentifier) || null
       ),
       catchError(() => of(null))
-    );
-  }
-
-  getPartnersByParticipant(participantId: number): Observable<Partner[]> {
-    const ids = this.authService.getCurrentUserIds();
-    if (!ids) {
-      return of([]);
-    }
-
-    return this.http.get<Partner[]>(
-      `${this.baseUrl}/service-providers/${ids.providerId}/tenants/${ids.tenantId}/participants/${ids.participantId}/partners`
-    ).pipe(
-      catchError(() => of([]))
     );
   }
 }

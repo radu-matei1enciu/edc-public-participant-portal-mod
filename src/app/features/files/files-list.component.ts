@@ -3,11 +3,13 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {CommonModule} from '@angular/common';
 import {Router} from '@angular/router';
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
-import {debounceTime, distinctUntilChanged, firstValueFrom, Observable} from 'rxjs';
+import {debounceTime, distinctUntilChanged, firstValueFrom, Observable, of} from 'rxjs';
+import {catchError} from 'rxjs/operators';
 import {UseCaseService} from '../../core/services/use-case.service';
 import {AuthService} from '../../core/services/auth.service';
 import {NotificationService} from '../../shared/services/notification.service';
 import {UserPreferences, UserPreferencesService} from '../../core/services/user-preferences.service';
+import {DataspaceService} from '../../core/services/dataspace.service';
 import {FileAsset} from '../../core/models/file-asset.model';
 import {UseCase} from '../../core/models/use-case.model';
 import {formatFileSize} from '../../shared/utils/format.utils';
@@ -28,6 +30,7 @@ export class FilesListComponent implements OnInit {
   private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
   private preferencesService = inject(UserPreferencesService);
+  private dataspaceService = inject(DataspaceService);
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private router = inject(Router);
@@ -122,7 +125,24 @@ export class FilesListComponent implements OnInit {
     const partnerId = file.metadata?.['partnerId'] as unknown as string;
     let partnerName = '';
     if (partnerId) {
-      partnerName = (await firstValueFrom(this.partnerService.getPartnerReference(1, partnerId)))?.name ?? '';
+      const userIds = this.authService.getCurrentUserIds();
+      if (userIds) {
+        try {
+          const dataspaces = await firstValueFrom(
+            this.dataspaceService.getParticipantDataspaces(userIds.providerId, userIds.tenantId, userIds.participantId)
+          );
+          const dataspaceId = dataspaces.length > 0 ? dataspaces[0].id : null;
+          if (dataspaceId) {
+            const partner = await firstValueFrom(
+            this.partnerService.getPartnerReference(userIds.providerId, userIds.tenantId, userIds.participantId, dataspaceId, partnerId)
+            );
+            partnerName = partner?.nickname ?? '';
+          }
+        } 
+        catch (error) {
+          console.log("Error getting partner reference", error);
+        }
+      }
     }
     this.files.push({
       name: file.fileName ?? '',
@@ -133,7 +153,7 @@ export class FilesListComponent implements OnInit {
       useCaseLabel: this.useCases.find(uc => uc.id === useCaseId)?.label ?? '',
       size: file.metadata?.['size'] as unknown as number ?? 0,
       origin: file.metadata?.['origin'] as unknown as 'owned' | 'remote' ?? 'owned',
-      accessRestrictions: partnerId ? [
+      accessRestrictions: partnerId && partnerName?.length ? [
         {
           partnerId: partnerId,
           partnerName: partnerName
