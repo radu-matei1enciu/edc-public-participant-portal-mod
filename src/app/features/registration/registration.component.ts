@@ -8,7 +8,7 @@ import { DataspaceService } from '../../core/services/dataspace.service';
 import { NotificationService } from '../../shared/services/notification.service';
 import { ModalService } from '../../core/services/modal.service';
 import { ParticipantRegistrationRequest, ParticipantMetadata, UserMetadata, UploadedDocument } from '../../core/models/participant.model';
-import { DataspaceResource } from '../../core/models/ecosystem.model';
+import { DataspaceResource } from '../../core/models/dataspace.model';
 import { NewTenantRegistration, NewDataspaceInfo, TenantResource, ParticipantResource, NewParticipantDeployment } from '../../core/models/tenant.model';
 import { ConfigService } from '../../core/services/config.service';
 import { AuthService } from '../../core/services/auth.service';

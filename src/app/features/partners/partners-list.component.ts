@@ -11,7 +11,7 @@ import { UserPreferencesService, UserPreferences } from '../../core/services/use
 import { DataspaceService } from '../../core/services/dataspace.service';
 import { ConfigService } from '../../core/services/config.service';
 import { Partner } from '../../core/models/partner.model';
-import { DataspaceResource } from '../../core/models/ecosystem.model';
+import { DataspaceResource } from '../../core/models/dataspace.model';
 import { UserProfile } from '../../core/models/participant.model';
 
 @Component({
@@ -90,7 +90,13 @@ export class PartnersListComponent implements OnInit {
   }
 
   loadDataspaces(): void {
-    this.dataspaceService.getDataspaces().subscribe({
+    const userIds = this.authService.getCurrentUserIds();
+    if (!userIds) {
+      this.notificationService.showError('Error', 'Failed to load user profile');
+      return;
+    }
+
+    this.dataspaceService.getParticipantDataspaces(userIds.providerId, userIds.tenantId, userIds.participantId).subscribe({
       next: (dataspaces) => {
         this.dataspaces = dataspaces;
         if (dataspaces.length > 0 && !this.selectedDataspaceId) {

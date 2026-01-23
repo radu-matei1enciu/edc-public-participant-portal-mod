@@ -1,8 +1,10 @@
 import { Component, Input, Output, EventEmitter, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MembershipService } from '../../../core/services/membership.service';
-import { Membership } from '../../../core/models/membership.model';
+import { DataspaceService } from '../../../core/services/dataspace.service';
+import { DataspaceResource } from '../../../core/models/dataspace.model';
 import { NotificationService } from '../../../shared/services/notification.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { ConfigService } from '../../../core/services/config.service';
 
 @Component({
   selector: 'app-memberships-section',
@@ -11,21 +13,29 @@ import { NotificationService } from '../../../shared/services/notification.servi
   templateUrl: './memberships-section.component.html',
   })
 export class MembershipsSectionComponent implements OnInit {
-  @Output() viewDetails = new EventEmitter<string>();
+  @Output() viewDetails = new EventEmitter<number>();
 
-  memberships: Membership[] = [];
+  memberships: DataspaceResource[] = [];
   loading = false;
 
-  private membershipService = inject(MembershipService);
+  private dataspaceService = inject(DataspaceService);
   private notificationService = inject(NotificationService);
+  private authService = inject(AuthService);
+  private configService = inject(ConfigService);
 
   ngOnInit(): void {
     this.loadMemberships();
   }
 
   loadMemberships(): void {
+    const userIds = this.authService.getCurrentUserIds();
+    if (!userIds) {
+      this.notificationService.showError('Error', 'Failed to load user profile');
+      return;
+    }
+
     this.loading = true;
-    this.membershipService.getMemberships().subscribe({
+    this.dataspaceService.getParticipantDataspaces(userIds.providerId, userIds.tenantId, userIds.participantId).subscribe({
       next: (memberships) => {
         this.memberships = memberships;
         this.loading = false;
@@ -37,33 +47,11 @@ export class MembershipsSectionComponent implements OnInit {
     });
   }
 
-  onViewDetails(membershipId: string): void {
+  onViewDetails(membershipId: number): void {
     this.viewDetails.emit(membershipId);
   }
 
   startRegistration(): void {
     window.location.href = '/registration';
-  }
-
-  getStatusClass(status: string): string {
-    switch (status) {
-      case 'active':
-        return 'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'pending':
-        return 'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      case 'inactive':
-        return 'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-      default:
-        return 'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-    }
-  }
-
-  formatDate(dateString: string): string {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
   }
 }
