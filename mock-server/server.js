@@ -239,34 +239,33 @@ function handleDeleteParticipant(req, res, id) {
   }
 }
 
-let memberships = [
+let participantDataspaces = [
   {
-    id: 'membership-1',
-    ecosystemId: 'ecosystem-1',
-    ecosystemName: 'Manufacturing DataSpace',
-    status: 'active',
-    joinedAt: '2024-01-10T10:00:00Z',
-    credentials: [
-      { id: 'cred-1', type: 'VC', status: 'issued', issuedAt: '2024-01-10T10:05:00Z' }
-    ]
+    id: 1,
+    name: 'Manufacturing Dataspace',
+    properties: {
+      region: 'EU',
+      protocol: 'dataspace-protocol-http',
+      description: 'European Manufacturing Dataspace'
+    }
   },
   {
-    id: 'membership-2',
-    ecosystemId: 'ecosystem-2',
-    ecosystemName: 'Healthcare DataSpace',
-    status: 'active',
-    joinedAt: '2024-01-12T14:30:00Z',
-    credentials: [
-      { id: 'cred-2', type: 'VC', status: 'issued', issuedAt: '2024-01-12T14:35:00Z' }
-    ]
+    id: 2,
+    name: 'Healthcare Dataspace',
+    properties: {
+      region: 'EU',
+      protocol: 'dataspace-protocol-http',
+      description: 'European Healthcare Dataspace'
+    }
   },
   {
-    id: 'membership-3',
-    ecosystemId: 'ecosystem-3',
-    ecosystemName: 'Energy DataSpace',
-    status: 'pending',
-    joinedAt: '2024-01-14T09:00:00Z',
-    credentials: []
+    id: 3,
+    name: 'Energy Dataspace',
+    properties: {
+      region: 'EU',
+      protocol: 'dataspace-protocol-http',
+      description: 'European Energy Dataspace'
+    }
   }
 ];
 
@@ -428,22 +427,11 @@ let ecosystems = [
   { id: 'ecosystem-3', name: 'Energy DataSpace', description: 'DataSpace for energy industry' }
 ];
 
-function handleGetMemberships(req, res, participantId) {
+function handleGetParticipantDataspaces(req, res, providerId, tenantId, participantId) {
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify(memberships));
+  res.end(JSON.stringify(participantDataspaces));
 }
 
-function handleGetMembershipDetails(req, res, participantId, membershipId) {
-  const membership = memberships.find(m => m.id === membershipId);
-  if (membership) {
-    const ecosystem = ecosystems.find(e => e.id === membership.ecosystemId);
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ ...membership, ecosystem }));
-  } else {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Membership not found' }));
-  }
-}
 
 function handleGetEcosystems(req, res) {
   res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -1243,17 +1231,15 @@ const server = http.createServer(async (req, res) => {
     const id = path.split('/')[3];
     handleDeleteParticipant(req, res, id);
   } 
-  // Memberships routes
-  else if (method === 'GET' && (path.match(/^\/v1\/participants\/([^\/]+)\/memberships$/) || path.match(/^\/api\/ui\/participants\/([^\/]+)\/memberships$/))) {
+  // Participant dataspaces (memberships) routes
+  else if (method === 'GET' && path.match(/^\/api\/ui\/service-providers\/(\d+)\/tenants\/(\d+)\/participants\/(\d+)\/dataspaces$/)) {
     const parts = path.split('/');
-    const participantId = path.startsWith('/api/ui') ? parts[4] : parts[3];
-    handleGetMemberships(req, res, participantId);
-  } else if (method === 'GET' && (path.match(/^\/v1\/participants\/([^\/]+)\/memberships\/([^\/]+)$/) || path.match(/^\/api\/ui\/participants\/([^\/]+)\/memberships\/([^\/]+)$/))) {
-    const parts = path.split('/');
-    const participantId = path.startsWith('/api/ui') ? parts[4] : parts[3];
-    const membershipId = path.startsWith('/api/ui') ? parts[6] : parts[5];
-    handleGetMembershipDetails(req, res, participantId, membershipId);
-  } else if (method === 'GET' && path === '/v1/ecosystems') {
+    const providerId = parts[parts.length - 4];
+    const tenantId = parts[parts.length - 3];
+    const participantId = parts[parts.length - 2];
+    handleGetParticipantDataspaces(req, res, providerId, tenantId, participantId);
+  }
+  else if (method === 'GET' && path === '/v1/ecosystems') {
     handleGetEcosystems(req, res);
   } else if (method === 'GET' && path === '/v1/dataspaces') {
     handleGetDataspaces(req, res);
@@ -1324,8 +1310,7 @@ server.listen(PORT, () => {
   console.log(`  GET  /v1/participants/:id - Get participant by ID`);
   console.log(`  DELETE /v1/participants/:id - Delete participant`);
   console.log(`  GET  /v1/me - Get current user profile (requires Bearer token)`);
-  console.log(`  GET  /v1/participants/:id/memberships - List memberships`);
-  console.log(`  GET  /v1/participants/:id/memberships/:membershipId - Get membership details`);
+  console.log(`  GET  /api/ui/service-providers/:providerId/tenants/:tenantId/participants/:participantId/dataspaces - List participant dataspaces`);
   console.log(`  GET  /v1/ecosystems - List ecosystems`);
   console.log(`  GET  /v1/dataspaces - List dataspaces`);
   console.log(`  GET  /v1/participants/:id/files - List files`);

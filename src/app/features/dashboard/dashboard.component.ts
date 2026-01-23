@@ -7,10 +7,10 @@ import { NotificationService } from '../../shared/services/notification.service'
 import { NotificationsComponent } from '../../shared/services/notifications.component';
 import { FileAssetService } from '../../core/services/file-asset.service';
 import { UseCaseService } from '../../core/services/use-case.service';
-import { MembershipService } from '../../core/services/membership.service';
+import { DataspaceService } from '../../core/services/dataspace.service';
 import { PartnerService } from '../../core/services/partner.service';
 import { UseCase } from '../../core/models/use-case.model';
-import { Membership } from '../../core/models/membership.model';
+import { DataspaceResource } from '../../core/models/dataspace.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -33,13 +33,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   partnersCount = 0;
   filesCount = 0;
   lastUpdateTime = new Date();
-  recentMemberships: Membership[] = [];
+  recentMemberships: DataspaceResource[] = [];
 
   private authService = inject(AuthService);
   private router = inject(Router);
   private fileAssetService = inject(FileAssetService);
   private useCaseService = inject(UseCaseService);
-  private membershipService = inject(MembershipService);
+  private dataspaceService = inject(DataspaceService);
   private partnerService = inject(PartnerService);
   private notificationService = inject(NotificationService);
 
@@ -89,7 +89,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   loadStats(): void {
-    this.membershipService.getMemberships().subscribe({
+    const userIds = this.authService.getCurrentUserIds();
+    if (!userIds) {
+      return;
+    }
+
+    this.dataspaceService.getParticipantDataspaces(userIds.providerId, userIds.tenantId, userIds.participantId).subscribe({
       next: (memberships) => {
         this.membershipsCount = memberships.length;
         this.recentMemberships = [...memberships].reverse().slice(0, 6);

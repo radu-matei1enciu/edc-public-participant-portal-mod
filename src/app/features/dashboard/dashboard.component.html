@@ -209,31 +209,24 @@
                     <div class="flex-shrink-0">
                       <div class="h-12 w-12 rounded-lg bg-primary-100 dark:bg-primary-900 flex items-center justify-center group-hover:bg-primary-200 dark:group-hover:bg-primary-800 transition-colors">
                         <span class="text-lg font-bold text-primary-600 dark:text-primary-200">
-                          {{ membership.ecosystemName.charAt(0).toUpperCase() }}
+                          {{ membership.name.charAt(0).toUpperCase() }}
                         </span>
                       </div>
                     </div>
                     <div class="ml-4 flex-1 min-w-0">
                       <h4 class="text-base font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 truncate">
-                        {{ membership.ecosystemName }}
+                        {{ membership.name }}
                       </h4>
-                      <p class="text-xs text-gray-500 dark:text-gray-400 font-mono truncate mt-1">
-                        {{ membership.id }}
+                      <p class="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">
+                        {{ membership.properties?.description }}
                       </p>
                       <div class="mt-2 flex items-center space-x-2">
-                        @if (membership.status === 'active') {
-                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                            Active
-                          </span>
-                        } @else if (membership.status === 'pending') {
-                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                            Pending
-                          </span>
-                        } @else {
-                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
-                            Inactive
-                          </span>
-                        }
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                          {{ membership.properties?.region }}
+                        </span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                          {{ membership.properties?.protocol }}
+                        </span>
                       </div>
                     </div>
                   </div>
