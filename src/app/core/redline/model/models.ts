@@ -4,6 +4,7 @@ export * from './contract';
 export * from './contractNegotiation';
 export * from './contractOffer';
 export * from './contractRequest';
+export * from './counterPartyIdWrapper';
 export * from './dataService';
 export * from './dataset';
 export * from './dataspace';

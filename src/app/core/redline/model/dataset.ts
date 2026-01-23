@@ -17,5 +17,6 @@ export interface Dataset {
     hasPolicy?: Array<Offer>;
     distribution?: Array<Distribution>;
     description?: string;
+    properties?: { [key: string]: object; };
 }
 

@@ -25,6 +25,8 @@ import { ContractNegotiation } from '../model/contractNegotiation';
 // @ts-ignore
 import { ContractRequest } from '../model/contractRequest';
 // @ts-ignore
+import { CounterPartyIdWrapper } from '../model/counterPartyIdWrapper';
+// @ts-ignore
 import { FileResource } from '../model/fileResource';
 // @ts-ignore
 import { TransferProcess } from '../model/transferProcess';
@@ -45,6 +47,80 @@ export class EDCDataOperationsService extends BaseService {
 
     constructor(protected httpClient: HttpClient, @Optional() @Inject(BASE_PATH) basePath: string|string[], @Optional() configuration?: Configuration) {
         super(basePath, configuration);
+    }
+
+    /**
+     * @endpoint get /api/ui/service-providers/{providerId}/tenants/{tenantId}/participants/{participantId}/files/{fileId}
+     * @param providerId 
+     * @param tenantId 
+     * @param participantId 
+     * @param fileId 
+     * @param authorization 
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     * @param options additional options
+     */
+    public downloadData(providerId: number, tenantId: number, participantId: number, fileId: string, authorization: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
+    public downloadData(providerId: number, tenantId: number, participantId: number, fileId: string, authorization: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
+    public downloadData(providerId: number, tenantId: number, participantId: number, fileId: string, authorization: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
+    public downloadData(providerId: number, tenantId: number, participantId: number, fileId: string, authorization: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (providerId === null || providerId === undefined) {
+            throw new Error('Required parameter providerId was null or undefined when calling downloadData.');
+        }
+        if (tenantId === null || tenantId === undefined) {
+            throw new Error('Required parameter tenantId was null or undefined when calling downloadData.');
+        }
+        if (participantId === null || participantId === undefined) {
+            throw new Error('Required parameter participantId was null or undefined when calling downloadData.');
+        }
+        if (fileId === null || fileId === undefined) {
+            throw new Error('Required parameter fileId was null or undefined when calling downloadData.');
+        }
+        if (authorization === null || authorization === undefined) {
+            throw new Error('Required parameter authorization was null or undefined when calling downloadData.');
+        }
+
+        let localVarHeaders = this.defaultHeaders;
+        if (authorization !== undefined && authorization !== null) {
+            localVarHeaders = localVarHeaders.set('Authorization', String(authorization));
+        }
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'application/json'
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/api/ui/service-providers/${this.configuration.encodeParam({name: "providerId", value: providerId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/tenants/${this.configuration.encodeParam({name: "tenantId", value: tenantId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/participants/${this.configuration.encodeParam({name: "participantId", value: participantId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/files/${this.configuration.encodeParam({name: "fileId", value: fileId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<string>('get', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                responseType: <any>responseType_,
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
+                reportProgress: reportProgress
+            }
+        );
     }
 
     /**
@@ -385,16 +461,16 @@ export class EDCDataOperationsService extends BaseService {
      * @param providerId Database ID of the service provider
      * @param tenantId Database ID of the tenant
      * @param participantId Database ID of the participant
-     * @param counterPartyIdentifier Identifier of the counter-party to request catalog from
+     * @param counterPartyIdWrapper 
      * @param cacheControl 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public requestCatalog(providerId: number, tenantId: number, participantId: number, counterPartyIdentifier: string, cacheControl?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Catalog>;
-    public requestCatalog(providerId: number, tenantId: number, participantId: number, counterPartyIdentifier: string, cacheControl?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Catalog>>;
-    public requestCatalog(providerId: number, tenantId: number, participantId: number, counterPartyIdentifier: string, cacheControl?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Catalog>>;
-    public requestCatalog(providerId: number, tenantId: number, participantId: number, counterPartyIdentifier: string, cacheControl?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public requestCatalog(providerId: number, tenantId: number, participantId: number, counterPartyIdWrapper: CounterPartyIdWrapper, cacheControl?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Catalog>;
+    public requestCatalog(providerId: number, tenantId: number, participantId: number, counterPartyIdWrapper: CounterPartyIdWrapper, cacheControl?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Catalog>>;
+    public requestCatalog(providerId: number, tenantId: number, participantId: number, counterPartyIdWrapper: CounterPartyIdWrapper, cacheControl?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Catalog>>;
+    public requestCatalog(providerId: number, tenantId: number, participantId: number, counterPartyIdWrapper: CounterPartyIdWrapper, cacheControl?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (providerId === null || providerId === undefined) {
             throw new Error('Required parameter providerId was null or undefined when calling requestCatalog.');
         }
@@ -404,20 +480,9 @@ export class EDCDataOperationsService extends BaseService {
         if (participantId === null || participantId === undefined) {
             throw new Error('Required parameter participantId was null or undefined when calling requestCatalog.');
         }
-        if (counterPartyIdentifier === null || counterPartyIdentifier === undefined) {
-            throw new Error('Required parameter counterPartyIdentifier was null or undefined when calling requestCatalog.');
+        if (counterPartyIdWrapper === null || counterPartyIdWrapper === undefined) {
+            throw new Error('Required parameter counterPartyIdWrapper was null or undefined when calling requestCatalog.');
         }
-
-        let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
-
-        localVarQueryParameters = this.addToHttpParams(
-            localVarQueryParameters,
-            'counterPartyIdentifier',
-            <any>counterPartyIdentifier,
-            QueryParamStyle.Form,
-            true,
-        );
-
 
         let localVarHeaders = this.defaultHeaders;
         if (cacheControl !== undefined && cacheControl !== null) {
@@ -436,6 +501,15 @@ export class EDCDataOperationsService extends BaseService {
         const localVarTransferCache: boolean = options?.transferCache ?? true;
 
 
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json'
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
+        }
+
         let responseType_: 'text' | 'json' | 'blob' = 'json';
         if (localVarHttpHeaderAcceptSelected) {
             if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
@@ -452,7 +526,7 @@ export class EDCDataOperationsService extends BaseService {
         return this.httpClient.request<Catalog>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                params: localVarQueryParameters.toHttpParams(),
+                body: counterPartyIdWrapper,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -628,16 +702,17 @@ export class EDCDataOperationsService extends BaseService {
      * @param participantId Database ID of the participant
      * @param tenantId Database ID of the tenant
      * @param providerId Database ID of the service provider
-     * @param metadata 
+     * @param publicMetadata 
+     * @param privateMetadata 
      * @param file 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public uploadFile(participantId: number, tenantId: number, providerId: number, metadata: string, file: Blob, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
-    public uploadFile(participantId: number, tenantId: number, providerId: number, metadata: string, file: Blob, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
-    public uploadFile(participantId: number, tenantId: number, providerId: number, metadata: string, file: Blob, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
-    public uploadFile(participantId: number, tenantId: number, providerId: number, metadata: string, file: Blob, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public uploadFile(participantId: number, tenantId: number, providerId: number, publicMetadata: string, privateMetadata: string, file: Blob, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
+    public uploadFile(participantId: number, tenantId: number, providerId: number, publicMetadata: string, privateMetadata: string, file: Blob, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
+    public uploadFile(participantId: number, tenantId: number, providerId: number, publicMetadata: string, privateMetadata: string, file: Blob, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
+    public uploadFile(participantId: number, tenantId: number, providerId: number, publicMetadata: string, privateMetadata: string, file: Blob, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (participantId === null || participantId === undefined) {
             throw new Error('Required parameter participantId was null or undefined when calling uploadFile.');
         }
@@ -647,8 +722,11 @@ export class EDCDataOperationsService extends BaseService {
         if (providerId === null || providerId === undefined) {
             throw new Error('Required parameter providerId was null or undefined when calling uploadFile.');
         }
-        if (metadata === null || metadata === undefined) {
-            throw new Error('Required parameter metadata was null or undefined when calling uploadFile.');
+        if (publicMetadata === null || publicMetadata === undefined) {
+            throw new Error('Required parameter publicMetadata was null or undefined when calling uploadFile.');
+        }
+        if (privateMetadata === null || privateMetadata === undefined) {
+            throw new Error('Required parameter privateMetadata was null or undefined when calling uploadFile.');
         }
         if (file === null || file === undefined) {
             throw new Error('Required parameter file was null or undefined when calling uploadFile.');
@@ -685,8 +763,11 @@ export class EDCDataOperationsService extends BaseService {
             localVarFormParams = new HttpParams({encoder: this.encoder});
         }
 
-        if (metadata !== undefined) {
-            localVarFormParams = localVarFormParams.append('metadata', <any>metadata) as any || localVarFormParams;
+        if (publicMetadata !== undefined) {
+            localVarFormParams = localVarFormParams.append('publicMetadata', <any>publicMetadata) as any || localVarFormParams;
+        }
+        if (privateMetadata !== undefined) {
+            localVarFormParams = localVarFormParams.append('privateMetadata', <any>privateMetadata) as any || localVarFormParams;
         }
         if (file !== undefined) {
             localVarFormParams = localVarFormParams.append('file', <any>file) as any || localVarFormParams;

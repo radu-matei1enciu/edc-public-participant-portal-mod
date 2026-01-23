@@ -312,6 +312,71 @@ export class TenantOperationsService extends BaseService {
     }
 
     /**
+     * Get participant dataspaces
+     * Retrieves a list of dataspaces associated with a specific participant
+     * @endpoint get /api/ui/service-providers/{serviceProviderId}/tenants/{tenantId}/participants/{participantId}/dataspaces
+     * @param serviceProviderId Database ID of the service provider
+     * @param tenantId Database ID of the tenant
+     * @param participantId Database ID of the participant
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     * @param options additional options
+     */
+    public getParticipantDataspaces(serviceProviderId: number, tenantId: number, participantId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<Dataspace>>;
+    public getParticipantDataspaces(serviceProviderId: number, tenantId: number, participantId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<Dataspace>>>;
+    public getParticipantDataspaces(serviceProviderId: number, tenantId: number, participantId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<Dataspace>>>;
+    public getParticipantDataspaces(serviceProviderId: number, tenantId: number, participantId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (serviceProviderId === null || serviceProviderId === undefined) {
+            throw new Error('Required parameter serviceProviderId was null or undefined when calling getParticipantDataspaces.');
+        }
+        if (tenantId === null || tenantId === undefined) {
+            throw new Error('Required parameter tenantId was null or undefined when calling getParticipantDataspaces.');
+        }
+        if (participantId === null || participantId === undefined) {
+            throw new Error('Required parameter participantId was null or undefined when calling getParticipantDataspaces.');
+        }
+
+        let localVarHeaders = this.defaultHeaders;
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'application/json'
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/api/ui/service-providers/${this.configuration.encodeParam({name: "serviceProviderId", value: serviceProviderId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/tenants/${this.configuration.encodeParam({name: "tenantId", value: tenantId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/participants/${this.configuration.encodeParam({name: "participantId", value: participantId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/dataspaces`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<Array<Dataspace>>('get', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                responseType: <any>responseType_,
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
      * Get partner references
      * Retrieves a list of partner references for a participant in a specific dataspace
      * @endpoint get /api/ui/service-providers/{providerId}/tenants/{tenantId}/participants/{participantId}/partners/{dataspaceId}
@@ -539,6 +604,68 @@ export class TenantOperationsService extends BaseService {
         let localVarPath = `/api/ui/service-providers/${this.configuration.encodeParam({name: "serviceProviderId", value: serviceProviderId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/tenants`;
         const { basePath, withCredentials } = this.configuration;
         return this.httpClient.request<Tenant>('get', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                responseType: <any>responseType_,
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * @endpoint post /api/ui/service-providers/{serviceProviderId}/tenants/{tenantId}/participants/{participantId}/dataplanes
+     * @param serviceProviderId 
+     * @param tenantId 
+     * @param participantId 
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     * @param options additional options
+     */
+    public registerDataPlane(serviceProviderId: number, tenantId: number, participantId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
+    public registerDataPlane(serviceProviderId: number, tenantId: number, participantId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
+    public registerDataPlane(serviceProviderId: number, tenantId: number, participantId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
+    public registerDataPlane(serviceProviderId: number, tenantId: number, participantId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (serviceProviderId === null || serviceProviderId === undefined) {
+            throw new Error('Required parameter serviceProviderId was null or undefined when calling registerDataPlane.');
+        }
+        if (tenantId === null || tenantId === undefined) {
+            throw new Error('Required parameter tenantId was null or undefined when calling registerDataPlane.');
+        }
+        if (participantId === null || participantId === undefined) {
+            throw new Error('Required parameter participantId was null or undefined when calling registerDataPlane.');
+        }
+
+        let localVarHeaders = this.defaultHeaders;
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/api/ui/service-providers/${this.configuration.encodeParam({name: "serviceProviderId", value: serviceProviderId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/tenants/${this.configuration.encodeParam({name: "tenantId", value: tenantId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/participants/${this.configuration.encodeParam({name: "participantId", value: participantId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/dataplanes`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<any>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,

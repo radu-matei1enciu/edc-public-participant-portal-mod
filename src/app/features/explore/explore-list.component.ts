@@ -126,7 +126,8 @@ export class ExploreListComponent implements OnInit {
         this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId, 0));
     console.log('Partners', JSON.stringify(partners))
     const catalog = await firstValueFrom(this.edcDataOperationsService.requestCatalog(
-        this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId, partners[0].identifier!
+        this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId,
+        { counterPartyIdentifier: partners[0].identifier! }
     ))
     console.log('Catalog', JSON.stringify(catalog))
   }

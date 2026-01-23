@@ -9,10 +9,7 @@
  */
 
 
-export interface TransferProcessRequest { 
-    counterPartyId?: string;
-    contractId?: string;
-    dataDestination?: { [key: string]: object; };
-    transferType?: string;
+export interface CounterPartyIdWrapper { 
+    counterPartyIdentifier?: string;
 }
 

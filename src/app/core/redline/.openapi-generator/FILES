@@ -1,5 +1,4 @@
 .gitignore
-.openapi-generator-ignore
 README.md
 api.base.service.ts
 api.module.ts
@@ -17,6 +16,7 @@ model/contract.ts
 model/contractNegotiation.ts
 model/contractOffer.ts
 model/contractRequest.ts
+model/counterPartyIdWrapper.ts
 model/dataService.ts
 model/dataset.ts
 model/dataspace.ts
