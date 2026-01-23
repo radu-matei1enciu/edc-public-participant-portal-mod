@@ -14,6 +14,7 @@ export interface DataspaceInfo {
 export interface NewTenantRegistration {
   tenantName: string;
   dataspaceInfos: NewDataspaceInfo[];
+  properties?: Record<string, unknown>;
 }
 
 export interface TenantResource {

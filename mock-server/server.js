@@ -580,56 +580,44 @@ async function handleDeployParticipant(req, res, providerId, tenantId, participa
 
 function handleGetPartners(req, res, providerId, tenantId, participantId, dataspaceId) {
   const mockPartners = [
-    { 
-      identifier: 'partner-1', 
+    {
+      identifier: 'did:web:partner1.com',
       nickname: 'Acme Corporation',
-      id: 'partner-1',
-      name: 'Acme Corporation',
-      description: 'Leading manufacturer in industrial automation',
-      companyIdentifier: 'ACME001',
-      metadata: {
+      properties: {
+        region: 'EU',
         industry: 'Manufacturing',
-        country: 'IT',
-        region: 'Lombardy'
+        contactEmail: 'contact@partner1.com',
+        status: 'active'
       }
     },
-    { 
-      identifier: 'partner-2', 
+    {
+      identifier: 'did:web:partner2.com',
       nickname: 'MedTech Solutions',
-      id: 'partner-2',
-      name: 'MedTech Solutions',
-      description: 'Healthcare technology provider',
-      companyIdentifier: 'MEDTECH001',
-      metadata: {
+      properties: {
+        region: 'EU',
         industry: 'Healthcare',
-        country: 'IT',
-        region: 'Lazio'
+        contactEmail: 'info@partner2.com',
+        status: 'active'
       }
     },
-    { 
-      identifier: 'partner-3', 
+    {
+      identifier: 'did:web:partner3.com',
       nickname: 'TechCorp Industries',
-      id: 'partner-3',
-      name: 'TechCorp Industries',
-      description: 'Technology solutions provider',
-      companyIdentifier: 'TECHCORP001',
-      metadata: {
+      properties: {
+        region: 'US',
         industry: 'Technology',
-        country: 'IT',
-        region: 'Tuscany'
+        contactEmail: 'support@partner3.com',
+        status: 'pending'
       }
     },
-    { 
-      identifier: 'partner-4', 
+    {
+      identifier: 'did:web:partner4.com',
       nickname: 'Global Solutions Ltd',
-      id: 'partner-4',
-      name: 'Global Solutions Ltd',
-      description: 'Global business solutions',
-      companyIdentifier: 'GLOBAL001',
-      metadata: {
+      properties: {
+        region: 'APAC',
         industry: 'Consulting',
-        country: 'IT',
-        region: 'Lombardy'
+        contactEmail: 'partners@global.com',
+        status: 'active'
       }
     }
   ];
@@ -639,35 +627,49 @@ function handleGetPartners(req, res, providerId, tenantId, participantId, datasp
 
 function handleGetPartner(req, res, providerId, tenantId, participantId, partnerId) {
   const mockPartners = [
-    { 
-      identifier: 'partner-1', 
+    {
+      identifier: 'did:web:partner1.com',
       nickname: 'Acme Corporation',
-      id: 'partner-1',
-      name: 'Acme Corporation',
-      description: 'Leading manufacturer in industrial automation',
-      companyIdentifier: 'ACME001',
-      metadata: {
+      properties: {
+        region: 'EU',
         industry: 'Manufacturing',
-        country: 'IT',
-        region: 'Lombardy'
+        contactEmail: 'contact@partner1.com',
+        status: 'active'
       }
     },
-    { 
-      identifier: 'partner-2', 
+    {
+      identifier: 'did:web:partner2.com',
       nickname: 'MedTech Solutions',
-      id: 'partner-2',
-      name: 'MedTech Solutions',
-      description: 'Healthcare technology provider',
-      companyIdentifier: 'MEDTECH001',
-      metadata: {
+      properties: {
+        region: 'EU',
         industry: 'Healthcare',
-        country: 'IT',
-        region: 'Lazio'
+        contactEmail: 'info@partner2.com',
+        status: 'active'
+      }
+    },
+    {
+      identifier: 'did:web:partner3.com',
+      nickname: 'TechCorp Industries',
+      properties: {
+        region: 'US',
+        industry: 'Technology',
+        contactEmail: 'support@partner3.com',
+        status: 'pending'
+      }
+    },
+    {
+      identifier: 'did:web:partner4.com',
+      nickname: 'Global Solutions Ltd',
+      properties: {
+        region: 'APAC',
+        industry: 'Consulting',
+        contactEmail: 'partners@global.com',
+        status: 'active'
       }
     }
   ];
   
-  const partner = mockPartners.find(p => p.id === partnerId || p.identifier === partnerId);
+  const partner = mockPartners.find(p => p.identifier === partnerId);
   if (partner) {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(partner));
@@ -678,8 +680,30 @@ function handleGetPartner(req, res, providerId, tenantId, participantId, partner
 }
 
 function handleGetPartners(req, res, participantId) {
+  const mockPartners = [
+    {
+      identifier: 'did:web:partner1.com',
+      nickname: 'Acme Corporation',
+      properties: {
+        region: 'EU',
+        industry: 'Manufacturing',
+        contactEmail: 'contact@partner1.com',
+        status: 'active'
+      }
+    },
+    {
+      identifier: 'did:web:partner2.com',
+      nickname: 'MedTech Solutions',
+      properties: {
+        region: 'EU',
+        industry: 'Healthcare',
+        contactEmail: 'info@partner2.com',
+        status: 'active'
+      }
+    }
+  ];
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify(partners));
+  res.end(JSON.stringify(mockPartners));
 }
 
 async function handleAddPartner(req, res, participantId) {
@@ -702,7 +726,30 @@ async function handleAddPartner(req, res, participantId) {
 }
 
 function handleGetPartner(req, res, participantId, partnerId) {
-  const partner = partners.find(p => p.id === partnerId);
+  const mockPartners = [
+    {
+      identifier: 'did:web:partner1.com',
+      nickname: 'Acme Corporation',
+      properties: {
+        region: 'EU',
+        industry: 'Manufacturing',
+        contactEmail: 'contact@partner1.com',
+        status: 'active'
+      }
+    },
+    {
+      identifier: 'did:web:partner2.com',
+      nickname: 'MedTech Solutions',
+      properties: {
+        region: 'EU',
+        industry: 'Healthcare',
+        contactEmail: 'info@partner2.com',
+        status: 'active'
+      }
+    }
+  ];
+  
+  const partner = mockPartners.find(p => p.identifier === partnerId);
   if (partner) {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(partner));
@@ -1190,28 +1237,13 @@ const server = http.createServer(async (req, res) => {
     const tenantId = parts[parts.length - 3];
     const participantId = parts[parts.length - 2];
     await handleDeployParticipant(req, res, providerId, tenantId, participantId);
-  } else if (method === 'GET' && (path.match(/^\/api\/ui\/service-providers\/(\d+)\/tenants\/(\d+)\/participants\/(\d+)\/partners\/([^\/]+)$/) || path.match(/^\/v1\/service-providers\/(\d+)\/tenants\/(\d+)\/participants\/(\d+)\/partners\/([^\/]+)$/))) {
+  } else if (method === 'GET' && (path.match(/^\/api\/ui\/service-providers\/(\d+)\/tenants\/(\d+)\/participants\/(\d+)\/partners\/(\d+)$/) || path.match(/^\/v1\/service-providers\/(\d+)\/tenants\/(\d+)\/participants\/(\d+)\/partners\/(\d+)$/))) {
     const parts = path.split('/');
     const providerId = parts[parts.length - 5];
     const tenantId = parts[parts.length - 4];
     const participantId = parts[parts.length - 2];
-    const lastParam = parts[parts.length - 1];
-    
-    const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
-    const dataspaceId = parsedUrl.searchParams.get('dataspaceId');
-    
-    if (lastParam.match(/^partner-/)) {
-      const partnerId = lastParam;
-      handleGetPartner(req, res, providerId, tenantId, participantId, partnerId);
-    } else if (dataspaceId) {
-      handleGetPartners(req, res, providerId, tenantId, participantId, dataspaceId);
-    } else if (lastParam.match(/^\d+$/)) {
-      const dataspaceIdFromPath = lastParam;
-      handleGetPartners(req, res, providerId, tenantId, participantId, dataspaceIdFromPath);
-    } else {
-      const partnerId = lastParam;
-      handleGetPartner(req, res, providerId, tenantId, participantId, partnerId);
-    }
+    const dataspaceId = parts[parts.length - 1];
+    handleGetPartners(req, res, providerId, tenantId, participantId, dataspaceId);
   } else if (method === 'POST' && path.match(/^\/v1\/service-providers\/(\d+)\/tenants\/(\d+)\/participants$/)) {
     const parts = path.split('/');
     const providerId = parts[3];

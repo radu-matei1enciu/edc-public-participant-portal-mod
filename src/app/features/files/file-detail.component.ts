@@ -3,11 +3,12 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
-import {forkJoin, of} from 'rxjs';
-import {catchError, switchMap} from 'rxjs/operators';
+import {forkJoin, of, Observable, from} from 'rxjs';
+import {catchError, switchMap, map} from 'rxjs/operators';
 import {FileAssetService} from '../../core/services/file-asset.service';
 import {UseCaseService} from '../../core/services/use-case.service';
 import {PartnerService} from '../../core/services/partner.service';
+import {DataspaceService} from '../../core/services/dataspace.service';
 import {AuthService} from '../../core/services/auth.service';
 import {NotificationService} from '../../shared/services/notification.service';
 import {ModalService} from '../../core/services/modal.service';
@@ -15,6 +16,7 @@ import {FileAsset} from '../../core/models/file-asset.model';
 import {UseCase} from '../../core/models/use-case.model';
 import {Partner} from '../../core/models/partner.model';
 import {formatFileSize} from '../../shared/utils/format.utils';
+import {firstValueFrom} from 'rxjs';
 
 @Component({
   selector: 'app-file-detail',
@@ -29,6 +31,7 @@ export class FileDetailComponent implements OnInit {
   private fileAssetService = inject(FileAssetService);
   private useCaseService = inject(UseCaseService);
   private partnerService = inject(PartnerService);
+  private dataspaceService = inject(DataspaceService);
   private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
   private modalService = inject(ModalService);
@@ -62,11 +65,20 @@ export class FileDetailComponent implements OnInit {
           catchError(() => of([] as UseCase[]))
         );
         
-        const partners$ = this.participantId 
-          ? this.partnerService.getPartnersByParticipant(this.participantId).pipe(
-              catchError(() => of([] as Partner[]))
-            )
-          : of([] as Partner[]);
+        const userIds = this.authService.getCurrentUserIds();
+        let partners$: Observable<Partner[]>;
+        if (userIds) {
+          partners$ = this.dataspaceService.getParticipantDataspaces(userIds.providerId, userIds.tenantId, userIds.participantId).pipe(
+            switchMap((dataspaces) => {
+              const dataspaceId = dataspaces.length > 0 ? dataspaces[0].id : 1;
+              return this.partnerService.getPartners(userIds.providerId, userIds.tenantId, userIds.participantId, dataspaceId).pipe(
+                catchError(() => of([] as Partner[]))
+              );
+            })
+          );
+        } else {
+          partners$ = of([] as Partner[]);
+        }
         
         return forkJoin({
           useCases: useCases$,

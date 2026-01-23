@@ -113,8 +113,14 @@ export class PartnersListComponent implements OnInit {
   loadPartners(): void {
     if (!this.selectedDataspaceId) return;
     
+    const ids = this.authService.getCurrentUserIds();
+    if (!ids) {
+      this.loading = false;
+      return;
+    }
+    
     this.loading = true;
-    this.partnerService.getPartners(this.selectedDataspaceId).subscribe({
+    this.partnerService.getPartners(ids.providerId, ids.tenantId, ids.participantId, this.selectedDataspaceId).subscribe({
       next: (partners) => {
         this.partners = partners;
         this.applyFilters();
@@ -132,9 +138,11 @@ export class PartnersListComponent implements OnInit {
 
     this.filteredPartners = this.partners.filter(p => {
       const matchesSearch = !searchTerm || 
-        p.name.toLowerCase().includes(searchTerm) ||
-        (p.description && p.description.toLowerCase().includes(searchTerm)) ||
-        (p.companyIdentifier && p.companyIdentifier.toLowerCase().includes(searchTerm));
+        p.nickname.toLowerCase().includes(searchTerm) ||
+        p.identifier.toLowerCase().includes(searchTerm) ||
+        (p.properties?.industry && p.properties.industry.toLowerCase().includes(searchTerm)) ||
+        (p.properties?.contactEmail && p.properties.contactEmail.toLowerCase().includes(searchTerm)) ||
+        (p.properties?.region && p.properties.region.toLowerCase().includes(searchTerm));
       return matchesSearch;
     });
 
