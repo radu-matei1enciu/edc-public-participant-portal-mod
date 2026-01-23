@@ -9,7 +9,7 @@
  */
 
 
-export interface ServiceProviderResource { 
+export interface ServiceProvider { 
     id?: number;
     name?: string;
 }

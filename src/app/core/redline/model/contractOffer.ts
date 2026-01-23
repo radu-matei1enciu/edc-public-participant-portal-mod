@@ -9,7 +9,9 @@
  */
 
 
-export interface NewServiceProvider { 
-    name?: string;
+export interface ContractOffer { 
+    id?: string;
+    policy?: { [key: string]: object; };
+    assetId?: string;
 }
 

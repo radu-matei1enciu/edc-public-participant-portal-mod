@@ -9,9 +9,10 @@
  */
 
 
-export interface NewDataspaceInfo { 
-    dataspaceId?: number;
-    agreementTypes?: Array<string>;
-    roles?: Array<string>;
+export interface TransferProcessRequest { 
+    counterPartyAddress?: string;
+    contractId?: string;
+    dataDestination?: { [key: string]: object; };
+    transferType?: string;
 }
 

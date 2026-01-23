@@ -7,10 +7,12 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { Constraint } from './constraint';
 
 
-export interface DataspaceResource { 
-    id?: number;
-    name?: string;
+export interface Prohibition { 
+    '@type'?: string;
+    action?: string;
+    constraint?: Array<Constraint>;
 }
 

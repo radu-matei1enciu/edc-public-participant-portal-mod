@@ -11,7 +11,7 @@ import {UserPreferences, UserPreferencesService} from '../../core/services/user-
 import {FileAsset} from '../../core/models/file-asset.model';
 import {UseCase} from '../../core/models/use-case.model';
 import {formatFileSize} from '../../shared/utils/format.utils';
-import {FileResource, RedlineUIService} from "../../core/redline";
+import {EDCDataOperationsService, FileResource} from "../../core/redline";
 import {FileDetailComponent} from "./file-detail.component";
 import {PartnerService} from "../../core/services/partner.service";
 
@@ -32,7 +32,7 @@ export class FilesListComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private readonly partnerService = inject(PartnerService)
-  private redlineService = inject(RedlineUIService);
+  private edcDataOperationsService = inject(EDCDataOperationsService);
 
   files: FileAsset[] = [];
   filteredFiles: FileAsset[] = [];
@@ -105,7 +105,7 @@ export class FilesListComponent implements OnInit {
       return;
     }
     try {
-      const redlineFiles = await firstValueFrom(this.redlineService.listFiles(userIds.participantId, userIds.tenantId, userIds.providerId));
+      const redlineFiles = await firstValueFrom(this.edcDataOperationsService.listFiles(userIds.participantId, userIds.tenantId, userIds.providerId));
       for (const file of redlineFiles) {
         await this.addToFiles(file)
       }

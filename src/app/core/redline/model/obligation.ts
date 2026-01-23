@@ -7,13 +7,12 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { Constraint } from './constraint';
 
 
-export interface DataspaceInfo { 
-    dataspaceId?: number;
-    agreementTypes?: Array<string>;
-    roles?: Array<string>;
-    properties?: { [key: string]: object; };
-    id?: number;
+export interface Obligation { 
+    '@type'?: string;
+    action?: string;
+    constraint?: Array<Constraint>;
 }
 

@@ -9,8 +9,8 @@
  */
 
 
-export interface NewParticipantDeployment { 
-    participantId?: number;
+export interface PartnerReference { 
     identifier?: string;
+    nickname?: string;
 }
 

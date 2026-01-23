@@ -1,5 +1,7 @@
-export * from './public.service';
-import { PublicService } from './public.service';
-export * from './redlineUI.service';
-import { RedlineUIService } from './redlineUI.service';
-export const APIS = [PublicService, RedlineUIService];
+export * from './eDCDataOperations.service';
+import { EDCDataOperationsService } from './eDCDataOperations.service';
+export * from './serverInfo.service';
+import { ServerInfoService } from './serverInfo.service';
+export * from './tenantOperations.service';
+import { TenantOperationsService } from './tenantOperations.service';
+export const APIS = [EDCDataOperationsService, ServerInfoService, TenantOperationsService];

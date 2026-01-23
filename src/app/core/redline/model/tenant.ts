@@ -7,13 +7,14 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { ParticipantResource } from './participantResource';
+import { Participant } from './participant';
 
 
-export interface TenantResource { 
+export interface Tenant { 
     id?: number;
     providerId?: number;
     name?: string;
-    participants?: Array<ParticipantResource>;
+    participants?: Array<Participant>;
+    properties?: { [key: string]: object; };
 }
 

@@ -7,10 +7,12 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { DataspaceInfo } from './dataspaceInfo';
 
 
-export interface PartnerReferenceResource { 
-    identifier?: string;
-    nickname?: string;
+export interface TenantRegistration { 
+    tenantName?: string;
+    dataspaceInfos?: Array<DataspaceInfo>;
+    properties?: { [key: string]: object; };
 }
 

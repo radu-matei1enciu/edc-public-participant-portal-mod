@@ -1,17 +1,17 @@
-import { Component, OnInit, inject, DestroyRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { FileAssetService } from '../../core/services/file-asset.service';
-import { UseCaseService } from '../../core/services/use-case.service';
-import { PartnerService } from '../../core/services/partner.service';
-import { AuthService } from '../../core/services/auth.service';
-import { NotificationService } from '../../shared/services/notification.service';
-import { ModalService } from '../../core/services/modal.service';
-import { UseCase } from '../../core/models/use-case.model';
-import { Partner } from '../../core/models/partner.model';
-import { formatFileSize } from '../../shared/utils/format.utils';
-import {RedlineUIService} from "../../core/redline";
+import {Component, DestroyRef, inject, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {Router} from '@angular/router';
+import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
+import {FileAssetService} from '../../core/services/file-asset.service';
+import {UseCaseService} from '../../core/services/use-case.service';
+import {PartnerService} from '../../core/services/partner.service';
+import {AuthService} from '../../core/services/auth.service';
+import {NotificationService} from '../../shared/services/notification.service';
+import {ModalService} from '../../core/services/modal.service';
+import {UseCase} from '../../core/models/use-case.model';
+import {Partner} from '../../core/models/partner.model';
+import {formatFileSize} from '../../shared/utils/format.utils';
+import {EDCDataOperationsService} from "../../core/redline";
 import {DataspaceService} from "../../core/services/dataspace.service";
 import {firstValueFrom} from "rxjs";
 
@@ -33,7 +33,7 @@ export class FileUploadComponent implements OnInit {
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
-  private redlineService = inject(RedlineUIService);
+  private edcDataOperationsService = inject(EDCDataOperationsService);
   private dataspaceService = inject(DataspaceService);
 
   participantId: number | null = null;
@@ -201,7 +201,7 @@ export class FileUploadComponent implements OnInit {
       size: this.selectedFiles[0].size,
       origin: 'owned'
     }
-    this.redlineService.uploadFile(userIds.participantId, userIds.tenantId, userIds.providerId, JSON.stringify(metadata),this.selectedFiles[0]).subscribe({
+    this.edcDataOperationsService.uploadFile(userIds.participantId, userIds.tenantId, userIds.providerId, JSON.stringify(metadata),this.selectedFiles[0]).subscribe({
       next: () => {
         this.uploading = false;
         this.notificationService.showSuccess('Success', `Successfully uploaded ${this.selectedFiles.length} file(s)`);

@@ -10,9 +10,12 @@
 import { Constraint } from './constraint';
 
 
-export interface Permission { 
-    '@type'?: string;
-    action?: string;
-    constraint?: Array<Constraint>;
+export interface ContractRequest { 
+    offerId?: string;
+    providerId?: string;
+    assetId?: string;
+    permissions?: Array<Constraint>;
+    prohibitions?: Array<Constraint>;
+    obligations?: Array<Constraint>;
 }
 

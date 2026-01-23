@@ -7,11 +7,11 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { NewDataspaceInfo } from './newDataspaceInfo';
 
 
-export interface NewTenantRegistration { 
-    tenantName?: string;
-    dataspaceInfos?: Array<NewDataspaceInfo>;
+export interface Dataspace { 
+    id?: number;
+    name?: string;
+    properties?: { [key: string]: object; };
 }
 
