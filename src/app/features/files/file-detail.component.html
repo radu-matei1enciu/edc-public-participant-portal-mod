@@ -117,8 +117,8 @@
                         formControlName="partnerId"
                         class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
                         <option [value]="''">None</option>
-                        @for (partner of partners; track partner.identifier) {
-                          <option [value]="partner.identifier">{{ partner.nickname }}</option>
+                        @for (partner of partners; track partner.id) {
+                          <option [value]="partner.id">{{ partner.name }}</option>
                         }
                       </select>
                     </div>
@@ -145,8 +145,8 @@
                       formControlName="partnerId"
                       class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
                       <option [value]="''">None</option>
-                      @for (partner of partners; track partner.identifier) {
-                        <option [value]="partner.identifier">{{ partner.nickname }}</option>
+                      @for (partner of partners; track partner.id) {
+                        <option [value]="partner.id">{{ partner.name }}</option>
                       }
                     </select>
                   </div>
