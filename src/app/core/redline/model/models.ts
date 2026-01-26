@@ -16,6 +16,7 @@ export * from './offer';
 export * from './participant';
 export * from './participantDeployment';
 export * from './partnerReference';
+export * from './partnerReferenceRequest';
 export * from './permission';
 export * from './prohibition';
 export * from './serviceProvider';

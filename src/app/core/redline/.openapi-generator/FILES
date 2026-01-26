@@ -29,6 +29,7 @@ model/offer.ts
 model/participant.ts
 model/participantDeployment.ts
 model/partnerReference.ts
+model/partnerReferenceRequest.ts
 model/permission.ts
 model/prohibition.ts
 model/serviceProvider.ts

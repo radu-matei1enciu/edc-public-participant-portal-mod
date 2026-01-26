@@ -9,7 +9,7 @@
  */
 
 
-export interface PartnerReference { 
+export interface PartnerReferenceRequest { 
     identifier?: string;
     nickname?: string;
     properties?: { [key: string]: object; };
