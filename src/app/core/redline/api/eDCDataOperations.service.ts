@@ -549,10 +549,10 @@ export class EDCDataOperationsService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public requestContract(providerId: number, tenantId: number, participantId: number, contractRequest: ContractRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public requestContract(providerId: number, tenantId: number, participantId: number, contractRequest: ContractRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public requestContract(providerId: number, tenantId: number, participantId: number, contractRequest: ContractRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
-    public requestContract(providerId: number, tenantId: number, participantId: number, contractRequest: ContractRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public requestContract(providerId: number, tenantId: number, participantId: number, contractRequest: ContractRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
+    public requestContract(providerId: number, tenantId: number, participantId: number, contractRequest: ContractRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
+    public requestContract(providerId: number, tenantId: number, participantId: number, contractRequest: ContractRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
+    public requestContract(providerId: number, tenantId: number, participantId: number, contractRequest: ContractRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (providerId === null || providerId === undefined) {
             throw new Error('Required parameter providerId was null or undefined when calling requestContract.');
         }
@@ -569,6 +569,7 @@ export class EDCDataOperationsService extends BaseService {
         let localVarHeaders = this.defaultHeaders;
 
         const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'text/plain',
             'application/json'
         ]);
         if (localVarHttpHeaderAcceptSelected !== undefined) {

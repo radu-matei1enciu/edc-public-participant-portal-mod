@@ -16,7 +16,6 @@ export interface Dataset {
     '@type'?: string;
     hasPolicy?: Array<Offer>;
     distribution?: Array<Distribution>;
-    description?: string;
-    properties?: { [key: string]: object; };
+    'edc:properties'?: { [key: string]: object; };
 }
 

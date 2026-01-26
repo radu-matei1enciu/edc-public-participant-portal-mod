@@ -22,8 +22,9 @@ import { UserPreferencesService, UserPreferences } from '../../core/services/use
 import { FileAsset } from '../../core/models/file-asset.model';
 import { UseCase } from '../../core/models/use-case.model';
 import { UserProfile } from '../../core/models/participant.model';
-import {EDCDataOperationsService, TenantOperationsService} from "../../core/redline";
+import {Dataset, EDCDataOperationsService, PartnerReference, TenantOperationsService} from "../../core/redline";
 import {RedlineUser} from "../../core/models/redline-user.model";
+import {DataspaceService} from "../../core/services/dataspace.service";
 
 @Component({
   selector: 'app-explore-list',
@@ -41,6 +42,7 @@ export class ExploreListComponent implements OnInit {
   private fb = inject(FormBuilder);
   private readonly tenantOperationsService = inject(TenantOperationsService)
   private readonly edcDataOperationsService = inject(EDCDataOperationsService)
+  private readonly dataspaceService = inject(DataspaceService)
 
   files: FileAsset[] = [];
   filteredFiles: FileAsset[] = [];
@@ -117,6 +119,7 @@ export class ExploreListComponent implements OnInit {
 
   async loadFiles(): Promise<void> {
     if (!this.redlineUser) return;
+    this.files = this.filteredFiles = [];
     this.loading = true;
 
     /**
@@ -124,12 +127,59 @@ export class ExploreListComponent implements OnInit {
      */
     const partners = await firstValueFrom(this.tenantOperationsService.getPartners(
         this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId, 0));
-    console.log('Partners', JSON.stringify(partners))
+    for (const partner of partners) {
+      (await this.getPartnerCatalog(partner)).forEach(file => this.files.push(file));
+    }
+    await this.matchContractsToFiles();
+    this.filteredFiles = this.files
+    this.loading = false;
+  }
+
+  private async matchContractsToFiles(): Promise<void> {
+    if (!this.redlineUser) return;
+    const contracts = await firstValueFrom(this.edcDataOperationsService.listContracts(
+        this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId
+    ));
+    for (const contract of contracts) {
+      const matchingFile = this.files.find(file => file.catalogDataset?.["edc:properties"]?.["edc:assetId"] === contract.assetId);
+      if (matchingFile && contract.counterParty === matchingFile.partnerDid && !contract.pending) {
+        matchingFile.accessRestrictions = [
+          {
+            partnerName: matchingFile.partnerName,
+            partnerId: contract.counterParty,
+            contractId: contract.id
+          }
+        ]
+      }
+    }
+  }
+
+  private async getPartnerCatalog(partner: PartnerReference): Promise<FileAsset[]> {
+    if (!this.redlineUser) return [];
     const catalog = await firstValueFrom(this.edcDataOperationsService.requestCatalog(
         this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId,
-        { counterPartyIdentifier: partners[0].identifier! }
-    ))
-    console.log('Catalog', JSON.stringify(catalog))
+        { counterPartyIdentifier: partner.identifier! }
+    ));
+    if (catalog.dataset) {
+      return catalog.dataset.map(ds => {
+        const useCaseId = ds["edc:properties"]?.["edc:useCase"] as unknown as string;
+        return {
+          name: ds["edc:properties"]?.["edc:originalFilename"] ?? 'N/A',
+          useCase: useCaseId ?? 'N/A',
+          useCaseLabel: this.useCases.find(uc => uc.id === useCaseId)?.label ?? '',
+          size: ds["edc:properties"]?.["edc:size"] as unknown as number ?? undefined,
+          description: ds["edc:properties"]?.['description'] ?? 'N/A',
+          id: ds["edc:properties"]?.["edc:fileId"] ?? 'N/A',
+          origin: "remote",
+          uploadedAt: 'N/A',
+          dataspace: 'Catena-X', // ToDo: get dataspace
+          catalogDataset: ds,
+          partnerName: partner.nickname,
+          partnerDid: partner.identifier
+        } as FileAsset
+      });
+    }
+    return [];
   }
 
   applyFilters(): void {
@@ -163,27 +213,59 @@ export class ExploreListComponent implements OnInit {
     return file.origin === 'remote' && !!file.accessRestrictions && file.accessRestrictions.length > 0;
   }
 
-  getFileCompany(file: FileAsset): string {
-    if (file.accessRestrictions && file.accessRestrictions.length > 0) {
-      return file.accessRestrictions[0].partnerName || 'Unknown';
+  async requestAccess(file: FileAsset): Promise<void> {
+    if (!this.redlineUser || !file.partnerDid || !file.catalogDataset || !file.catalogDataset["edc:properties"]) {
+      console.error('missing data');
+      this.notificationService.showError('Error', 'Missing Data');
+      return;
     }
-    return 'Unknown';
+
+    if (!file.catalogDataset["edc:properties"]["edc:assetId"]) {
+      console.error('missing assest id');
+      this.notificationService.showError('Error', 'Missing asset ID');
+      return;
+    }
+    if (!file.catalogDataset.hasPolicy) {
+      console.error('missing offers');
+      this.notificationService.showError('Error', 'This file has no data sharing offers');
+      return;
+    }
+
+    this.requestingAccess = file.id;
+    const negotiationId = await firstValueFrom(this.edcDataOperationsService.requestContract(
+        this.redlineUser.providerId,
+        this.redlineUser.tenantId,
+        this.redlineUser.participantId,
+        {
+          assetId: file.catalogDataset["edc:properties"]["edc:assetId"] as unknown as string,
+          providerId: file.partnerDid,
+          offerId: file.catalogDataset.hasPolicy?.at(0)?.["@id"],
+          permissions: file.catalogDataset.hasPolicy!.at(0)!.permission!.flatMap(pm => pm.constraint ?? [])
+        },
+        "body", false, {httpHeaderAccept: "text/plain"}
+    ))
+
+    let negotiationState = '';
+    while (negotiationState !== 'FINALIZED' && negotiationState !== 'TERMINATED') {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      negotiationState = (await firstValueFrom(this.edcDataOperationsService.getContractNegotiation(
+       this.redlineUser.providerId,
+       this.redlineUser.tenantId,
+       this.redlineUser.participantId,
+       negotiationId
+      ))).state ?? '';
+      console.log('State:', negotiationState);
+    }
+    if (negotiationState === 'FINALIZED') {
+      this.notificationService.showSuccess('Success', 'Access granted');
+      await this.loadFiles();
+    } else {
+      this.notificationService.showError('Error', 'Failed to request access');
+    }
+    this.requestingAccess = null;
   }
 
-  requestAccess(fileId: string): void {
-    if (!this.redlineUser) return;
+  async requestTransferAndDownload(file: FileAsset): Promise<void> {
 
-  //   this.requestingAccess = fileId;
-  //   this.fileAssetService.requestAccess(this.redlineUser, fileId).subscribe({
-  //     next: () => {
-  //       this.requestingAccess = null;
-  //       this.notificationService.showSuccess('Success', 'Access request submitted');
-  //       this.loadFiles();
-  //     },
-  //     error: () => {
-  //       this.requestingAccess = null;
-  //       this.notificationService.showError('Error', 'Failed to request access');
-  //     }
-  //   });
   }
 }
