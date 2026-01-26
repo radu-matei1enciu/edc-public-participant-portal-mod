@@ -39,7 +39,7 @@ export class MembershipDetailComponent implements OnInit {
   }
 
   loadMembership(): void {
-    const userIds = this.authService.getCurrentUserIds();
+    const userIds = this.authService.getRedlineUser();
     if (!userIds) {
       this.loading = false;
       this.notificationService.showError('Error', 'Failed to load user profile');

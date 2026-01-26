@@ -43,7 +43,7 @@ export class PartnerAddComponent implements OnInit {
 
   loadDataspaces(): void {
     this.loading = true;
-    const userIds = this.authService.getCurrentUserIds();
+    const userIds = this.authService.getRedlineUser();
     if (!userIds) {
       this.loading = false;
       this.notificationService.showError('Error', 'Failed to load user profile');
@@ -74,7 +74,7 @@ export class PartnerAddComponent implements OnInit {
       return;
     }
 
-    const userIds = this.authService.getCurrentUserIds();
+    const userIds = this.authService.getRedlineUser();
     if (!userIds) {
       this.notificationService.showError('Error', 'Failed to load user profile');
       return;

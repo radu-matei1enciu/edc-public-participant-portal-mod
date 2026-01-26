@@ -28,7 +28,7 @@ export class MembershipsSectionComponent implements OnInit {
   }
 
   loadMemberships(): void {
-    const userIds = this.authService.getCurrentUserIds();
+    const userIds = this.authService.getRedlineUser();
     if (!userIds) {
       this.notificationService.showError('Error', 'Failed to load user profile');
       return;

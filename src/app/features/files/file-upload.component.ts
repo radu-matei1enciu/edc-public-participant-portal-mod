@@ -89,7 +89,14 @@ export class FileUploadComponent implements OnInit {
     if (!this.participantId) return;
     const cx = (await firstValueFrom(this.dataspaceService.getDataspaces()))
         .find(ds => ds.name.toLowerCase().includes('catena'));
-    this.partnerService.getPartners(cx!.id).subscribe({
+    const redlineUser = this.authService.getRedlineUser();
+    if (!cx || !redlineUser) return ;
+    this.partnerService.getPartners(
+        redlineUser.providerId,
+        redlineUser.tenantId,
+        redlineUser.participantId,
+        cx.id
+    ).subscribe({
       next: (partners) => {
         this.partners = partners;
       },
@@ -161,14 +168,14 @@ export class FileUploadComponent implements OnInit {
       const useCaseId = this.uploadForm.get('useCase')?.value;
       const partnerId = this.uploadForm.get('partnerId')?.value;
       const useCase = this.useCases.find(uc => uc.id === useCaseId);
-      const partner = this.partners.find(p => p.id === partnerId);
+      const partner = this.partners.find(p => p.identifier === partnerId);
       
       return {
         name: file.name,
         size: file.size,
         type: file.type || 'application/octet-stream',
         useCase: useCase?.label,
-        partner: partner?.name
+        partner: partner?.nickname
       };
     });
   }
@@ -218,24 +225,6 @@ export class FileUploadComponent implements OnInit {
         this.notificationService.showError('Error', error.message || 'Failed to upload files');
       }
     });
-
-    //
-    // this.fileAssetService.uploadFiles(this.participantId, this.selectedFiles, {
-    //   useCase: uploadMetadata.useCase || undefined,
-    //   partnerId: uploadMetadata.partnerId || undefined,
-    //   description: '',
-    //   dataspace: undefined
-    // }).subscribe({
-    //   next: () => {
-    //     this.uploading = false;
-    //     this.notificationService.showSuccess('Success', `Successfully uploaded ${this.selectedFiles.length} file(s)`);
-    //     this.router.navigate(['/files']);
-    //   },
-    //   error: (error) => {
-    //     this.uploading = false;
-    //     this.notificationService.showError('Error', error.message || 'Failed to upload files');
-    //   }
-    // });
   }
 
   closeUpload(): void {

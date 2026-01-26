@@ -3,7 +3,7 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
-import {forkJoin, of} from 'rxjs';
+import {firstValueFrom, forkJoin, of} from 'rxjs';
 import {catchError, switchMap} from 'rxjs/operators';
 import {FileAssetService} from '../../core/services/file-asset.service';
 import {UseCaseService} from '../../core/services/use-case.service';
@@ -15,6 +15,7 @@ import {FileAsset} from '../../core/models/file-asset.model';
 import {UseCase} from '../../core/models/use-case.model';
 import {Partner} from '../../core/models/partner.model';
 import {formatFileSize} from '../../shared/utils/format.utils';
+import {DataspaceService} from "../../core/services/dataspace.service";
 
 @Component({
   selector: 'app-file-detail',
@@ -33,6 +34,7 @@ export class FileDetailComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private modalService = inject(ModalService);
   private destroyRef = inject(DestroyRef);
+  private readonly dataspaceService = inject(DataspaceService)
 
   @Input() file: FileAsset | null = null;
   @Output() closeDetails = new EventEmitter<void>();
@@ -47,23 +49,32 @@ export class FileDetailComponent implements OnInit {
   saving = false;
   private fb = inject(FormBuilder);
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.editForm = this.fb.group({
       useCase: [''],
       partnerId: ['']
     });
 
+    const redlineUser = this.authService.getRedlineUser();
+    const cx = (await firstValueFrom(this.dataspaceService.getDataspaces()))
+        .find(ds => ds.name.toLowerCase().includes('catena'));
+    if (!redlineUser || !cx) return;
+
     this.authService.loadUserProfile().pipe(
       switchMap((profile) => {
         this.participantId = profile.participant.id;
-        const fileId = this.route.snapshot.params['id'];
-        
+
         const useCases$ = this.useCaseService.getUseCases().pipe(
           catchError(() => of([] as UseCase[]))
         );
-        
-        const partners$ = this.participantId 
-          ? this.partnerService.getPartnersByParticipant(this.participantId).pipe(
+
+        const partners$ = this.participantId
+          ? this.partnerService.getPartners(
+              redlineUser.participantId,
+                redlineUser.tenantId,
+                redlineUser.participantId,
+                cx.id
+            ).pipe(
               catchError(() => of([] as Partner[]))
             )
           : of([] as Partner[]);

@@ -14,6 +14,8 @@ import {formatFileSize} from '../../shared/utils/format.utils';
 import {EDCDataOperationsService, FileResource} from "../../core/redline";
 import {FileDetailComponent} from "./file-detail.component";
 import {PartnerService} from "../../core/services/partner.service";
+import {RedlineUser} from "../../core/models/redline-user.model";
+import {DataspaceService} from "../../core/services/dataspace.service";
 
 @Component({
   selector: 'app-files-list',
@@ -32,7 +34,8 @@ export class FilesListComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private readonly partnerService = inject(PartnerService)
-  private edcDataOperationsService = inject(EDCDataOperationsService);
+  private readonly edcDataOperationsService = inject(EDCDataOperationsService);
+  private readonly dataspaceService = inject(DataspaceService);
 
   files: FileAsset[] = [];
   filteredFiles: FileAsset[] = [];
@@ -45,6 +48,7 @@ export class FilesListComponent implements OnInit {
   searchText?: string;
   useCaseFilter?: string;
   originFilter?: string;
+  redlineUser?: RedlineUser;
 
   constructor() {
     this.filterForm = this.fb.group({
@@ -56,8 +60,9 @@ export class FilesListComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    this.redlineUser = await this.authService.getRedlineUser();
     this.loadUseCases();
-    this.loadFiles();
+    await this.loadFiles();
 
     this.filterForm.get('searchTerm')?.valueChanges.pipe(
       debounceTime(300),
@@ -97,15 +102,15 @@ export class FilesListComponent implements OnInit {
 
 
   async loadFiles(): Promise<void> {
-    this.loading = true;
-
-    const userIds = this.authService.getRedlineUser();
-    if (!userIds) {
+    if (!this.redlineUser) {
       this.notificationService.showError('Error', 'Failed to load the user profile.');
       return;
     }
+    this.loading = true;
+
     try {
-      const redlineFiles = await firstValueFrom(this.edcDataOperationsService.listFiles(userIds.participantId, userIds.tenantId, userIds.providerId));
+      const redlineFiles = await firstValueFrom(this.edcDataOperationsService.listFiles(
+          this.redlineUser.participantId, this.redlineUser.tenantId, this.redlineUser.providerId));
       for (const file of redlineFiles) {
         await this.addToFiles(file)
       }
@@ -118,11 +123,21 @@ export class FilesListComponent implements OnInit {
   }
 
   private async addToFiles(file: FileResource): Promise<void> {
+    const cx = (await firstValueFrom(this.dataspaceService.getDataspaces()))
+        .find(ds => ds.name.toLowerCase().includes('catena'));
+    if (!this.redlineUser || !cx) return ;
+
     const useCaseId = file.metadata?.['useCase'] as unknown as string;
     const partnerId = file.metadata?.['partnerId'] as unknown as string;
     let partnerName = '';
     if (partnerId) {
-      partnerName = (await firstValueFrom(this.partnerService.getPartnerReference(1, partnerId)))?.name ?? '';
+      partnerName = (await firstValueFrom(this.partnerService.getPartnerReference(
+          this.redlineUser.providerId,
+          this.redlineUser.tenantId,
+          this.redlineUser.participantId,
+          cx.id,
+          partnerId)
+      ))?.nickname ?? '';
     }
     this.files.push({
       name: file.fileName ?? '',
