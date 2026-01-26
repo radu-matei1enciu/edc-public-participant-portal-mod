@@ -1,35 +1,24 @@
-import { Component, OnInit, inject, DestroyRef } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import {
-  Observable,
-  interval,
-  startWith,
-  switchMap,
-  catchError,
-  of,
-  debounceTime,
-  distinctUntilChanged,
-  firstValueFrom
-} from 'rxjs';
-import { FileAssetService } from '../../core/services/file-asset.service';
-import { UseCaseService } from '../../core/services/use-case.service';
-import { AuthService } from '../../core/services/auth.service';
-import { NotificationService } from '../../shared/services/notification.service';
-import { UserPreferencesService, UserPreferences } from '../../core/services/user-preferences.service';
-import { FileAsset } from '../../core/models/file-asset.model';
-import { UseCase } from '../../core/models/use-case.model';
-import { UserProfile } from '../../core/models/participant.model';
-import {Dataset, EDCDataOperationsService, PartnerReference, TenantOperationsService} from "../../core/redline";
+import {Component, DestroyRef, inject, OnInit} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {CommonModule} from '@angular/common';
+import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
+import {debounceTime, distinctUntilChanged, firstValueFrom, Observable} from 'rxjs';
+import {FileAssetService} from '../../core/services/file-asset.service';
+import {UseCaseService} from '../../core/services/use-case.service';
+import {AuthService} from '../../core/services/auth.service';
+import {NotificationService} from '../../shared/services/notification.service';
+import {UserPreferences, UserPreferencesService} from '../../core/services/user-preferences.service';
+import {FileAsset} from '../../core/models/file-asset.model';
+import {UseCase} from '../../core/models/use-case.model';
+import {UserProfile} from '../../core/models/participant.model';
+import {EDCDataOperationsService, PartnerReference, TenantOperationsService, TransferProcess} from "../../core/redline";
 import {RedlineUser} from "../../core/models/redline-user.model";
 import {DataspaceService} from "../../core/services/dataspace.service";
 
 @Component({
   selector: 'app-explore-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './explore-list.component.html',
   })
 export class ExploreListComponent implements OnInit {
@@ -55,6 +44,7 @@ export class ExploreListComponent implements OnInit {
   userProfile: UserProfile | null = null;
   redlineUser?: RedlineUser;
   requestingAccess: string | null = null;
+  requestingTransfer?: string;
 
   constructor() {
     this.filterForm = this.fb.group({
@@ -254,11 +244,10 @@ export class ExploreListComponent implements OnInit {
        this.redlineUser.participantId,
        negotiationId
       ))).state ?? '';
-      console.log('State:', negotiationState);
     }
     if (negotiationState === 'FINALIZED') {
       this.notificationService.showSuccess('Success', 'Access granted');
-      await this.loadFiles();
+      await this.matchContractsToFiles();
     } else {
       this.notificationService.showError('Error', 'Failed to request access');
     }
@@ -266,6 +255,54 @@ export class ExploreListComponent implements OnInit {
   }
 
   async requestTransferAndDownload(file: FileAsset): Promise<void> {
+    if (!this.redlineUser || !file.accessRestrictions || !file.accessRestrictions[0].contractId || !file.catalogDataset?.distribution) {
+      console.error('missing data');
+      this.notificationService.showError('Error', 'Missing Data');
+      return;
+    }
+
+    this.requestingTransfer = file.id;
+    const transferProcessId = await firstValueFrom(this.edcDataOperationsService.requestTransfer(
+        this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId,
+        {
+          contractId: file.accessRestrictions[0].contractId,
+          counterPartyId: file.partnerDid,
+          transferType: file.catalogDataset.distribution[0].format
+        },
+        "body", false, {httpHeaderAccept: "text/plain"}
+    ))
+
+    let transferProcess: TransferProcess | undefined = undefined;
+    while (transferProcess?.state !== 'STARTED' && transferProcess?.state !== 'TERMINATED') {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      transferProcess = await firstValueFrom(this.edcDataOperationsService.getTransferProcess(
+          this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId,
+          transferProcessId
+      ));
+    }
+    if (transferProcess.state === 'STARTED') {
+      const token = (transferProcess.contentDataAddress?.["properties"] as Record<string, string>)?.["https://w3id.org/edc/v0.0.1/ns/authorization"];
+      const data: Blob = await firstValueFrom(this.edcDataOperationsService.downloadData(
+          this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId,
+          file.id,
+          token
+      ));
+      this.startBrowserDownload(data, file);
+    } else {
+      this.notificationService.showError('Error', 'Failed to transfer file');
+    }
+    this.requestingTransfer = undefined;
+  }
+
+  private startBrowserDownload(data: Blob, file: FileAsset): void {
+    const url = window.URL.createObjectURL(data);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.name || 'download';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
 
   }
 }

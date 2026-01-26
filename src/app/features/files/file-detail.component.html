@@ -28,7 +28,7 @@
                   </div>
                 </div>
                 <div class="ml-6">
-                  <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ file.name.split('.')[0] }}</h1>
+                  <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ file.name.split('.')[0] | titlecase }}</h1>
                   @if (file.description) {
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ file.description }}</p>
                   }
