@@ -36,7 +36,7 @@ export class PartnerService {
     );
   }
 
-  addPartner(providerId: number, tenantId: number, participantId: number, dataspaceId: number, partner: { nickname: string; identifier: string; properties?: Record<string, unknown> }): Observable<Partner> {
+  addPartner(providerId: number, tenantId: number, participantId: number, dataspaceId: number, partner: { nickname: string; identifier: string; properties?: unknown }): Observable<Partner> {
     return this.http.post<Partner>(
       `${this.baseUrl}/service-providers/${providerId}/tenants/${tenantId}/participants/${participantId}/partners/${dataspaceId}`,
       partner
