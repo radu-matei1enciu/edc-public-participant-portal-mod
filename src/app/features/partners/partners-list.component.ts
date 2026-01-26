@@ -1,18 +1,18 @@
-import { Component, OnInit, inject, DestroyRef } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Observable, interval, startWith, switchMap, catchError, of, debounceTime, distinctUntilChanged } from 'rxjs';
-import { PartnerService } from '../../core/services/partner.service';
-import { AuthService } from '../../core/services/auth.service';
-import { NotificationService } from '../../shared/services/notification.service';
-import { UserPreferencesService, UserPreferences } from '../../core/services/user-preferences.service';
-import { DataspaceService } from '../../core/services/dataspace.service';
-import { ConfigService } from '../../core/services/config.service';
-import { Partner } from '../../core/models/partner.model';
-import { DataspaceResource } from '../../core/models/dataspace.model';
-import { UserProfile } from '../../core/models/participant.model';
+import {Component, DestroyRef, inject, OnInit} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {CommonModule} from '@angular/common';
+import {RouterLink} from '@angular/router';
+import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
+import {debounceTime, distinctUntilChanged, firstValueFrom, Observable} from 'rxjs';
+import {PartnerService} from '../../core/services/partner.service';
+import {AuthService} from '../../core/services/auth.service';
+import {NotificationService} from '../../shared/services/notification.service';
+import {UserPreferences, UserPreferencesService} from '../../core/services/user-preferences.service';
+import {DataspaceService} from '../../core/services/dataspace.service';
+import {ConfigService} from '../../core/services/config.service';
+import {Partner} from '../../core/models/partner.model';
+import {DataspaceResource} from '../../core/models/dataspace.model';
+import {UserProfile} from '../../core/models/participant.model';
 
 @Component({
   selector: 'app-partners-list',
@@ -49,21 +49,10 @@ export class PartnersListComponent implements OnInit {
     this.preferences$ = this.preferencesService.preferences$;
   }
 
-  ngOnInit(): void {
-    this.loadDataspaces();
+  async ngOnInit(): Promise<void> {
+    await this.loadDataspaces();
+    await this.loadPartners();
     
-    this.authService.loadUserProfile().subscribe({
-      next: (profile) => {
-        this.userProfile = profile;
-        if (this.selectedDataspaceId) {
-          this.loadPartners();
-        }
-      },
-      error: () => {
-        this.notificationService.showError('Error', 'Failed to load user profile');
-      }
-    });
-
     this.preferences$.pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(prefs => {
@@ -89,48 +78,36 @@ export class PartnersListComponent implements OnInit {
     });
   }
 
-  loadDataspaces(): void {
-    const userIds = this.authService.getRedlineUser();
-    if (!userIds) {
-      this.notificationService.showError('Error', 'Failed to load user profile');
-      return;
-    }
-
-    this.dataspaceService.getParticipantDataspaces(userIds.providerId, userIds.tenantId, userIds.participantId).subscribe({
-      next: (dataspaces) => {
-        this.dataspaces = dataspaces;
-        if (dataspaces.length > 0 && !this.selectedDataspaceId) {
-          this.selectedDataspaceId = dataspaces[0].id;
-          this.filterForm.patchValue({ dataspaceId: dataspaces[0].id.toString() });
-        }
-      },
-      error: () => {
-        this.notificationService.showError('Error', 'Failed to load dataspaces');
+  async loadDataspaces(): Promise<void> {
+    try {
+      this.dataspaces = await firstValueFrom(this.dataspaceService.getDataspaces());
+      if (this.dataspaces.length > 0 && !this.selectedDataspaceId) {
+        this.selectedDataspaceId = this.dataspaces[0].id;
+        this.filterForm.patchValue({ dataspaceId: this.dataspaces[0].id.toString() });
       }
-    });
+    } catch (_) {
+      this.notificationService.showError('Error', 'Failed to load dataspaces');
+    }
   }
 
-  loadPartners(): void {
-    if (!this.selectedDataspaceId) return;
-    
+  async loadPartners(): Promise<void> {
+    if (this.selectedDataspaceId === null) return;
+
+    this.loading = true;
     const ids = this.authService.getRedlineUser();
     if (!ids) {
       this.loading = false;
       return;
     }
-    
-    this.loading = true;
-    this.partnerService.getPartners(ids.providerId, ids.tenantId, ids.participantId, this.selectedDataspaceId).subscribe({
-      next: (partners) => {
-        this.partners = partners;
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-        this.notificationService.showError('Error', 'Failed to load partners');
-      }
-    });
+
+    try {
+      this.partners = await firstValueFrom(this.partnerService.getPartners(ids.providerId, ids.tenantId, ids.participantId, this.selectedDataspaceId));
+      this.applyFilters();
+      this.loading = false;
+    } catch (_) {
+      this.loading = false;
+      this.notificationService.showError('Error', 'Failed to load partners');
+    }
   }
 
   applyFilters(): void {
