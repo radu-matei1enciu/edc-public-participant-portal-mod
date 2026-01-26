@@ -759,6 +759,31 @@ function handleGetPartner(req, res, participantId, partnerId) {
   }
 }
 
+async function handleAddPartner(req, res, providerId, tenantId, participantId, dataspaceId) {
+  try {
+    const body = await parseBody(req);
+    
+    if (!body.nickname || !body.identifier) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'nickname and identifier are required' }));
+      return;
+    }
+    
+    const newPartner = {
+      identifier: body.identifier,
+      nickname: body.nickname,
+      properties: body.properties || {}
+    };
+    
+    res.writeHead(201, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(newPartner));
+  } catch (error) {
+    console.error('Error adding partner:', error);
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Internal server error', message: error.message }));
+  }
+}
+
 function handleGetFiles(req, res, participantId) {
   const query = url.parse(req.url, true).query;
   let filteredFiles = [...files];
@@ -1244,6 +1269,13 @@ const server = http.createServer(async (req, res) => {
     const participantId = parts[parts.length - 2];
     const dataspaceId = parts[parts.length - 1];
     handleGetPartners(req, res, providerId, tenantId, participantId, dataspaceId);
+  } else if (method === 'POST' && (path.match(/^\/api\/ui\/service-providers\/(\d+)\/tenants\/(\d+)\/participants\/(\d+)\/partners\/(\d+)$/) || path.match(/^\/v1\/service-providers\/(\d+)\/tenants\/(\d+)\/participants\/(\d+)\/partners\/(\d+)$/))) {
+    const parts = path.split('/');
+    const providerId = parts[parts.length - 5];
+    const tenantId = parts[parts.length - 4];
+    const participantId = parts[parts.length - 2];
+    const dataspaceId = parts[parts.length - 1];
+    await handleAddPartner(req, res, providerId, tenantId, participantId, dataspaceId);
   } else if (method === 'POST' && path.match(/^\/v1\/service-providers\/(\d+)\/tenants\/(\d+)\/participants$/)) {
     const parts = path.split('/');
     const providerId = parts[3];
