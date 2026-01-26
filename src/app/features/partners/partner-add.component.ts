@@ -89,13 +89,13 @@ export class PartnerAddComponent implements OnInit {
     }
 
     const propertyKeys = ['region', 'industry', 'contactEmail', 'status'];
-    const properties = propertyKeys.reduce((acc, key) => {
+    const properties: Record<string, unknown> = {};
+    propertyKeys.forEach(key => {
       const value = formValue[key];
       if (value) {
-        acc[key] = value;
+        properties[key] = value;
       }
-      return acc;
-    }, {} as Record<string, unknown>);
+    });
 
     const partnerData = {
       nickname: formValue.nickname,

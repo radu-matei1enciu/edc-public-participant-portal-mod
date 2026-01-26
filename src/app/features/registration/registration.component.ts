@@ -406,13 +406,13 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
         'email', 'phone', 'website', 'country', 'region', 'city', 'address', 'postalCode'
       ];
       
-      const properties = propertyKeys.reduce((acc, key) => {
+      const properties: Record<string, unknown> = {};
+      propertyKeys.forEach(key => {
         const value = formValue[key];
         if (value) {
-          acc[key] = value;
+          properties[key] = value;
         }
-        return acc;
-      }, {} as Record<string, unknown>);
+      });
       
       const tenantRegistration: NewTenantRegistration = {
         tenantName: formValue.participantName,

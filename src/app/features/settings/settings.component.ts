@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { UserPreferencesService, UserPreferences } from '../../core/services/user-preferences.service';
 import { ModalService } from '../../core/services/modal.service';
@@ -10,7 +11,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 @Component({
     selector: 'app-settings',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterLink],
     templateUrl: './settings.component.html'
 })
 export class SettingsComponent implements OnInit {

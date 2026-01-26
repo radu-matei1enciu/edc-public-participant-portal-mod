@@ -1,0 +1,146 @@
+<div class="p-6 max-w-4xl mx-auto">
+  <div class="mb-6">
+    <button (click)="goBack()" 
+            class="inline-flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-4">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+      </svg>
+      Back to Settings
+    </button>
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Profile</h1>
+    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+      View your participant profile information
+    </p>
+  </div>
+
+  @if (selectedParticipant) {
+    <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
+      <div class="px-6 py-6 sm:px-8 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div class="h-16 w-16 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
+              <span class="text-2xl font-bold text-primary-600 dark:text-primary-200">
+                {{ selectedParticipant.tenantName.charAt(0).toUpperCase() }}
+              </span>
+            </div>
+          </div>
+          <div class="ml-6">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ selectedParticipant.tenantName }}</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 font-mono break-all">{{ selectedParticipant.participantIdentifier }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-6 py-6 sm:p-8">
+        <div>
+          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tenant Name</dt>
+          <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ selectedParticipant.tenantName }}</dd>
+        </div>
+
+        @if (hasProperties()) {
+          <div class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-6">Company Information</h3>
+            <dl class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              @if (properties?.description) {
+                <div class="sm:col-span-2">
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Description</dt>
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ properties?.description }}</dd>
+                </div>
+              }
+              @if (properties?.companyType) {
+                <div>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Company Type</dt>
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ properties?.companyType }}</dd>
+                </div>
+              }
+              @if (properties?.companyIdentifier) {
+                <div>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Company Identifier</dt>
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono">{{ properties?.companyIdentifier }}</dd>
+                </div>
+              }
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">VAT Number</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono">{{ properties?.vatNumber || 'N/A' }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Fiscal Code</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono">{{ properties?.fiscalCode || 'N/A' }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                  <a [href]="'mailto:' + properties?.email!" class="text-primary-600 dark:text-primary-400 hover:underline">
+                    {{ properties?.email || 'N/A' }}
+                  </a>
+                </dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Phone</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                  <a [href]="'tel:' + properties?.phone" class="text-primary-600 dark:text-primary-400 hover:underline">
+                    {{ properties?.phone || 'N/A' }}
+                  </a>
+                </dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Website</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                  <a [href]="properties?.website!" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">
+                    {{ properties?.website || 'N/A' }}
+                  </a>
+                </dd>
+              </div>
+              <div class="sm:col-span-2">
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Address</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ properties?.address }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">City</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ properties?.city || 'N/A' }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Postal Code</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ properties?.postalCode || 'N/A' }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Region</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ properties?.region || 'N/A' }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Country</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ properties?.country || 'N/A' }}</dd>
+              </div>
+            </dl>
+          </div>
+        } @else {
+          <div class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700 text-center py-8">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No additional information</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              No company information is available for this participant.
+            </p>
+          </div>
+        }
+      </div>
+    </div>
+  } @else {
+    <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-12 text-center">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+      </svg>
+      <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No participant selected</h3>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        Please select a participant to view profile information.
+      </p>
+      <div class="mt-6">
+        <button (click)="goBack()"
+                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
+          Back to Settings
+        </button>
+      </div>
+    </div>
+  }
+</div>
