@@ -35,4 +35,13 @@ export class PartnerService {
       catchError(() => of(null))
     );
   }
+
+  addPartner(providerId: number, tenantId: number, participantId: number, dataspaceId: number, partner: { nickname: string; identifier: string; properties?: Record<string, unknown> }): Observable<Partner> {
+    return this.http.post<Partner>(
+      `${this.baseUrl}/service-providers/${providerId}/tenants/${tenantId}/participants/${participantId}/partners/${dataspaceId}`,
+      partner
+    ).pipe(
+      catchError((error) => throwError(() => error))
+    );
+  }
 }

@@ -1,0 +1,166 @@
+<div class="p-6 max-w-4xl mx-auto">
+  <div class="mb-6">
+    <button (click)="cancel()" 
+            class="inline-flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-4">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+      </svg>
+      Back to Partners
+    </button>
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Add New Partner</h1>
+    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+      Add a new partner to your dataspace
+    </p>
+  </div>
+
+  @if (loading) {
+    <div class="flex justify-center py-12">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+    </div>
+  } @else {
+    <form [formGroup]="partnerForm" (ngSubmit)="onSubmit()" class="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
+      <div class="px-6 py-6 sm:px-8 space-y-6">
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div class="sm:col-span-2">
+            <label for="dataspaceId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Dataspace <span class="text-red-500">*</span>
+            </label>
+            <select 
+              id="dataspaceId"
+              formControlName="dataspaceId"
+              class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+              <option value="">Select a dataspace</option>
+              @for (dataspace of dataspaces; track dataspace.id) {
+                <option [value]="dataspace.id.toString()">{{ dataspace.name }}</option>
+              }
+            </select>
+            @if (partnerForm.get('dataspaceId')?.invalid && partnerForm.get('dataspaceId')?.touched) {
+              <p class="mt-1 text-sm text-red-600 dark:text-red-400">Please select a dataspace</p>
+            }
+          </div>
+
+          <div>
+            <label for="nickname" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Nickname <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="text"
+              id="nickname"
+              formControlName="nickname"
+              class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              placeholder="Enter partner nickname">
+            @if (partnerForm.get('nickname')?.invalid && partnerForm.get('nickname')?.touched) {
+              <p class="mt-1 text-sm text-red-600 dark:text-red-400">
+                @if (partnerForm.get('nickname')?.errors?.['required']) {
+                  Nickname is required
+                } @else if (partnerForm.get('nickname')?.errors?.['minlength']) {
+                  Nickname must be at least 2 characters
+                }
+              </p>
+            }
+          </div>
+
+          <div>
+            <label for="identifier" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Identifier <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="text"
+              id="identifier"
+              formControlName="identifier"
+              class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm font-mono"
+              placeholder="did:web:example.com">
+            @if (partnerForm.get('identifier')?.invalid && partnerForm.get('identifier')?.touched) {
+              <p class="mt-1 text-sm text-red-600 dark:text-red-400">
+                @if (partnerForm.get('identifier')?.errors?.['required']) {
+                  Identifier is required
+                } @else if (partnerForm.get('identifier')?.errors?.['minlength']) {
+                  Identifier must be at least 2 characters
+                }
+              </p>
+            }
+          </div>
+
+          <div>
+            <label for="region" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Region
+            </label>
+            <input 
+              type="text"
+              id="region"
+              formControlName="region"
+              class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              placeholder="e.g., EU, US, APAC">
+          </div>
+
+          <div>
+            <label for="industry" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Industry
+            </label>
+            <input 
+              type="text"
+              id="industry"
+              formControlName="industry"
+              class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              placeholder="e.g., Manufacturing, Healthcare">
+          </div>
+
+          <div>
+            <label for="contactEmail" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Contact Email
+            </label>
+            <input 
+              type="email"
+              id="contactEmail"
+              formControlName="contactEmail"
+              class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              placeholder="contact@example.com">
+            @if (partnerForm.get('contactEmail')?.invalid && partnerForm.get('contactEmail')?.touched) {
+              <p class="mt-1 text-sm text-red-600 dark:text-red-400">Please enter a valid email address</p>
+            }
+          </div>
+
+          <div>
+            <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Status
+            </label>
+            <select 
+              id="status"
+              formControlName="status"
+              class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+              <option value="">Select status</option>
+              <option value="active">Active</option>
+              <option value="pending">Pending</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 sm:px-8 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-3">
+        <button 
+          type="button"
+          (click)="cancel()"
+          class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+          Cancel
+        </button>
+        <button 
+          type="submit"
+          [disabled]="partnerForm.invalid || submitting"
+          class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed">
+          @if (submitting) {
+            <span class="flex items-center">
+              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Adding...
+            </span>
+          } @else {
+            Add Partner
+          }
+        </button>
+      </div>
+    </form>
+  }
+</div>

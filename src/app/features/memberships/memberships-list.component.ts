@@ -48,7 +48,6 @@ export class MembershipsListComponent implements OnInit {
     this.authService.loadUserProfile().subscribe({
       next: (profile) => {
         this.userProfile = profile;
-        this.loadMemberships();
       },
       error: () => {
         this.notificationService.showError('Error', 'Failed to load user profile');
@@ -70,7 +69,7 @@ export class MembershipsListComponent implements OnInit {
       this.applyFilters();
     });
 
-
+    this.loading = true;
     this.preferences$.pipe(
       switchMap(prefs => {
         const intervalMs = (prefs.autoRefreshInterval || 30) * 1000;
@@ -89,26 +88,6 @@ export class MembershipsListComponent implements OnInit {
       }),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
-      next: (memberships) => {
-        this.memberships = memberships;
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-      }
-    });
-  }
-
-  loadMemberships(): void {
-    const userIds = this.authService.getCurrentUserIds();
-    if (!userIds) {
-      this.notificationService.showError('Error', 'Failed to load user profile');
-      return;
-    }
-
-    this.loading = true;
-    this.dataspaceService.getParticipantDataspaces(userIds.providerId, userIds.tenantId, userIds.participantId).subscribe({
       next: (memberships) => {
         this.memberships = memberships;
         this.applyFilters();
