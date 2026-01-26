@@ -2,16 +2,16 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 import { UserProfile } from '../../core/models/participant.model';
 import { NotificationService } from '../../shared/services/notification.service';
 import { NotificationsComponent } from '../../shared/services/notifications.component';
-import { FileAssetService } from '../../core/services/file-asset.service';
 import { DataspaceService } from '../../core/services/dataspace.service';
 import { PartnerService } from '../../core/services/partner.service';
 import { DataspaceResource } from '../../core/models/dataspace.model';
 import { Partner } from '../../core/models/partner.model';
+import { RedlineUIService } from '../../core/redline';
 
 @Component({
   selector: 'app-dashboard',
@@ -37,9 +37,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private authService = inject(AuthService);
   private router = inject(Router);
-  private fileAssetService = inject(FileAssetService);
   private dataspaceService = inject(DataspaceService);
   private partnerService = inject(PartnerService);
+  private redlineService = inject(RedlineUIService);
   private notificationService = inject(NotificationService);
 
   ngOnInit(): void {
@@ -89,20 +89,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
       catchError(() => of([] as DataspaceResource[]))
     );
 
-    const files$ = this.userProfile?.participant?.id
-      ? this.fileAssetService.getFiles(this.userProfile.participant.id).pipe(
-          catchError(() => of([]))
-        )
-      : of([]);
+    const files$ = this.redlineService.listFiles(
+      userIds.participantId,
+      userIds.tenantId,
+      userIds.providerId
+    ).pipe(
+      catchError(() => of([]))
+    );
 
-    dataspaces$.subscribe({
-      next: (memberships) => {
-        this.membershipsCount = memberships.length;
-        this.recentMemberships = [...memberships].reverse().slice(0, 6);
+    forkJoin({
+      dataspaces: dataspaces$,
+      files: files$
+    }).pipe(
+      switchMap(({ dataspaces, files }) => {
+        this.membershipsCount = dataspaces.length;
+        this.recentMemberships = [...dataspaces].reverse().slice(0, 6);
+        this.filesCount = files.length;
         this.lastUpdateTime = new Date();
 
-        if (memberships.length > 0) {
-          const partnerRequests = memberships.map(dataspace =>
+        if (dataspaces.length > 0) {
+          const partnerRequests = dataspaces.map(dataspace =>
             this.partnerService.getPartners(
               userIds.providerId,
               userIds.tenantId,
@@ -113,32 +119,34 @@ export class DashboardComponent implements OnInit, OnDestroy {
             )
           );
 
-          forkJoin(partnerRequests).subscribe({
-            next: (partnersArrays) => {
-              const allPartners = partnersArrays.flat();
-              const uniquePartners = Array.from(
-                new Map(allPartners.map(p => [p.identifier, p])).values()
-              );
-              this.partnersCount = uniquePartners.length;
-              this.lastUpdateTime = new Date();
-            },
-            error: () => {
-              this.partnersCount = 0;
-            }
-          });
+          return forkJoin(partnerRequests).pipe(
+            catchError(() => of([] as Partner[][]))
+          );
+        } else {
+          return of([] as Partner[][]);
+        }
+      }),
+      catchError(() => {
+        this.membershipsCount = 0;
+        this.filesCount = 0;
+        this.partnersCount = 0;
+        return of([] as Partner[][]);
+      })
+    ).subscribe({
+      next: (partnersArrays) => {
+        if (partnersArrays.length > 0) {
+          const allPartners = partnersArrays.flat();
+          const uniquePartners = Array.from(
+            new Map(allPartners.map(p => [p.identifier, p])).values()
+          );
+          this.partnersCount = uniquePartners.length;
         } else {
           this.partnersCount = 0;
         }
-      }
-    });
-
-    files$.subscribe({
-      next: (files) => {
-        this.filesCount = files.length;
         this.lastUpdateTime = new Date();
       },
       error: () => {
-        this.filesCount = 0;
+        this.partnersCount = 0;
       }
     });
   }

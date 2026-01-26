@@ -1,6 +1,7 @@
 {
   "production": false,
   "apiUrl": "http://localhost:3001/api/ui",
+  "redlineUrl": "http://localhost:3001/api/ui",
   "appName": "DataSpace Portal",
   "version": "1.0.0",
   "features": {
