@@ -11,9 +11,16 @@ import {UserPreferences, UserPreferencesService} from '../../core/services/user-
 import {FileAsset} from '../../core/models/file-asset.model';
 import {UseCase} from '../../core/models/use-case.model';
 import {UserProfile} from '../../core/models/participant.model';
-import {EDCDataOperationsService, PartnerReference, TenantOperationsService, TransferProcess} from "../../core/redline";
+import {
+  Dataspace,
+  EDCDataOperationsService,
+  PartnerReference,
+  TenantOperationsService,
+  TransferProcess
+} from "../../core/redline";
 import {RedlineUser} from "../../core/models/redline-user.model";
 import {DataspaceService} from "../../core/services/dataspace.service";
+import {DataspaceResource} from "../../core/models/dataspace.model";
 
 @Component({
   selector: 'app-explore-list',
@@ -45,6 +52,7 @@ export class ExploreListComponent implements OnInit {
   redlineUser?: RedlineUser;
   requestingAccess: string | null = null;
   requestingTransfer?: string;
+  catenaX?: DataspaceResource;
 
   constructor() {
     this.filterForm = this.fb.group({
@@ -55,7 +63,9 @@ export class ExploreListComponent implements OnInit {
     this.preferences$ = this.preferencesService.preferences$;
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    this.catenaX = (await firstValueFrom(this.dataspaceService.getDataspaces()))
+        .find(ds => ds.name.toLowerCase().includes('catena'));
     this.authService.loadUserProfile().subscribe({
       next: (profile) => {
         this.userProfile = profile;
@@ -108,15 +118,12 @@ export class ExploreListComponent implements OnInit {
   }
 
   async loadFiles(): Promise<void> {
-    if (!this.redlineUser) return;
+    if (!this.redlineUser || !this.catenaX) return;
     this.files = this.filteredFiles = [];
     this.loading = true;
 
-    /**
-     * ToDo: Get dataspace ID
-     */
     const partners = await firstValueFrom(this.tenantOperationsService.getPartners(
-        this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId, 0));
+        this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId, this.catenaX.id));
     for (const partner of partners) {
       (await this.getPartnerCatalog(partner)).forEach(file => this.files.push(file));
     }
@@ -145,7 +152,7 @@ export class ExploreListComponent implements OnInit {
   }
 
   private async getPartnerCatalog(partner: PartnerReference): Promise<FileAsset[]> {
-    if (!this.redlineUser) return [];
+    if (!this.redlineUser || !this.catenaX) return [];
     const catalog = await firstValueFrom(this.edcDataOperationsService.requestCatalog(
         this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId,
         { counterPartyIdentifier: partner.identifier! }
@@ -162,7 +169,7 @@ export class ExploreListComponent implements OnInit {
           id: ds["edc:properties"]?.["edc:fileId"] ?? 'N/A',
           origin: "remote",
           uploadedAt: 'N/A',
-          dataspace: 'Catena-X', // ToDo: get dataspace
+          dataspace: this.catenaX?.name,
           catalogDataset: ds,
           partnerName: partner.nickname,
           partnerDid: partner.identifier
