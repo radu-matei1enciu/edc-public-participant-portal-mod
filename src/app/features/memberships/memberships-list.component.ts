@@ -4,11 +4,12 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Observable, interval, startWith, switchMap, catchError, of, debounceTime, distinctUntilChanged } from 'rxjs';
-import { MembershipService } from '../../core/services/membership.service';
+import { DataspaceService } from '../../core/services/dataspace.service';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../shared/services/notification.service';
 import { UserPreferencesService, UserPreferences } from '../../core/services/user-preferences.service';
-import { Membership } from '../../core/models/membership.model';
+import { ConfigService } from '../../core/services/config.service';
+import { DataspaceResource } from '../../core/models/dataspace.model';
 import { UserProfile } from '../../core/models/participant.model';
 
 @Component({
@@ -18,15 +19,16 @@ import { UserProfile } from '../../core/models/participant.model';
   templateUrl: './memberships-list.component.html',
   })
 export class MembershipsListComponent implements OnInit {
-  private membershipService = inject(MembershipService);
+  private dataspaceService = inject(DataspaceService);
   private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
   private preferencesService = inject(UserPreferencesService);
+  private configService = inject(ConfigService);
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
 
-  memberships: Membership[] = [];
-  filteredMemberships: Membership[] = [];
+  memberships: DataspaceResource[] = [];
+  filteredMemberships: DataspaceResource[] = [];
   filterForm: FormGroup;
   loading = false;
   preferences$: Observable<UserPreferences>;
@@ -37,8 +39,7 @@ export class MembershipsListComponent implements OnInit {
 
   constructor() {
     this.filterForm = this.fb.group({
-      searchTerm: [''],
-      statusFilter: ['']
+      searchTerm: ['']
     });
     this.preferences$ = this.preferencesService.preferences$;
   }
@@ -47,7 +48,6 @@ export class MembershipsListComponent implements OnInit {
     this.authService.loadUserProfile().subscribe({
       next: (profile) => {
         this.userProfile = profile;
-        this.loadMemberships();
       },
       error: () => {
         this.notificationService.showError('Error', 'Failed to load user profile');
@@ -69,19 +69,18 @@ export class MembershipsListComponent implements OnInit {
       this.applyFilters();
     });
 
-    this.filterForm.get('statusFilter')?.valueChanges.pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(() => {
-      this.applyFilters();
-    });
-
+    this.loading = true;
     this.preferences$.pipe(
       switchMap(prefs => {
         const intervalMs = (prefs.autoRefreshInterval || 30) * 1000;
         return interval(intervalMs).pipe(
           startWith(0),
           switchMap(() => {
-            return this.membershipService.getMemberships().pipe(
+            const userIds = this.authService.getCurrentUserIds();
+            if (!userIds) {
+              return of([]);
+            }
+            return this.dataspaceService.getParticipantDataspaces(userIds.providerId, userIds.tenantId, userIds.participantId).pipe(
               catchError(() => of([]))
             );
           })
@@ -96,20 +95,6 @@ export class MembershipsListComponent implements OnInit {
       },
       error: () => {
         this.loading = false;
-      }
-    });
-  }
-
-  loadMemberships(): void {
-    this.loading = true;
-    this.membershipService.getMemberships().subscribe({
-      next: (memberships) => {
-        this.memberships = memberships;
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
         this.notificationService.showError('Error', 'Failed to load memberships');
       }
     });
@@ -117,20 +102,20 @@ export class MembershipsListComponent implements OnInit {
 
   applyFilters(): void {
     const searchTerm = this.filterForm.get('searchTerm')?.value?.toLowerCase() || '';
-    const statusFilter = this.filterForm.get('statusFilter')?.value || '';
 
     this.filteredMemberships = this.memberships.filter(m => {
       const matchesSearch = !searchTerm || 
-        m.ecosystemName.toLowerCase().includes(searchTerm) ||
-        m.ecosystemId.toLowerCase().includes(searchTerm);
-      const matchesStatus = !statusFilter || m.status === statusFilter;
-      return matchesSearch && matchesStatus;
+        m.name.toLowerCase().includes(searchTerm) ||
+        (m.properties && m.properties.description.toLowerCase().includes(searchTerm)) ||
+        (m.properties && m.properties.region.toLowerCase().includes(searchTerm)) ||
+        (m.properties && m.properties.protocol.toLowerCase().includes(searchTerm));
+      return matchesSearch;
     });
 
     this.currentPage = 1;
   }
 
-  getPaginatedMemberships(): Membership[] {
+  getPaginatedMemberships(): DataspaceResource[] {
     const start = (this.currentPage - 1) * this.itemsPerPage;
     const end = start + this.itemsPerPage;
     return this.filteredMemberships.slice(start, end);
@@ -152,18 +137,6 @@ export class MembershipsListComponent implements OnInit {
     }
   }
 
-  getStatusClass(status: string): string {
-    switch (status) {
-      case 'active':
-        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'pending':
-        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      case 'inactive':
-        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-      default:
-        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-    }
-  }
 
   formatDate(dateString: string): string {
     if (!dateString) return 'N/A';

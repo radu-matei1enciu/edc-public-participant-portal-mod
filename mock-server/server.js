@@ -239,34 +239,33 @@ function handleDeleteParticipant(req, res, id) {
   }
 }
 
-let memberships = [
+let participantDataspaces = [
   {
-    id: 'membership-1',
-    ecosystemId: 'ecosystem-1',
-    ecosystemName: 'Manufacturing DataSpace',
-    status: 'active',
-    joinedAt: '2024-01-10T10:00:00Z',
-    credentials: [
-      { id: 'cred-1', type: 'VC', status: 'issued', issuedAt: '2024-01-10T10:05:00Z' }
-    ]
+    id: 1,
+    name: 'Manufacturing Dataspace',
+    properties: {
+      region: 'EU',
+      protocol: 'dataspace-protocol-http',
+      description: 'European Manufacturing Dataspace'
+    }
   },
   {
-    id: 'membership-2',
-    ecosystemId: 'ecosystem-2',
-    ecosystemName: 'Healthcare DataSpace',
-    status: 'active',
-    joinedAt: '2024-01-12T14:30:00Z',
-    credentials: [
-      { id: 'cred-2', type: 'VC', status: 'issued', issuedAt: '2024-01-12T14:35:00Z' }
-    ]
+    id: 2,
+    name: 'Healthcare Dataspace',
+    properties: {
+      region: 'EU',
+      protocol: 'dataspace-protocol-http',
+      description: 'European Healthcare Dataspace'
+    }
   },
   {
-    id: 'membership-3',
-    ecosystemId: 'ecosystem-3',
-    ecosystemName: 'Energy DataSpace',
-    status: 'pending',
-    joinedAt: '2024-01-14T09:00:00Z',
-    credentials: []
+    id: 3,
+    name: 'Energy Dataspace',
+    properties: {
+      region: 'EU',
+      protocol: 'dataspace-protocol-http',
+      description: 'European Energy Dataspace'
+    }
   }
 ];
 
@@ -428,22 +427,11 @@ let ecosystems = [
   { id: 'ecosystem-3', name: 'Energy DataSpace', description: 'DataSpace for energy industry' }
 ];
 
-function handleGetMemberships(req, res, participantId) {
+function handleGetParticipantDataspaces(req, res, providerId, tenantId, participantId) {
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify(memberships));
+  res.end(JSON.stringify(participantDataspaces));
 }
 
-function handleGetMembershipDetails(req, res, participantId, membershipId) {
-  const membership = memberships.find(m => m.id === membershipId);
-  if (membership) {
-    const ecosystem = ecosystems.find(e => e.id === membership.ecosystemId);
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ ...membership, ecosystem }));
-  } else {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Membership not found' }));
-  }
-}
 
 function handleGetEcosystems(req, res) {
   res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -592,56 +580,44 @@ async function handleDeployParticipant(req, res, providerId, tenantId, participa
 
 function handleGetPartners(req, res, providerId, tenantId, participantId, dataspaceId) {
   const mockPartners = [
-    { 
-      identifier: 'partner-1', 
+    {
+      identifier: 'did:web:partner1.com',
       nickname: 'Acme Corporation',
-      id: 'partner-1',
-      name: 'Acme Corporation',
-      description: 'Leading manufacturer in industrial automation',
-      companyIdentifier: 'ACME001',
-      metadata: {
+      properties: {
+        region: 'EU',
         industry: 'Manufacturing',
-        country: 'IT',
-        region: 'Lombardy'
+        contactEmail: 'contact@partner1.com',
+        status: 'active'
       }
     },
-    { 
-      identifier: 'partner-2', 
+    {
+      identifier: 'did:web:partner2.com',
       nickname: 'MedTech Solutions',
-      id: 'partner-2',
-      name: 'MedTech Solutions',
-      description: 'Healthcare technology provider',
-      companyIdentifier: 'MEDTECH001',
-      metadata: {
+      properties: {
+        region: 'EU',
         industry: 'Healthcare',
-        country: 'IT',
-        region: 'Lazio'
+        contactEmail: 'info@partner2.com',
+        status: 'active'
       }
     },
-    { 
-      identifier: 'partner-3', 
+    {
+      identifier: 'did:web:partner3.com',
       nickname: 'TechCorp Industries',
-      id: 'partner-3',
-      name: 'TechCorp Industries',
-      description: 'Technology solutions provider',
-      companyIdentifier: 'TECHCORP001',
-      metadata: {
+      properties: {
+        region: 'US',
         industry: 'Technology',
-        country: 'IT',
-        region: 'Tuscany'
+        contactEmail: 'support@partner3.com',
+        status: 'pending'
       }
     },
-    { 
-      identifier: 'partner-4', 
+    {
+      identifier: 'did:web:partner4.com',
       nickname: 'Global Solutions Ltd',
-      id: 'partner-4',
-      name: 'Global Solutions Ltd',
-      description: 'Global business solutions',
-      companyIdentifier: 'GLOBAL001',
-      metadata: {
+      properties: {
+        region: 'APAC',
         industry: 'Consulting',
-        country: 'IT',
-        region: 'Lombardy'
+        contactEmail: 'partners@global.com',
+        status: 'active'
       }
     }
   ];
@@ -651,35 +627,49 @@ function handleGetPartners(req, res, providerId, tenantId, participantId, datasp
 
 function handleGetPartner(req, res, providerId, tenantId, participantId, partnerId) {
   const mockPartners = [
-    { 
-      identifier: 'partner-1', 
+    {
+      identifier: 'did:web:partner1.com',
       nickname: 'Acme Corporation',
-      id: 'partner-1',
-      name: 'Acme Corporation',
-      description: 'Leading manufacturer in industrial automation',
-      companyIdentifier: 'ACME001',
-      metadata: {
+      properties: {
+        region: 'EU',
         industry: 'Manufacturing',
-        country: 'IT',
-        region: 'Lombardy'
+        contactEmail: 'contact@partner1.com',
+        status: 'active'
       }
     },
-    { 
-      identifier: 'partner-2', 
+    {
+      identifier: 'did:web:partner2.com',
       nickname: 'MedTech Solutions',
-      id: 'partner-2',
-      name: 'MedTech Solutions',
-      description: 'Healthcare technology provider',
-      companyIdentifier: 'MEDTECH001',
-      metadata: {
+      properties: {
+        region: 'EU',
         industry: 'Healthcare',
-        country: 'IT',
-        region: 'Lazio'
+        contactEmail: 'info@partner2.com',
+        status: 'active'
+      }
+    },
+    {
+      identifier: 'did:web:partner3.com',
+      nickname: 'TechCorp Industries',
+      properties: {
+        region: 'US',
+        industry: 'Technology',
+        contactEmail: 'support@partner3.com',
+        status: 'pending'
+      }
+    },
+    {
+      identifier: 'did:web:partner4.com',
+      nickname: 'Global Solutions Ltd',
+      properties: {
+        region: 'APAC',
+        industry: 'Consulting',
+        contactEmail: 'partners@global.com',
+        status: 'active'
       }
     }
   ];
   
-  const partner = mockPartners.find(p => p.id === partnerId || p.identifier === partnerId);
+  const partner = mockPartners.find(p => p.identifier === partnerId);
   if (partner) {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(partner));
@@ -690,8 +680,30 @@ function handleGetPartner(req, res, providerId, tenantId, participantId, partner
 }
 
 function handleGetPartners(req, res, participantId) {
+  const mockPartners = [
+    {
+      identifier: 'did:web:partner1.com',
+      nickname: 'Acme Corporation',
+      properties: {
+        region: 'EU',
+        industry: 'Manufacturing',
+        contactEmail: 'contact@partner1.com',
+        status: 'active'
+      }
+    },
+    {
+      identifier: 'did:web:partner2.com',
+      nickname: 'MedTech Solutions',
+      properties: {
+        region: 'EU',
+        industry: 'Healthcare',
+        contactEmail: 'info@partner2.com',
+        status: 'active'
+      }
+    }
+  ];
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify(partners));
+  res.end(JSON.stringify(mockPartners));
 }
 
 async function handleAddPartner(req, res, participantId) {
@@ -714,13 +726,61 @@ async function handleAddPartner(req, res, participantId) {
 }
 
 function handleGetPartner(req, res, participantId, partnerId) {
-  const partner = partners.find(p => p.id === partnerId);
+  const mockPartners = [
+    {
+      identifier: 'did:web:partner1.com',
+      nickname: 'Acme Corporation',
+      properties: {
+        region: 'EU',
+        industry: 'Manufacturing',
+        contactEmail: 'contact@partner1.com',
+        status: 'active'
+      }
+    },
+    {
+      identifier: 'did:web:partner2.com',
+      nickname: 'MedTech Solutions',
+      properties: {
+        region: 'EU',
+        industry: 'Healthcare',
+        contactEmail: 'info@partner2.com',
+        status: 'active'
+      }
+    }
+  ];
+  
+  const partner = mockPartners.find(p => p.identifier === partnerId);
   if (partner) {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(partner));
   } else {
     res.writeHead(404, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'Partner not found' }));
+  }
+}
+
+async function handleAddPartner(req, res, providerId, tenantId, participantId, dataspaceId) {
+  try {
+    const body = await parseBody(req);
+    
+    if (!body.nickname || !body.identifier) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'nickname and identifier are required' }));
+      return;
+    }
+    
+    const newPartner = {
+      identifier: body.identifier,
+      nickname: body.nickname,
+      properties: body.properties || {}
+    };
+    
+    res.writeHead(201, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(newPartner));
+  } catch (error) {
+    console.error('Error adding partner:', error);
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Internal server error', message: error.message }));
   }
 }
 
@@ -1202,28 +1262,20 @@ const server = http.createServer(async (req, res) => {
     const tenantId = parts[parts.length - 3];
     const participantId = parts[parts.length - 2];
     await handleDeployParticipant(req, res, providerId, tenantId, participantId);
-  } else if (method === 'GET' && (path.match(/^\/api\/ui\/service-providers\/(\d+)\/tenants\/(\d+)\/participants\/(\d+)\/partners\/([^\/]+)$/) || path.match(/^\/v1\/service-providers\/(\d+)\/tenants\/(\d+)\/participants\/(\d+)\/partners\/([^\/]+)$/))) {
+  } else if (method === 'GET' && (path.match(/^\/api\/ui\/service-providers\/(\d+)\/tenants\/(\d+)\/participants\/(\d+)\/partners\/(\d+)$/) || path.match(/^\/v1\/service-providers\/(\d+)\/tenants\/(\d+)\/participants\/(\d+)\/partners\/(\d+)$/))) {
     const parts = path.split('/');
     const providerId = parts[parts.length - 5];
     const tenantId = parts[parts.length - 4];
     const participantId = parts[parts.length - 2];
-    const lastParam = parts[parts.length - 1];
-    
-    const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
-    const dataspaceId = parsedUrl.searchParams.get('dataspaceId');
-    
-    if (lastParam.match(/^partner-/)) {
-      const partnerId = lastParam;
-      handleGetPartner(req, res, providerId, tenantId, participantId, partnerId);
-    } else if (dataspaceId) {
-      handleGetPartners(req, res, providerId, tenantId, participantId, dataspaceId);
-    } else if (lastParam.match(/^\d+$/)) {
-      const dataspaceIdFromPath = lastParam;
-      handleGetPartners(req, res, providerId, tenantId, participantId, dataspaceIdFromPath);
-    } else {
-      const partnerId = lastParam;
-      handleGetPartner(req, res, providerId, tenantId, participantId, partnerId);
-    }
+    const dataspaceId = parts[parts.length - 1];
+    handleGetPartners(req, res, providerId, tenantId, participantId, dataspaceId);
+  } else if (method === 'POST' && (path.match(/^\/api\/ui\/service-providers\/(\d+)\/tenants\/(\d+)\/participants\/(\d+)\/partners\/(\d+)$/) || path.match(/^\/v1\/service-providers\/(\d+)\/tenants\/(\d+)\/participants\/(\d+)\/partners\/(\d+)$/))) {
+    const parts = path.split('/');
+    const providerId = parts[parts.length - 5];
+    const tenantId = parts[parts.length - 4];
+    const participantId = parts[parts.length - 2];
+    const dataspaceId = parts[parts.length - 1];
+    await handleAddPartner(req, res, providerId, tenantId, participantId, dataspaceId);
   } else if (method === 'POST' && path.match(/^\/v1\/service-providers\/(\d+)\/tenants\/(\d+)\/participants$/)) {
     const parts = path.split('/');
     const providerId = parts[3];
@@ -1243,17 +1295,15 @@ const server = http.createServer(async (req, res) => {
     const id = path.split('/')[3];
     handleDeleteParticipant(req, res, id);
   } 
-  // Memberships routes
-  else if (method === 'GET' && (path.match(/^\/v1\/participants\/([^\/]+)\/memberships$/) || path.match(/^\/api\/ui\/participants\/([^\/]+)\/memberships$/))) {
+  // Participant dataspaces (memberships) routes
+  else if (method === 'GET' && path.match(/^\/api\/ui\/service-providers\/(\d+)\/tenants\/(\d+)\/participants\/(\d+)\/dataspaces$/)) {
     const parts = path.split('/');
-    const participantId = path.startsWith('/api/ui') ? parts[4] : parts[3];
-    handleGetMemberships(req, res, participantId);
-  } else if (method === 'GET' && (path.match(/^\/v1\/participants\/([^\/]+)\/memberships\/([^\/]+)$/) || path.match(/^\/api\/ui\/participants\/([^\/]+)\/memberships\/([^\/]+)$/))) {
-    const parts = path.split('/');
-    const participantId = path.startsWith('/api/ui') ? parts[4] : parts[3];
-    const membershipId = path.startsWith('/api/ui') ? parts[6] : parts[5];
-    handleGetMembershipDetails(req, res, participantId, membershipId);
-  } else if (method === 'GET' && path === '/v1/ecosystems') {
+    const providerId = parts[parts.length - 4];
+    const tenantId = parts[parts.length - 3];
+    const participantId = parts[parts.length - 2];
+    handleGetParticipantDataspaces(req, res, providerId, tenantId, participantId);
+  }
+  else if (method === 'GET' && path === '/v1/ecosystems') {
     handleGetEcosystems(req, res);
   } else if (method === 'GET' && path === '/v1/dataspaces') {
     handleGetDataspaces(req, res);
@@ -1324,8 +1374,7 @@ server.listen(PORT, () => {
   console.log(`  GET  /v1/participants/:id - Get participant by ID`);
   console.log(`  DELETE /v1/participants/:id - Delete participant`);
   console.log(`  GET  /v1/me - Get current user profile (requires Bearer token)`);
-  console.log(`  GET  /v1/participants/:id/memberships - List memberships`);
-  console.log(`  GET  /v1/participants/:id/memberships/:membershipId - Get membership details`);
+  console.log(`  GET  /api/ui/service-providers/:providerId/tenants/:tenantId/participants/:participantId/dataspaces - List participant dataspaces`);
   console.log(`  GET  /v1/ecosystems - List ecosystems`);
   console.log(`  GET  /v1/dataspaces - List dataspaces`);
   console.log(`  GET  /v1/participants/:id/files - List files`);

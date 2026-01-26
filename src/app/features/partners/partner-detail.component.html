@@ -23,13 +23,13 @@
                 <div class="flex-shrink-0">
                   <div class="h-16 w-16 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
                     <span class="text-2xl font-bold text-primary-600 dark:text-primary-200">
-                      {{ (partner.name || partner.nickname || partner.identifier).charAt(0).toUpperCase() }}
+                      {{ partner.nickname.charAt(0).toUpperCase() }}
                     </span>
                   </div>
                 </div>
                 <div class="ml-6">
-                  <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ partner.name || partner.nickname || partner.identifier }}</h1>
-                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 font-mono">{{ partner.identifier || partner.id }}</p>
+                  <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ partner.nickname }}</h1>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 font-mono">{{ partner.identifier }}</p>
                 </div>
               </div>
             </div>
@@ -38,56 +38,52 @@
           <div class="px-6 py-6 sm:p-8">
             <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3">
               <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Name</dt>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nickname</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                  {{ partner.name || partner.nickname || 'N/A' }}
+                  {{ partner.nickname }}
                 </dd>
               </div>
-              @if (partner.description) {
-                <div>
-                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Description</dt>
-                  <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                    {{ partner.description }}
-                  </dd>
-                </div>
-              }
               <div>
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Identifier</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono break-all bg-gray-50 dark:bg-gray-700 p-2 rounded">
-                  {{ partner.identifier || partner.id }}
+                  {{ partner.identifier }}
                 </dd>
               </div>
-              @if (partner.companyIdentifier) {
-                <div>
-                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Company Identifier</dt>
-                  <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono">
-                    {{ partner.companyIdentifier }}
-                  </dd>
-                </div>
-              }
-              @if (partner.metadata?.industry) {
-                <div>
-                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Industry</dt>
-                  <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                    {{ partner.metadata?.industry }}
-                  </dd>
-                </div>
-              }
-              @if (partner.metadata?.country) {
-                <div>
-                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Country</dt>
-                  <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                    {{ partner.metadata?.country }}
-                  </dd>
-                </div>
-              }
-              @if (partner.metadata?.region) {
-                <div>
-                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Region</dt>
-                  <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                    {{ partner.metadata?.region }}
-                  </dd>
-                </div>
+              @if (partner.properties) {
+                @if (partner.properties.region) {
+                  <div>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Region</dt>
+                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                      {{ partner.properties.region }}
+                    </dd>
+                  </div>
+                }
+                @if (partner.properties.industry) {
+                  <div>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Industry</dt>
+                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                      {{ partner.properties.industry }}
+                    </dd>
+                  </div>
+                }
+                @if (partner.properties.contactEmail) {
+                  <div>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Contact Email</dt>
+                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                      {{ partner.properties.contactEmail }}
+                    </dd>
+                  </div>
+                }
+                @if (partner.properties.status) {
+                  <div>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</dt>
+                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                        {{ partner.properties.status }}
+                      </span>
+                    </dd>
+                  </div>
+                }
               }
             </dl>
           </div>

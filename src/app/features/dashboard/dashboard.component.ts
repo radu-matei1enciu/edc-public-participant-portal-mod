@@ -1,16 +1,17 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 import { UserProfile } from '../../core/models/participant.model';
 import { NotificationService } from '../../shared/services/notification.service';
 import { NotificationsComponent } from '../../shared/services/notifications.component';
-import { FileAssetService } from '../../core/services/file-asset.service';
-import { UseCaseService } from '../../core/services/use-case.service';
-import { MembershipService } from '../../core/services/membership.service';
+import { DataspaceService } from '../../core/services/dataspace.service';
 import { PartnerService } from '../../core/services/partner.service';
-import { UseCase } from '../../core/models/use-case.model';
-import { Membership } from '../../core/models/membership.model';
+import { DataspaceResource } from '../../core/models/dataspace.model';
+import { Partner } from '../../core/models/partner.model';
+import { RedlineUIService } from '../../core/redline';
 
 @Component({
   selector: 'app-dashboard',
@@ -28,19 +29,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loading = true;
   error: string | null = null;
   isAuthenticated = false;
-  useCases: UseCase[] = [];
   membershipsCount = 0;
   partnersCount = 0;
   filesCount = 0;
   lastUpdateTime = new Date();
-  recentMemberships: Membership[] = [];
+  recentMemberships: DataspaceResource[] = [];
 
   private authService = inject(AuthService);
   private router = inject(Router);
-  private fileAssetService = inject(FileAssetService);
-  private useCaseService = inject(UseCaseService);
-  private membershipService = inject(MembershipService);
+  private dataspaceService = inject(DataspaceService);
   private partnerService = inject(PartnerService);
+  private redlineService = inject(RedlineUIService);
   private notificationService = inject(NotificationService);
 
   ngOnInit(): void {
@@ -53,7 +52,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
     
     this.loadUserProfile();
-    this.loadUseCases();
   }
 
   ngOnDestroy(): void {
@@ -77,33 +75,79 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadUseCases(): void {
-    this.useCaseService.getUseCases().subscribe({
-      next: (useCases) => {
-        this.useCases = useCases;
+  loadStats(): void {
+    const userIds = this.authService.getCurrentUserIds();
+    if (!userIds) {
+      return;
+    }
+
+    const dataspaces$ = this.dataspaceService.getParticipantDataspaces(
+      userIds.providerId,
+      userIds.tenantId,
+      userIds.participantId
+    ).pipe(
+      catchError(() => of([] as DataspaceResource[]))
+    );
+
+    const files$ = this.redlineService.listFiles(
+      userIds.participantId,
+      userIds.tenantId,
+      userIds.providerId
+    ).pipe(
+      catchError(() => of([]))
+    );
+
+    forkJoin({
+      dataspaces: dataspaces$,
+      files: files$
+    }).pipe(
+      switchMap(({ dataspaces, files }) => {
+        this.membershipsCount = dataspaces.length;
+        this.recentMemberships = [...dataspaces].reverse().slice(0, 6);
+        this.filesCount = files.length;
+        this.lastUpdateTime = new Date();
+
+        if (dataspaces.length > 0) {
+          const partnerRequests = dataspaces.map(dataspace =>
+            this.partnerService.getPartners(
+              userIds.providerId,
+              userIds.tenantId,
+              userIds.participantId,
+              dataspace.id
+            ).pipe(
+              catchError(() => of([] as Partner[]))
+            )
+          );
+
+          return forkJoin(partnerRequests).pipe(
+            catchError(() => of([] as Partner[][]))
+          );
+        } else {
+          return of([] as Partner[][]);
+        }
+      }),
+      catchError(() => {
+        this.membershipsCount = 0;
+        this.filesCount = 0;
+        this.partnersCount = 0;
+        return of([] as Partner[][]);
+      })
+    ).subscribe({
+      next: (partnersArrays) => {
+        if (partnersArrays.length > 0) {
+          const allPartners = partnersArrays.flat();
+          const uniquePartners = Array.from(
+            new Map(allPartners.map(p => [p.identifier, p])).values()
+          );
+          this.partnersCount = uniquePartners.length;
+        } else {
+          this.partnersCount = 0;
+        }
+        this.lastUpdateTime = new Date();
       },
       error: () => {
-        this.useCases = [];
+        this.partnersCount = 0;
       }
     });
-  }
-
-  loadStats(): void {
-    this.membershipService.getMemberships().subscribe({
-      next: (memberships) => {
-        this.membershipsCount = memberships.length;
-        this.recentMemberships = [...memberships].reverse().slice(0, 6);
-        this.lastUpdateTime = new Date();
-      }
-    });
-
-    if (this.userProfile?.participant?.id) {
-      this.fileAssetService.getFiles(this.userProfile.participant.id).subscribe({
-        next: (files) => {
-          this.filesCount = files.length;
-          this.lastUpdateTime = new Date();
-        }
-      });
-    }
   }
 }

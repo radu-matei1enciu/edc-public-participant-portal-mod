@@ -4,8 +4,9 @@ import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { PartnerService } from '../../../core/services/partner.service';
 import { DataspaceService } from '../../../core/services/dataspace.service';
 import { ConfigService } from '../../../core/services/config.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Partner } from '../../../core/models/partner.model';
-import { DataspaceResource } from '../../../core/models/ecosystem.model';
+import { DataspaceResource } from '../../../core/models/dataspace.model';
 import { NotificationService } from '../../../shared/services/notification.service';
 
 @Component({
@@ -24,6 +25,7 @@ export class PartnersSectionComponent implements OnInit {
   private partnerService = inject(PartnerService);
   private dataspaceService = inject(DataspaceService);
   private configService = inject(ConfigService);
+  private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
   private fb = inject(FormBuilder);
 
@@ -47,7 +49,13 @@ export class PartnersSectionComponent implements OnInit {
   }
 
   loadDataspaces(): void {
-    this.dataspaceService.getDataspaces().subscribe({
+    const userIds = this.authService.getCurrentUserIds();
+    if (!userIds) {
+      this.notificationService.showError('Error', 'Failed to load user profile');
+      return;
+    }
+
+    this.dataspaceService.getParticipantDataspaces(userIds.providerId, userIds.tenantId, userIds.participantId).subscribe({
       next: (dataspaces) => {
         this.dataspaces = dataspaces;
         if (dataspaces.length > 0 && !this.selectedDataspaceId) {
@@ -64,9 +72,15 @@ export class PartnersSectionComponent implements OnInit {
   loadPartners(): void {
     if (!this.selectedDataspaceId) return;
     
+    const ids = this.authService.getCurrentUserIds();
+    if (!ids) {
+      this.loading = false;
+      return;
+    }
+    
     this.loading = true;
     
-    this.partnerService.getPartners(this.selectedDataspaceId).subscribe({
+    this.partnerService.getPartners(ids.providerId, ids.tenantId, ids.participantId, this.selectedDataspaceId).subscribe({
       next: (partners) => {
         this.partners = partners;
         this.loading = false;

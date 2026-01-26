@@ -8,7 +8,7 @@ import { DataspaceService } from '../../core/services/dataspace.service';
 import { NotificationService } from '../../shared/services/notification.service';
 import { ModalService } from '../../core/services/modal.service';
 import { ParticipantRegistrationRequest, ParticipantMetadata, UserMetadata, UploadedDocument } from '../../core/models/participant.model';
-import { DataspaceResource } from '../../core/models/ecosystem.model';
+import { DataspaceResource } from '../../core/models/dataspace.model';
 import { NewTenantRegistration, NewDataspaceInfo, TenantResource, ParticipantResource, NewParticipantDeployment } from '../../core/models/tenant.model';
 import { ConfigService } from '../../core/services/config.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -401,6 +401,19 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
         return;
       }
       
+      const propertyKeys = [
+        'companyIdentifier', 'description', 'companyType', 'vatNumber', 'fiscalCode',
+        'email', 'phone', 'website', 'country', 'region', 'city', 'address', 'postalCode'
+      ];
+      
+      const properties: Record<string, unknown> = {};
+      propertyKeys.forEach(key => {
+        const value = formValue[key];
+        if (value) {
+          properties[key] = value;
+        }
+      });
+      
       const tenantRegistration: NewTenantRegistration = {
         tenantName: formValue.participantName,
         dataspaceInfos: [
@@ -409,7 +422,8 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
             agreementTypes: [],
             roles: []
           }
-        ]
+        ],
+        ...(Object.keys(properties).length > 0 && { properties })
       };
 
       this.tenantService.registerTenant(providerId, tenantRegistration).subscribe({

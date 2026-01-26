@@ -74,7 +74,7 @@ export class UserPreferencesService {
   private configService = inject(ConfigService);
   
   private readonly defaultPreferences: UserPreferences = {
-    theme: 'system',
+    theme: 'light',
     compactMode: false,
     animations: true,
     fontSize: 'medium',

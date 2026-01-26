@@ -11,7 +11,7 @@ import { UserPreferencesService, UserPreferences } from '../../core/services/use
 import { DataspaceService } from '../../core/services/dataspace.service';
 import { ConfigService } from '../../core/services/config.service';
 import { Partner } from '../../core/models/partner.model';
-import { DataspaceResource } from '../../core/models/ecosystem.model';
+import { DataspaceResource } from '../../core/models/dataspace.model';
 import { UserProfile } from '../../core/models/participant.model';
 
 @Component({
@@ -90,7 +90,13 @@ export class PartnersListComponent implements OnInit {
   }
 
   loadDataspaces(): void {
-    this.dataspaceService.getDataspaces().subscribe({
+    const userIds = this.authService.getCurrentUserIds();
+    if (!userIds) {
+      this.notificationService.showError('Error', 'Failed to load user profile');
+      return;
+    }
+
+    this.dataspaceService.getParticipantDataspaces(userIds.providerId, userIds.tenantId, userIds.participantId).subscribe({
       next: (dataspaces) => {
         this.dataspaces = dataspaces;
         if (dataspaces.length > 0 && !this.selectedDataspaceId) {
@@ -107,8 +113,14 @@ export class PartnersListComponent implements OnInit {
   loadPartners(): void {
     if (!this.selectedDataspaceId) return;
     
+    const ids = this.authService.getCurrentUserIds();
+    if (!ids) {
+      this.loading = false;
+      return;
+    }
+    
     this.loading = true;
-    this.partnerService.getPartners(this.selectedDataspaceId).subscribe({
+    this.partnerService.getPartners(ids.providerId, ids.tenantId, ids.participantId, this.selectedDataspaceId).subscribe({
       next: (partners) => {
         this.partners = partners;
         this.applyFilters();
@@ -126,9 +138,11 @@ export class PartnersListComponent implements OnInit {
 
     this.filteredPartners = this.partners.filter(p => {
       const matchesSearch = !searchTerm || 
-        p.name.toLowerCase().includes(searchTerm) ||
-        (p.description && p.description.toLowerCase().includes(searchTerm)) ||
-        (p.companyIdentifier && p.companyIdentifier.toLowerCase().includes(searchTerm));
+        p.nickname.toLowerCase().includes(searchTerm) ||
+        p.identifier.toLowerCase().includes(searchTerm) ||
+        (p.properties?.industry && p.properties.industry.toLowerCase().includes(searchTerm)) ||
+        (p.properties?.contactEmail && p.properties.contactEmail.toLowerCase().includes(searchTerm)) ||
+        (p.properties?.region && p.properties.region.toLowerCase().includes(searchTerm));
       return matchesSearch;
     });
 

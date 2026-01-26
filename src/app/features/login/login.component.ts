@@ -6,7 +6,7 @@ import { TenantService } from '../../core/services/tenant.service';
 import { ConfigService } from '../../core/services/config.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ModalService } from '../../core/services/modal.service';
-import { TenantResource, ParticipantResource } from '../../core/models/tenant.model';
+import { TenantResource, ParticipantResource, TenantProperties } from '../../core/models/tenant.model';
 import { SelectedParticipant } from '../../core/models/auth.model';
 
 interface ParticipantOption {
@@ -15,6 +15,7 @@ interface ParticipantOption {
   tenantName: string;
   participantIdentifier: string;
   displayName: string;
+  tenantProperties?: TenantProperties;
 }
 
 @Component({
@@ -77,7 +78,8 @@ export class LoginComponent implements OnInit {
           participantId: participant.id,
           tenantName: tenant.name,
           participantIdentifier: participant.identifier,
-          displayName: `${tenant.name} - ${participant.identifier}`
+          displayName: `${tenant.name} - ${participant.identifier}`,
+          tenantProperties: tenant.properties
         });
       });
     });
@@ -111,15 +113,17 @@ export class LoginComponent implements OnInit {
 
   login(): void {
     if (!this.selectedParticipant) {
-      this.errorMessage = 'Please select a participant';
+      this.errorMessage = 'Please select a user';
       return;
     }
 
+    const tenant = this.tenants.find(t => t.id === this.selectedParticipant!.tenantId);
     const selected: SelectedParticipant = {
       tenantId: this.selectedParticipant.tenantId,
       participantId: this.selectedParticipant.participantId,
       tenantName: this.selectedParticipant.tenantName,
-      participantIdentifier: this.selectedParticipant.participantIdentifier
+      participantIdentifier: this.selectedParticipant.participantIdentifier,
+      tenantProperties: tenant?.properties as TenantProperties | undefined
     };
 
     this.authService.setSelectedParticipant(selected);
@@ -136,7 +140,7 @@ export class LoginComponent implements OnInit {
   private showErrorModalAndRedirect(): void {
     this.modalService.alert({
       title: 'Error',
-      message: 'An error occurred while loading participants. You will be redirected to the landing page.',
+      message: 'An error occurred while loading users. You will be redirected to the landing page.',
       confirmText: 'OK',
       size: 'md'
     }).then(() => {
