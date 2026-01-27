@@ -394,8 +394,8 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
       const formValue = this.registrationForm.value;
       const providerId = this.configService.config?.defaultServiceProviderId || 1;
       const dataspaceId = parseInt(formValue.dataspaceId);
-      
-      if (!dataspaceId || isNaN(dataspaceId)) {
+
+      if (isNaN(dataspaceId)) {
         this.errorMessage = 'Please select a valid dataspace';
         this.isLoading = false;
         return;
