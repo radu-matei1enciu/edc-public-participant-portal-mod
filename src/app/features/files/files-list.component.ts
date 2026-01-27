@@ -16,6 +16,8 @@ import {FileDetailComponent} from "./file-detail.component";
 import {PartnerService} from "../../core/services/partner.service";
 import {RedlineUser} from "../../core/models/redline-user.model";
 import {DataspaceService} from "../../core/services/dataspace.service";
+import {CatalogService} from "../../core/services/catalog.service";
+import {TransferService} from "../../core/services/transfer.service";
 
 @Component({
   selector: 'app-files-list',
@@ -36,6 +38,8 @@ export class FilesListComponent implements OnInit {
   private readonly partnerService = inject(PartnerService)
   private readonly edcDataOperationsService = inject(EDCDataOperationsService);
   private readonly dataspaceService = inject(DataspaceService);
+  private readonly catalogService = inject(CatalogService);
+  private readonly transferService = inject(TransferService);
 
   files: FileAsset[] = [];
   filteredFiles: FileAsset[] = [];
@@ -49,6 +53,7 @@ export class FilesListComponent implements OnInit {
   useCaseFilter?: string;
   originFilter?: string;
   redlineUser?: RedlineUser;
+  requestingTransfer?: string;
 
   constructor() {
     this.filterForm = this.fb.group({
@@ -114,6 +119,11 @@ export class FilesListComponent implements OnInit {
       for (const file of redlineFiles) {
         await this.addToFiles(file)
       }
+      const catalogFiles = await this.catalogService.getCatalogForAllPartners();
+      (await this.catalogService.matchContractsToFiles(catalogFiles))
+          .filter(file => file.accessRestrictions)
+          .forEach(file => this.files.push(file));
+      this.files = this.files.sort((a, b) => a.name.localeCompare(b.name));
       this.applyFilters();
       this.loading = false;
     } catch (error) {
@@ -175,6 +185,11 @@ export class FilesListComponent implements OnInit {
     }
   }
 
+  async requestTransferAndDownload(file: FileAsset): Promise<void> {
+    this.requestingTransfer = file.id;
+    await this.transferService.requestTransferAndDownload(file);
+    this.requestingTransfer = undefined;
+  }
 
   openExploreSelection(): void {
     this.showExploreSelection = true;
