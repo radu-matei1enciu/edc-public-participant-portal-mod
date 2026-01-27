@@ -6,7 +6,6 @@ import { catchError, switchMap } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 import { UserProfile } from '../../core/models/participant.model';
 import { NotificationService } from '../../shared/services/notification.service';
-import { NotificationsComponent } from '../../shared/services/notifications.component';
 import { DataspaceService } from '../../core/services/dataspace.service';
 import { PartnerService } from '../../core/services/partner.service';
 import { DataspaceResource } from '../../core/models/dataspace.model';
@@ -19,8 +18,7 @@ import { EDCDataOperationsService } from '../../core/redline';
   imports: [
     CommonModule,
     DatePipe,
-    RouterLink,
-    NotificationsComponent
+    RouterLink
   ],
   templateUrl: './dashboard.component.html'
 })

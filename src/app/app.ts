@@ -6,11 +6,12 @@ import { Subject } from 'rxjs';
 import { AuthService } from './core/services/auth.service';
 import { UserPreferencesService } from './core/services/user-preferences.service';
 import { ModalComponent } from './shared/components/modal/modal.component';
+import { NotificationsComponent } from './shared/services/notifications.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, ModalComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, ModalComponent, NotificationsComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
