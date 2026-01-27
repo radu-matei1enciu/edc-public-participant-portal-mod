@@ -21,6 +21,14 @@
       "image/png"
     ]
   },
+  "useCases": [
+    {
+      "id": "uc-certificate-management",
+      "name": "certificate-management",
+      "label": "Certificate Management",
+      "description": "Manage your certificate sharing with partners"
+    }
+  ],
   "defaultServiceProviderId": 1,
   "participantIdentifierPrefix": "did:web:identityhub.edc-v.svc.cluster.local%3A7083:"
 }
