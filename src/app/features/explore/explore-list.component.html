@@ -33,32 +33,35 @@
         <select formControlName="companyFilter"
                 class="rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white sm:text-sm">
           <option value="">All Companies</option>
+          @for (partner of partners; track partner.identifier) {
+            <option [value]="partner.identifier">{{ partner.nickname }}</option>
+          }
         </select>
       </div>
     </div>
   </form>
 
   
-  <div class="mb-4 flex items-center justify-between">
-    <div class="text-sm text-gray-500 dark:text-gray-400">
-      Showing {{ filteredFiles.length }} of {{ files.length }} files
-      @if (preferences$ | async; as prefs) {
-        <span class="ml-2">
-          (page size: {{ prefs.defaultPageSize }})
-        </span>
-      }
-    </div>
-    @if (preferences$ | async; as prefs) {
-      <div class="text-sm text-gray-500 dark:text-gray-400">
-        @if (prefs.autoRefreshInterval > 0) {
-          <div class="flex items-center space-x-2">
-            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span>Auto-refresh: {{ prefs.autoRefreshInterval }}s</span>
-          </div>
-        }
-      </div>
-    }
-  </div>
+<!--  <div class="mb-4 flex items-center justify-between">-->
+<!--    <div class="text-sm text-gray-500 dark:text-gray-400">-->
+<!--      Showing {{ filteredFiles.length }} of {{ files.length }} files-->
+<!--      @if (preferences$ | async; as prefs) {-->
+<!--        <span class="ml-2">-->
+<!--          (page size: {{ prefs.defaultPageSize }})-->
+<!--        </span>-->
+<!--      }-->
+<!--    </div>-->
+<!--    @if (preferences$ | async; as prefs) {-->
+<!--      <div class="text-sm text-gray-500 dark:text-gray-400">-->
+<!--        @if (prefs.autoRefreshInterval > 0) {-->
+<!--          <div class="flex items-center space-x-2">-->
+<!--            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>-->
+<!--            <span>Auto-refresh: {{ prefs.autoRefreshInterval }}s</span>-->
+<!--          </div>-->
+<!--        }-->
+<!--      </div>-->
+<!--    }-->
+<!--  </div>-->
 
   
   <div class="mt-8 flow-root">
@@ -102,7 +105,7 @@
                 </tr>
               } @else {
                 @if (filteredFiles.length > 0) {
-                  @for (file of getPaginatedFiles(); track file.id) {
+                  @for (file of filteredFiles; track file.id) {
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
                       <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm font-medium text-gray-900 dark:text-white">{{ file.name.split('.')[0] | titlecase }}</div>

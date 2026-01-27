@@ -53,6 +53,10 @@ export class ExploreListComponent implements OnInit {
   requestingAccess: string | null = null;
   requestingTransfer?: string;
   catenaX?: DataspaceResource;
+  partners?: PartnerReference[];
+  useCaseFilter?: string;
+  companyFilter?: string;
+  searchText?: string;
 
   constructor() {
     this.filterForm = this.fb.group({
@@ -64,12 +68,24 @@ export class ExploreListComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    this.redlineUser = this.authService.getRedlineUser();
+    if (!this.redlineUser) {
+      this.notificationService.showError('Error', 'Failed to get user information');
+      console.error('Redline user is undefined');
+      return;
+    }
     this.catenaX = (await firstValueFrom(this.dataspaceService.getDataspaces()))
         .find(ds => ds.name.toLowerCase().includes('catena'));
+    if (!this.catenaX) {
+      console.error('No Catena-X dataspace found');
+      return;
+    }
+    this.partners = await firstValueFrom(this.tenantOperationsService.getPartners(
+        this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId, this.catenaX.id));
+
     this.authService.loadUserProfile().subscribe({
       next: (profile) => {
         this.userProfile = profile;
-        this.redlineUser = this.authService.getRedlineUser();
         this.loadUseCases();
         this.loadFiles().then();
       },
@@ -78,31 +94,34 @@ export class ExploreListComponent implements OnInit {
       }
     });
 
-    this.preferences$.pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(prefs => {
-      this.itemsPerPage = prefs.defaultPageSize || 10;
-      this.currentPage = 1;
-    });
+    // this.preferences$.pipe(
+    //   takeUntilDestroyed(this.destroyRef)
+    // ).subscribe(prefs => {
+    //   this.itemsPerPage = prefs.defaultPageSize || 10;
+    //   this.currentPage = 1;
+    // });
 
     this.filterForm.get('searchTerm')?.valueChanges.pipe(
       debounceTime(300),
       distinctUntilChanged(),
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe(() => {
-      this.loadFiles().then();
+    ).subscribe(value => {
+      this.searchText = (value as string).toLowerCase();
+      this.applyFilters();
     });
 
     this.filterForm.get('useCaseFilter')?.valueChanges.pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(() => {
-      this.loadFiles().then();
+        takeUntilDestroyed(this.destroyRef)
+    ).subscribe(value => {
+      this.useCaseFilter = value;
+      this.applyFilters();
     });
 
     this.filterForm.get('companyFilter')?.valueChanges.pipe(
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe(() => {
-      this.loadFiles().then();
+    ).subscribe(value => {
+      this.companyFilter = value;
+      this.applyFilters();
     });
   }
 
@@ -118,13 +137,11 @@ export class ExploreListComponent implements OnInit {
   }
 
   async loadFiles(): Promise<void> {
-    if (!this.redlineUser || !this.catenaX) return;
+    if (!this.redlineUser || !this.catenaX || !this.partners) return;
     this.files = this.filteredFiles = [];
     this.loading = true;
 
-    const partners = await firstValueFrom(this.tenantOperationsService.getPartners(
-        this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId, this.catenaX.id));
-    for (const partner of partners) {
+    for (const partner of this.partners) {
       (await this.getPartnerCatalog(partner)).forEach(file => this.files.push(file));
     }
     await this.matchContractsToFiles();
@@ -181,7 +198,20 @@ export class ExploreListComponent implements OnInit {
 
   applyFilters(): void {
     this.filteredFiles = [...this.files];
-    this.currentPage = 1;
+    if (this.searchText) {
+      this.filteredFiles = this.filteredFiles.filter(file => {
+        return file.name.toLowerCase().includes(this.searchText!) ||
+            file.useCase?.toLowerCase().includes(this.searchText!) ||
+            file.type?.toLowerCase().includes(this.searchText!) ||
+            file.partnerName?.toLowerCase().includes(this.searchText!)
+      })
+    }
+    if (this.useCaseFilter && this.useCaseFilter !== 'All Use Cases') {
+      this.filteredFiles = this.filteredFiles.filter(file => file.useCase === this.useCaseFilter);
+    }
+    if (this.companyFilter && this.companyFilter !== 'All Companies') {
+      this.filteredFiles = this.filteredFiles.filter(file => file.partnerDid === this.companyFilter);
+    }
   }
 
   getPaginatedFiles(): FileAsset[] {
