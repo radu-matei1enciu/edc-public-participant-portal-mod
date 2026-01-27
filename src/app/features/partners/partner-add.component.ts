@@ -83,7 +83,7 @@ export class PartnerAddComponent implements OnInit {
     const formValue = this.partnerForm.value;
     const dataspaceId = parseInt(formValue.dataspaceId);
     
-    if (dataspaceId === undefined || isNaN(dataspaceId)) {
+    if (!dataspaceId || isNaN(dataspaceId)) {
       this.notificationService.showError('Error', 'Please select a valid dataspace');
       return;
     }

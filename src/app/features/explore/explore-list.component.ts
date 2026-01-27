@@ -3,7 +3,6 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {CommonModule} from '@angular/common';
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {debounceTime, distinctUntilChanged, firstValueFrom, Observable} from 'rxjs';
-import {FileAssetService} from '../../core/services/file-asset.service';
 import {UseCaseService} from '../../core/services/use-case.service';
 import {AuthService} from '../../core/services/auth.service';
 import {NotificationService} from '../../shared/services/notification.service';
@@ -11,16 +10,12 @@ import {UserPreferences, UserPreferencesService} from '../../core/services/user-
 import {FileAsset} from '../../core/models/file-asset.model';
 import {UseCase} from '../../core/models/use-case.model';
 import {UserProfile} from '../../core/models/participant.model';
-import {
-  Dataspace,
-  EDCDataOperationsService,
-  PartnerReference,
-  TenantOperationsService,
-  TransferProcess
-} from "../../core/redline";
+import {EDCDataOperationsService, PartnerReference, TenantOperationsService} from "../../core/redline";
 import {RedlineUser} from "../../core/models/redline-user.model";
 import {DataspaceService} from "../../core/services/dataspace.service";
 import {DataspaceResource} from "../../core/models/dataspace.model";
+import {CatalogService} from "../../core/services/catalog.service";
+import {TransferService} from "../../core/services/transfer.service";
 
 @Component({
   selector: 'app-explore-list',
@@ -29,7 +24,6 @@ import {DataspaceResource} from "../../core/models/dataspace.model";
   templateUrl: './explore-list.component.html',
   })
 export class ExploreListComponent implements OnInit {
-  private fileAssetService = inject(FileAssetService);
   private useCaseService = inject(UseCaseService);
   private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
@@ -39,6 +33,8 @@ export class ExploreListComponent implements OnInit {
   private readonly tenantOperationsService = inject(TenantOperationsService)
   private readonly edcDataOperationsService = inject(EDCDataOperationsService)
   private readonly dataspaceService = inject(DataspaceService)
+  private readonly catalogService = inject(CatalogService)
+  private readonly transferService = inject(TransferService)
 
   files: FileAsset[] = [];
   filteredFiles: FileAsset[] = [];
@@ -141,59 +137,11 @@ export class ExploreListComponent implements OnInit {
     this.files = this.filteredFiles = [];
     this.loading = true;
 
-    for (const partner of this.partners) {
-      (await this.getPartnerCatalog(partner)).forEach(file => this.files.push(file));
-    }
-    await this.matchContractsToFiles();
+    (await this.catalogService.getCatalogForAllPartners()).forEach(file => this.files.push(file));
+    await this.catalogService.matchContractsToFiles(this.files);
+    this.files = this.files.sort((a, b) => a.name.localeCompare(b.name));
     this.filteredFiles = this.files
     this.loading = false;
-  }
-
-  private async matchContractsToFiles(): Promise<void> {
-    if (!this.redlineUser) return;
-    const contracts = await firstValueFrom(this.edcDataOperationsService.listContracts(
-        this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId
-    ));
-    for (const contract of contracts) {
-      const matchingFile = this.files.find(file => file.catalogDataset?.["edc:properties"]?.["edc:assetId"] === contract.assetId);
-      if (matchingFile && contract.counterParty === matchingFile.partnerDid && !contract.pending) {
-        matchingFile.accessRestrictions = [
-          {
-            partnerName: matchingFile.partnerName,
-            partnerId: contract.counterParty,
-            contractId: contract.id
-          }
-        ]
-      }
-    }
-  }
-
-  private async getPartnerCatalog(partner: PartnerReference): Promise<FileAsset[]> {
-    if (!this.redlineUser || !this.catenaX) return [];
-    const catalog = await firstValueFrom(this.edcDataOperationsService.requestCatalog(
-        this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId,
-        { counterPartyIdentifier: partner.identifier! }
-    ));
-    if (catalog.dataset) {
-      return catalog.dataset.map(ds => {
-        const useCaseId = ds["edc:properties"]?.["edc:useCase"] as unknown as string;
-        return {
-          name: ds["edc:properties"]?.["edc:originalFilename"] ?? 'N/A',
-          useCase: useCaseId ?? 'N/A',
-          useCaseLabel: this.useCases.find(uc => uc.id === useCaseId)?.label ?? '',
-          size: ds["edc:properties"]?.["edc:size"] as unknown as number ?? undefined,
-          description: ds["edc:properties"]?.['description'] ?? 'N/A',
-          id: ds["edc:properties"]?.["edc:fileId"] ?? 'N/A',
-          origin: "remote",
-          uploadedAt: 'N/A',
-          dataspace: this.catenaX?.name,
-          catalogDataset: ds,
-          partnerName: partner.nickname,
-          partnerDid: partner.identifier
-        } as FileAsset
-      });
-    }
-    return [];
   }
 
   applyFilters(): void {
@@ -284,7 +232,7 @@ export class ExploreListComponent implements OnInit {
     }
     if (negotiationState === 'FINALIZED') {
       this.notificationService.showSuccess('Success', 'Access granted');
-      await this.matchContractsToFiles();
+      await this.catalogService.matchContractsToFiles(this.files);
     } else {
       this.notificationService.showError('Error', 'Failed to request access');
     }
@@ -292,54 +240,9 @@ export class ExploreListComponent implements OnInit {
   }
 
   async requestTransferAndDownload(file: FileAsset): Promise<void> {
-    if (!this.redlineUser || !file.accessRestrictions || !file.accessRestrictions[0].contractId || !file.catalogDataset?.distribution) {
-      console.error('missing data');
-      this.notificationService.showError('Error', 'Missing Data');
-      return;
-    }
-
     this.requestingTransfer = file.id;
-    const transferProcessId = await firstValueFrom(this.edcDataOperationsService.requestTransfer(
-        this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId,
-        {
-          contractId: file.accessRestrictions[0].contractId,
-          counterPartyId: file.partnerDid,
-          transferType: file.catalogDataset.distribution[0].format
-        },
-        "body", false, {httpHeaderAccept: "text/plain"}
-    ))
-
-    let transferProcess: TransferProcess | undefined = undefined;
-    while (transferProcess?.state !== 'STARTED' && transferProcess?.state !== 'TERMINATED') {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      transferProcess = await firstValueFrom(this.edcDataOperationsService.getTransferProcess(
-          this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId,
-          transferProcessId
-      ));
-    }
-    if (transferProcess.state === 'STARTED') {
-      const token = (transferProcess.contentDataAddress?.["properties"] as Record<string, string>)?.["https://w3id.org/edc/v0.0.1/ns/authorization"];
-      const data: Blob = await firstValueFrom(this.edcDataOperationsService.downloadData(
-          this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId,
-          file.id,
-          token
-      ));
-      this.startBrowserDownload(data, file);
-    } else {
-      this.notificationService.showError('Error', 'Failed to transfer file');
-    }
+    await this.transferService.requestTransferAndDownload(file);
     this.requestingTransfer = undefined;
   }
 
-  private startBrowserDownload(data: Blob, file: FileAsset): void {
-    const url = window.URL.createObjectURL(data);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = file.name || 'download';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-
-  }
 }
