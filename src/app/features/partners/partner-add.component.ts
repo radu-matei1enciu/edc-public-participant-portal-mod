@@ -43,7 +43,7 @@ export class PartnerAddComponent implements OnInit {
 
   loadDataspaces(): void {
     this.loading = true;
-    const userIds = this.authService.getCurrentUserIds();
+    const userIds = this.authService.getRedlineUser();
     if (!userIds) {
       this.loading = false;
       this.notificationService.showError('Error', 'Failed to load user profile');
@@ -74,7 +74,7 @@ export class PartnerAddComponent implements OnInit {
       return;
     }
 
-    const userIds = this.authService.getCurrentUserIds();
+    const userIds = this.authService.getRedlineUser();
     if (!userIds) {
       this.notificationService.showError('Error', 'Failed to load user profile');
       return;
@@ -83,7 +83,7 @@ export class PartnerAddComponent implements OnInit {
     const formValue = this.partnerForm.value;
     const dataspaceId = parseInt(formValue.dataspaceId);
     
-    if (!dataspaceId || isNaN(dataspaceId)) {
+    if (dataspaceId === undefined || isNaN(dataspaceId)) {
       this.notificationService.showError('Error', 'Please select a valid dataspace');
       return;
     }

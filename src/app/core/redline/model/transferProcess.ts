@@ -22,5 +22,6 @@ export interface TransferProcess {
     transferType?: string;
     dataPlaneId?: string;
     dataplaneMetadata?: { [key: string]: object; };
+    state?: string;
 }
 

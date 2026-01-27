@@ -10,6 +10,7 @@
 
 
 export interface Contract { 
+    id?: string;
     counterParty?: string;
     type?: string;
     agreementId?: string;

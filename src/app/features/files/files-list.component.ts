@@ -3,19 +3,19 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {CommonModule} from '@angular/common';
 import {Router} from '@angular/router';
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
-import {debounceTime, distinctUntilChanged, firstValueFrom, Observable, of} from 'rxjs';
-import {catchError} from 'rxjs/operators';
+import {debounceTime, distinctUntilChanged, firstValueFrom, Observable} from 'rxjs';
 import {UseCaseService} from '../../core/services/use-case.service';
 import {AuthService} from '../../core/services/auth.service';
 import {NotificationService} from '../../shared/services/notification.service';
 import {UserPreferences, UserPreferencesService} from '../../core/services/user-preferences.service';
-import {DataspaceService} from '../../core/services/dataspace.service';
 import {FileAsset} from '../../core/models/file-asset.model';
 import {UseCase} from '../../core/models/use-case.model';
 import {formatFileSize} from '../../shared/utils/format.utils';
-import {FileResource, RedlineUIService} from "../../core/redline";
+import {EDCDataOperationsService, FileResource} from "../../core/redline";
 import {FileDetailComponent} from "./file-detail.component";
 import {PartnerService} from "../../core/services/partner.service";
+import {RedlineUser} from "../../core/models/redline-user.model";
+import {DataspaceService} from "../../core/services/dataspace.service";
 
 @Component({
   selector: 'app-files-list',
@@ -30,12 +30,12 @@ export class FilesListComponent implements OnInit {
   private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
   private preferencesService = inject(UserPreferencesService);
-  private dataspaceService = inject(DataspaceService);
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private readonly partnerService = inject(PartnerService)
-  private redlineService = inject(RedlineUIService);
+  private readonly edcDataOperationsService = inject(EDCDataOperationsService);
+  private readonly dataspaceService = inject(DataspaceService);
 
   files: FileAsset[] = [];
   filteredFiles: FileAsset[] = [];
@@ -48,6 +48,7 @@ export class FilesListComponent implements OnInit {
   searchText?: string;
   useCaseFilter?: string;
   originFilter?: string;
+  redlineUser?: RedlineUser;
 
   constructor() {
     this.filterForm = this.fb.group({
@@ -59,8 +60,9 @@ export class FilesListComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    this.redlineUser = await this.authService.getRedlineUser();
     this.loadUseCases();
-    this.loadFiles();
+    await this.loadFiles();
 
     this.filterForm.get('searchTerm')?.valueChanges.pipe(
       debounceTime(300),
@@ -100,15 +102,15 @@ export class FilesListComponent implements OnInit {
 
 
   async loadFiles(): Promise<void> {
-    this.loading = true;
-
-    const userIds = this.authService.getCurrentUserIds();
-    if (!userIds) {
+    if (!this.redlineUser) {
       this.notificationService.showError('Error', 'Failed to load the user profile.');
       return;
     }
+    this.loading = true;
+
     try {
-      const redlineFiles = await firstValueFrom(this.redlineService.listFiles(userIds.participantId, userIds.tenantId, userIds.providerId));
+      const redlineFiles = await firstValueFrom(this.edcDataOperationsService.listFiles(
+          this.redlineUser.participantId, this.redlineUser.tenantId, this.redlineUser.providerId));
       for (const file of redlineFiles) {
         await this.addToFiles(file)
       }
@@ -121,28 +123,21 @@ export class FilesListComponent implements OnInit {
   }
 
   private async addToFiles(file: FileResource): Promise<void> {
+    const cx = (await firstValueFrom(this.dataspaceService.getDataspaces()))
+        .find(ds => ds.name.toLowerCase().includes('catena'));
+    if (!this.redlineUser || !cx) return ;
+
     const useCaseId = file.metadata?.['useCase'] as unknown as string;
     const partnerId = file.metadata?.['partnerId'] as unknown as string;
     let partnerName = '';
     if (partnerId) {
-      const userIds = this.authService.getCurrentUserIds();
-      if (userIds) {
-        try {
-          const dataspaces = await firstValueFrom(
-            this.dataspaceService.getParticipantDataspaces(userIds.providerId, userIds.tenantId, userIds.participantId)
-          );
-          const dataspaceId = dataspaces.length > 0 ? dataspaces[0].id : null;
-          if (dataspaceId) {
-            const partner = await firstValueFrom(
-            this.partnerService.getPartnerReference(userIds.providerId, userIds.tenantId, userIds.participantId, dataspaceId, partnerId)
-            );
-            partnerName = partner?.nickname ?? '';
-          }
-        } 
-        catch (error) {
-          console.log("Error getting partner reference", error);
-        }
-      }
+      partnerName = (await firstValueFrom(this.partnerService.getPartnerReference(
+          this.redlineUser.providerId,
+          this.redlineUser.tenantId,
+          this.redlineUser.participantId,
+          cx.id,
+          partnerId)
+      ))?.nickname ?? '';
     }
     this.files.push({
       name: file.fileName ?? '',
@@ -153,7 +148,7 @@ export class FilesListComponent implements OnInit {
       useCaseLabel: this.useCases.find(uc => uc.id === useCaseId)?.label ?? '',
       size: file.metadata?.['size'] as unknown as number ?? 0,
       origin: file.metadata?.['origin'] as unknown as 'owned' | 'remote' ?? 'owned',
-      accessRestrictions: partnerId && partnerName?.length ? [
+      accessRestrictions: partnerId ? [
         {
           partnerId: partnerId,
           partnerName: partnerName

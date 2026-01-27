@@ -1,7 +1,7 @@
 {
   "production": false,
-  "apiUrl": "http://localhost:3001/api/ui",
-  "redlineUrl": "http://localhost:3001/api/ui",
+  "apiUrl": "http://redline.localhost/api/ui",
+  "redlineUrl": "http://redline.localhost",
   "appName": "DataSpace Portal",
   "version": "1.0.0",
   "features": {
@@ -21,6 +21,14 @@
       "image/png"
     ]
   },
+  "useCases": [
+    {
+      "id": "uc-certificate-management",
+      "name": "certificate-management",
+      "label": "Certificate Management",
+      "description": "Manage your certificate sharing with partners"
+    }
+  ],
   "defaultServiceProviderId": 1,
   "participantIdentifierPrefix": "did:web:identityhub.edc-v.svc.cluster.local%3A7083:"
 }

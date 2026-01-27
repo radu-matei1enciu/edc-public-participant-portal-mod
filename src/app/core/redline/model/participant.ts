@@ -8,13 +8,13 @@
  * Do not edit the class manually.
  */
 import { DataspaceInfo } from './dataspaceInfo';
-import { VPAResource } from './vPAResource';
+import { VirtualParticipantAgent } from './virtualParticipantAgent';
 
 
-export interface ParticipantResource { 
+export interface Participant { 
     id?: number;
     identifier?: string;
-    agents?: Array<VPAResource>;
+    agents?: Array<VirtualParticipantAgent>;
     dataspaceInfos?: Array<DataspaceInfo>;
 }
 

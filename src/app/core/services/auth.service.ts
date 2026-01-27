@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { AuthUser, UserProfile } from '../models/participant.model';
 import { SelectedParticipant } from '../models/auth.model';
 import {ConfigService} from "./config.service";
+import {RedlineUser} from "../models/redline-user.model";
 
 const SELECTED_PARTICIPANT_KEY = 'selected_participant';
 
@@ -83,13 +84,13 @@ export class AuthService implements OnDestroy {
     return selected?.participantId || null;
   }
 
-  getCurrentUserIds(): { providerId: number; tenantId: number; participantId: number } | null {
+  getRedlineUser(): RedlineUser | undefined {
     const providerId = this.configService.config?.defaultServiceProviderId || 1;
     const tenantId = this.getTenantId();
     const participantId = this.getParticipantId();
 
     if (!tenantId || !participantId) {
-      return null;
+      return undefined;
     }
 
     return { providerId, tenantId, participantId };

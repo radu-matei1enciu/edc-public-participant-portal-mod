@@ -9,7 +9,8 @@
  */
 
 
-export interface NewServiceProvider { 
+export interface ServiceProvider { 
+    id?: number;
     name?: string;
 }
 

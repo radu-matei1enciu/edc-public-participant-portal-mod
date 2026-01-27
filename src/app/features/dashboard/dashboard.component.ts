@@ -11,7 +11,7 @@ import { DataspaceService } from '../../core/services/dataspace.service';
 import { PartnerService } from '../../core/services/partner.service';
 import { DataspaceResource } from '../../core/models/dataspace.model';
 import { Partner } from '../../core/models/partner.model';
-import { RedlineUIService } from '../../core/redline';
+import { EDCDataOperationsService } from '../../core/redline';
 
 @Component({
   selector: 'app-dashboard',
@@ -39,7 +39,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private dataspaceService = inject(DataspaceService);
   private partnerService = inject(PartnerService);
-  private redlineService = inject(RedlineUIService);
+  private edcDataOperationsService = inject(EDCDataOperationsService);
   private notificationService = inject(NotificationService);
 
   ngOnInit(): void {
@@ -76,7 +76,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   loadStats(): void {
-    const userIds = this.authService.getCurrentUserIds();
+    const userIds = this.authService.getRedlineUser();
     if (!userIds) {
       return;
     }
@@ -89,7 +89,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       catchError(() => of([] as DataspaceResource[]))
     );
 
-    const files$ = this.redlineService.listFiles(
+    const files$ = this.edcDataOperationsService.listFiles(
       userIds.participantId,
       userIds.tenantId,
       userIds.providerId

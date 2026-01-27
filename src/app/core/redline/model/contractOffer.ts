@@ -9,8 +9,9 @@
  */
 
 
-export interface DataspaceResource { 
-    id?: number;
-    name?: string;
+export interface ContractOffer { 
+    id?: string;
+    policy?: { [key: string]: object; };
+    assetId?: string;
 }
 

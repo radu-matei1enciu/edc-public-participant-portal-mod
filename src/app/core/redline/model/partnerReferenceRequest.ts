@@ -9,8 +9,9 @@
  */
 
 
-export interface ServiceProviderResource { 
-    id?: number;
-    name?: string;
+export interface PartnerReferenceRequest { 
+    identifier?: string;
+    nickname?: string;
+    properties?: { [key: string]: object; };
 }
 

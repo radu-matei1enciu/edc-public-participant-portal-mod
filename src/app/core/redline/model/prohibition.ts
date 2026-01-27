@@ -7,13 +7,12 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { ParticipantResource } from './participantResource';
+import { Constraint } from './constraint';
 
 
-export interface TenantResource { 
-    id?: number;
-    providerId?: number;
-    name?: string;
-    participants?: Array<ParticipantResource>;
+export interface Prohibition { 
+    '@type'?: string;
+    action?: string;
+    constraint?: Array<Constraint>;
 }
 

@@ -76,7 +76,7 @@ export class MembershipsListComponent implements OnInit {
         return interval(intervalMs).pipe(
           startWith(0),
           switchMap(() => {
-            const userIds = this.authService.getCurrentUserIds();
+            const userIds = this.authService.getRedlineUser();
             if (!userIds) {
               return of([]);
             }

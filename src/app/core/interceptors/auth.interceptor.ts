@@ -9,7 +9,6 @@ export class AuthInterceptor implements HttpInterceptor {
 
   intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     const headers: { [key: string]: string } = {
-      'Accept': 'application/json',
       'X-Requested-With': 'XMLHttpRequest'
     };
 

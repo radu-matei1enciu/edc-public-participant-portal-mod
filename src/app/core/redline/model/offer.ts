@@ -7,12 +7,18 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { Prohibition } from './prohibition';
+import { Obligation } from './obligation';
 import { Permission } from './permission';
 
 
 export interface Offer { 
+    target?: string;
+    assigner?: string;
     '@id'?: string;
     '@type'?: string;
     permission?: Array<Permission>;
+    prohibition?: Array<Prohibition>;
+    obligation?: Array<Obligation>;
 }
 

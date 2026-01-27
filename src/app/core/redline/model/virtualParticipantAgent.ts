@@ -9,12 +9,12 @@
  */
 
 
-export interface VPAResource { 
+export interface VirtualParticipantAgent { 
     id?: number;
-    type?: VPAResource.TypeEnum;
-    state?: VPAResource.StateEnum;
+    type?: VirtualParticipantAgent.TypeEnum;
+    state?: VirtualParticipantAgent.StateEnum;
 }
-export namespace VPAResource {
+export namespace VirtualParticipantAgent {
     export const TypeEnum = {
         ControlPlane: 'CONTROL_PLANE',
         CredentialService: 'CREDENTIAL_SERVICE',

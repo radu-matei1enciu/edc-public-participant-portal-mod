@@ -3,12 +3,11 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
-import {forkJoin, of, Observable, from} from 'rxjs';
-import {catchError, switchMap, map} from 'rxjs/operators';
+import {firstValueFrom, forkJoin, of} from 'rxjs';
+import {catchError, switchMap} from 'rxjs/operators';
 import {FileAssetService} from '../../core/services/file-asset.service';
 import {UseCaseService} from '../../core/services/use-case.service';
 import {PartnerService} from '../../core/services/partner.service';
-import {DataspaceService} from '../../core/services/dataspace.service';
 import {AuthService} from '../../core/services/auth.service';
 import {NotificationService} from '../../shared/services/notification.service';
 import {ModalService} from '../../core/services/modal.service';
@@ -16,7 +15,7 @@ import {FileAsset} from '../../core/models/file-asset.model';
 import {UseCase} from '../../core/models/use-case.model';
 import {Partner} from '../../core/models/partner.model';
 import {formatFileSize} from '../../shared/utils/format.utils';
-import {firstValueFrom} from 'rxjs';
+import {DataspaceService} from "../../core/services/dataspace.service";
 
 @Component({
   selector: 'app-file-detail',
@@ -31,11 +30,11 @@ export class FileDetailComponent implements OnInit {
   private fileAssetService = inject(FileAssetService);
   private useCaseService = inject(UseCaseService);
   private partnerService = inject(PartnerService);
-  private dataspaceService = inject(DataspaceService);
   private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
   private modalService = inject(ModalService);
   private destroyRef = inject(DestroyRef);
+  private readonly dataspaceService = inject(DataspaceService)
 
   @Input() file: FileAsset | null = null;
   @Output() closeDetails = new EventEmitter<void>();
@@ -50,35 +49,35 @@ export class FileDetailComponent implements OnInit {
   saving = false;
   private fb = inject(FormBuilder);
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.editForm = this.fb.group({
       useCase: [''],
       partnerId: ['']
     });
 
+    const redlineUser = this.authService.getRedlineUser();
+    const cx = (await firstValueFrom(this.dataspaceService.getDataspaces()))
+        .find(ds => ds.name.toLowerCase().includes('catena'));
+    if (!redlineUser || !cx) return;
+
     this.authService.loadUserProfile().pipe(
       switchMap((profile) => {
         this.participantId = profile.participant.id;
-        const fileId = this.route.snapshot.params['id'];
-        
+
         const useCases$ = this.useCaseService.getUseCases().pipe(
           catchError(() => of([] as UseCase[]))
         );
-        
-        const userIds = this.authService.getCurrentUserIds();
-        let partners$: Observable<Partner[]>;
-        if (userIds) {
-          partners$ = this.dataspaceService.getParticipantDataspaces(userIds.providerId, userIds.tenantId, userIds.participantId).pipe(
-            switchMap((dataspaces) => {
-              const dataspaceId = dataspaces.length > 0 ? dataspaces[0].id : 1;
-              return this.partnerService.getPartners(userIds.providerId, userIds.tenantId, userIds.participantId, dataspaceId).pipe(
-                catchError(() => of([] as Partner[]))
-              );
-            })
-          );
-        } else {
-          partners$ = of([] as Partner[]);
-        }
+
+        const partners$ = this.participantId
+          ? this.partnerService.getPartners(
+              redlineUser.participantId,
+                redlineUser.tenantId,
+                redlineUser.participantId,
+                cx.id
+            ).pipe(
+              catchError(() => of([] as Partner[]))
+            )
+          : of([] as Partner[]);
         
         return forkJoin({
           useCases: useCases$,

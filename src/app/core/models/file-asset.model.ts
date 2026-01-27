@@ -1,3 +1,5 @@
+import {Dataset} from "../redline";
+
 export interface FileAsset {
   id: string;
   name: string;
@@ -14,12 +16,16 @@ export interface FileAsset {
   accessRestrictions?: AccessRestriction[];
   agreements?: Agreement[];
   transactionHistory?: Transaction[];
+  partnerName?: string;
+  catalogDataset?: Dataset;
+  partnerDid?: string;
 }
 
 export interface AccessRestriction {
   partnerId?: string;
   partnerName?: string;
   policy?: string;
+  contractId?: string;
 }
 
 export interface Agreement {

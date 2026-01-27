@@ -7,13 +7,14 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { Participant } from './participant';
 
 
-export interface DataspaceInfo { 
-    dataspaceId?: number;
-    agreementTypes?: Array<string>;
-    roles?: Array<string>;
-    properties?: { [key: string]: object; };
+export interface Tenant { 
     id?: number;
+    providerId?: number;
+    name?: string;
+    participants?: Array<Participant>;
+    properties?: { [key: string]: object; };
 }
 
