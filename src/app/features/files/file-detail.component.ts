@@ -14,7 +14,7 @@ import {ModalService} from '../../core/services/modal.service';
 import {FileAsset} from '../../core/models/file-asset.model';
 import {UseCase} from '../../core/models/use-case.model';
 import {Partner} from '../../core/models/partner.model';
-import {formatFileSize} from '../../shared/utils/format.utils';
+import {DATE_FORMATS, formatFileSize} from '../../shared/utils/format.utils';
 import {DataspaceService} from "../../core/services/dataspace.service";
 import {EDCDataOperationsService} from "../../core/redline";
 
@@ -228,4 +228,6 @@ export class FileDetailComponent implements OnInit {
       }
     });
   }
+
+  protected readonly DATE_FORMATS = DATE_FORMATS;
 }

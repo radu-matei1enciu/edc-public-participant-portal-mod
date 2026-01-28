@@ -6,6 +6,7 @@ import { ConfigService } from '../../core/services/config.service';
 import { ParticipantService, ParticipantActivation } from '../../core/services/participant.service';
 import { Subject, timer, of, merge } from 'rxjs';
 import { catchError, switchMap, takeUntil } from 'rxjs/operators';
+import {DATE_FORMATS} from "../../shared/utils/format.utils";
 
 @Component({
   selector: 'app-success',
@@ -144,4 +145,6 @@ export class SuccessComponent implements OnInit, OnDestroy {
     localStorage.setItem('returnUrl', '/dashboard');
     this.authService.login();
   }
+
+  protected readonly DATE_FORMATS = DATE_FORMATS;
 }

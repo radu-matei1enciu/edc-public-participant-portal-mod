@@ -10,7 +10,7 @@ import {NotificationService} from '../../shared/services/notification.service';
 import {UserPreferences, UserPreferencesService} from '../../core/services/user-preferences.service';
 import {FileAsset} from '../../core/models/file-asset.model';
 import {UseCase} from '../../core/models/use-case.model';
-import {formatFileSize} from '../../shared/utils/format.utils';
+import {DATE_FORMATS, formatFileSize} from '../../shared/utils/format.utils';
 import {EDCDataOperationsService, FileResource} from "../../core/redline";
 import {FileDetailComponent} from "./file-detail.component";
 import {PartnerService} from "../../core/services/partner.service";
@@ -219,4 +219,5 @@ export class FilesListComponent implements OnInit {
   }
 
 
+  protected readonly DATE_FORMATS = DATE_FORMATS;
 }

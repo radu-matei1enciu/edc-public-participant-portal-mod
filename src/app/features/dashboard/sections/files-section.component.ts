@@ -5,6 +5,7 @@ import { FileAssetService } from '../../../core/services/file-asset.service';
 import { FileAsset } from '../../../core/models/file-asset.model';
 import { UseCase } from '../../../core/models/use-case.model';
 import { NotificationService } from '../../../shared/services/notification.service';
+import {DATE_FORMATS} from "../../../shared/utils/format.utils";
 
 @Component({
   selector: 'app-files-section',
@@ -158,4 +159,5 @@ export class FilesSectionComponent implements OnInit {
     return useCase ? useCase.label : useCaseId;
   }
 
+  protected readonly DATE_FORMATS = DATE_FORMATS;
 }

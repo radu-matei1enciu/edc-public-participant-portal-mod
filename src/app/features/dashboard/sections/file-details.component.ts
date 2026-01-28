@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FileAssetService } from '../../../core/services/file-asset.service';
 import { FileAsset } from '../../../core/models/file-asset.model';
 import { NotificationService } from '../../../shared/services/notification.service';
-import { formatFileSize } from '../../../shared/utils/format.utils';
+import {DATE_FORMATS, formatFileSize} from '../../../shared/utils/format.utils';
 
 @Component({
   selector: 'app-file-details',
@@ -70,4 +70,5 @@ export class FileDetailsComponent implements OnInit {
     }
   }
 
+  protected readonly DATE_FORMATS = DATE_FORMATS;
 }

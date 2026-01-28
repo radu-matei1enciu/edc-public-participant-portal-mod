@@ -99,7 +99,7 @@
               <div>
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Date</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                  {{ file.uploadedAt ? (file.uploadedAt | date:'yyyy-MM-dd HH:mm') : 'N/A' }}
+                  {{ file.uploadedAt ? (file.uploadedAt | date: DATE_FORMATS.dateWithTime) : 'N/A' }}
                 </dd>
               </div>
             </dl>
@@ -207,7 +207,7 @@
                       @for (agreement of file.agreements; track agreement.id) {
                         <tr>
                           <td class="w-1/3 px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                            {{ agreement.createdAt ? (agreement.createdAt | date:'yyyy-MM-dd HH:mm') : 'N/A' }}
+                            {{ agreement.createdAt ? (agreement.createdAt | date: DATE_FORMATS.dateWithTime) : 'N/A' }}
                           </td>
                           <td class="w-1/3 px-6 py-4">
                             <div class="text-sm inline-flex px-2 rounded bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
@@ -256,7 +256,7 @@
                       @for (transaction of file.transactionHistory; track transaction.id) {
                         <tr>
                           <td class="w-1/3 px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                            {{ transaction.timestamp ? (transaction.timestamp | date:'yyyy-MM-dd HH:mm') : 'N/A' }}
+                            {{ transaction.timestamp ? (transaction.timestamp | date: DATE_FORMATS.dateWithTime) : 'N/A' }}
                           </td>
                           <td class="w-1/3 px-6 py-4">
                             <div class="text-sm inline-flex px-2 rounded bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
