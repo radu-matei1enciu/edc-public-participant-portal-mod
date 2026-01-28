@@ -156,17 +156,6 @@ export class FileDetailComponent implements OnInit {
     }
   }
 
-  formatDate(dateString: string): string {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('it-IT', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
 
   getAgreementStatusClass(status: string): string {
     switch (status?.toUpperCase()) {

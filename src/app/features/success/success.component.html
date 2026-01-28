@@ -63,7 +63,7 @@
             </div>
             <div>
               <dt class="font-medium text-gray-500">Registration Date:</dt>
-              <dd class="text-gray-900">{{ getCurrentDate() }}</dd>
+              <dd class="text-gray-900">{{ (startedAt | date:'yyyy-MM-dd HH:mm') }}</dd>
             </div>
             @if (agentsSorted.length) {
               <div>

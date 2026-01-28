@@ -132,16 +132,6 @@ export class SuccessComponent implements OnInit, OnDestroy {
     this.startProvisioningPoll();
   }
 
-  getCurrentDate(): string {
-    return new Date().toLocaleDateString('it-IT', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
   goToHome(): void {
     this.router.navigate(['/']);
   }
