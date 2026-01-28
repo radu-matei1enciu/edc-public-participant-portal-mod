@@ -19,6 +19,7 @@ export interface FileAsset {
   partnerName?: string;
   catalogDataset?: Dataset;
   partnerDid?: string;
+  assetId?: string;
 }
 
 export interface AccessRestriction {

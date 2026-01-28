@@ -122,11 +122,11 @@
                         {{ formatFileSize(file.size) }}
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        @if (file.origin === "remote" && file.accessRestrictions && file.accessRestrictions.length > 0) {
+                        @if (file.origin === "remote" && file.agreements && file.agreements.length > 0) {
                           <div class="space-y-1">
-                            @for (restriction of file.accessRestrictions; track restriction.partnerId) {
+                            @for (agreement of file.agreements; track agreement.id) {
                               <div class="px-2 inline-flex text-xs leading-5 font-medium rounded bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-                                {{ restriction.partnerName || restriction.partnerId || 'Unknown' }}
+                                {{ agreement.partnerName || agreement.partnerId || 'Unknown' }}
                               </div>
                             }
                           </div>

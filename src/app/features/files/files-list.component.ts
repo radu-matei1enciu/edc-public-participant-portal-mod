@@ -118,10 +118,11 @@ export class FilesListComponent implements OnInit {
           this.redlineUser.participantId, this.redlineUser.tenantId, this.redlineUser.providerId));
       for (const file of redlineFiles) {
         await this.addToFiles(file)
+        await this.catalogService.matchContractsToFiles(this.files);
       }
       const catalogFiles = await this.catalogService.getCatalogForAllPartners();
       (await this.catalogService.matchContractsToFiles(catalogFiles))
-          .filter(file => file.accessRestrictions)
+          .filter(file => file.agreements)
           .forEach(file => this.files.push(file));
     } catch (error) {
       this.notificationService.showError('Error', (error as Error).message);
@@ -158,6 +159,7 @@ export class FilesListComponent implements OnInit {
       useCaseLabel: this.useCases.find(uc => uc.id === useCaseId)?.label ?? '',
       size: file.metadata?.['size'] as unknown as number ?? 0,
       origin: file.metadata?.['origin'] as unknown as 'owned' | 'remote' ?? 'owned',
+      assetId: file.metadata?.['assetId'] as unknown as string,
       accessRestrictions: partnerId ? [
         {
           partnerId: partnerId,

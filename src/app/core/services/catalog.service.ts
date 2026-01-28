@@ -1,11 +1,12 @@
 import {inject, Injectable} from '@angular/core';
 import {AuthService} from "./auth.service";
 import {EDCDataOperationsService, PartnerReference, TenantOperationsService} from "../redline";
-import {FileAsset} from "../models/file-asset.model";
+import {Agreement, FileAsset} from "../models/file-asset.model";
 import {firstValueFrom} from "rxjs";
 import {DataspaceService} from "./dataspace.service";
 import {UseCaseService} from "./use-case.service";
 import {NotificationService} from "../../shared/services/notification.service";
+import {PartnerService} from "./partner.service";
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +18,7 @@ export class CatalogService {
   private readonly edcDataOperationsService = inject(EDCDataOperationsService);
   private readonly tenantOperationsService = inject(TenantOperationsService);
   private readonly notificationService = inject(NotificationService);
+  private readonly partnerService = inject(PartnerService);
 
   public async getCatalogForAllPartners(): Promise<FileAsset[]> {
     const redlineUser = this.authService.getRedlineUser();
@@ -66,7 +68,8 @@ export class CatalogService {
           dataspace: catenaX?.name,
           catalogDataset: ds,
           partnerName: partner.nickname,
-          partnerDid: partner.identifier
+          partnerDid: partner.identifier,
+          assetId: ds["edc:properties"]?.["edc:assetId"] as unknown as string
         } as FileAsset
       });
     }
@@ -75,22 +78,33 @@ export class CatalogService {
 
   public async matchContractsToFiles(files: FileAsset[]): Promise<FileAsset[]> {
     const redlineUser = this.authService.getRedlineUser();
-    if (!redlineUser) return files;
+    const cx = (await firstValueFrom(this.dataspaceService.getDataspaces()))
+        .find(ds => ds.name.toLowerCase().includes('catena'));
+    if (!redlineUser || !cx) return files;
+    const partners = (await firstValueFrom(this.partnerService.getPartners(
+        redlineUser.providerId, redlineUser.tenantId, redlineUser.participantId, cx.id)));
     const contracts = await firstValueFrom(this.edcDataOperationsService.listContracts(
-        redlineUser.providerId, redlineUser.tenantId, redlineUser.participantId
-    ));
+        redlineUser.providerId, redlineUser.tenantId, redlineUser.participantId));
     for (const contract of contracts) {
-      const matchingFile = files.find(file => file.catalogDataset?.["edc:properties"]?.["edc:assetId"] === contract.assetId);
-      if (matchingFile && contract.counterParty === matchingFile.partnerDid && !contract.pending) {
-        matchingFile.accessRestrictions = [
-          {
-            partnerName: matchingFile.partnerName,
-            partnerId: contract.counterParty,
-            contractId: contract.id
+      files.filter(file => file.assetId === contract.assetId).forEach(file => {
+        if (!contract.pending) {
+          const agreement: Agreement = {
+            partnerName: partners.find(p => p.identifier === contract.counterParty)?.nickname ?? 'N/A',
+            partnerId: contract.counterParty ?? 'N/A',
+            id: contract.id!,
+            status: contract.pending ? 'Pending' : 'Active',
+            createdAt: contract.signingDate!
+          };
+          if (!file.agreements) {
+            file.agreements = [agreement];
+          } else {
+            file.agreements.push(agreement);
           }
-        ]
-        matchingFile.uploadedAt = contract.signingDate!;
-      }
+          if (file.uploadedAt === 'N/A') {
+            file.uploadedAt = contract.signingDate!;
+          }
+        }
+      })
     }
     return files;
   }
