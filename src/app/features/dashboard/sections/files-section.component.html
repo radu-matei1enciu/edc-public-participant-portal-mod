@@ -84,7 +84,7 @@
                   {{ file.dataspace || 'N/A' }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                  {{ formatDate(file.uploadedAt) }}
+                  {{ file.uploadedAt ? (file.uploadedAt | date: DATE_FORMATS.dateWithTime) : 'N/A' }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button

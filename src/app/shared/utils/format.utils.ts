@@ -19,3 +19,8 @@ export function formatFileSize(bytes: number | undefined | null): string {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
 }
+
+export const DATE_FORMATS = {
+  shortDate: 'yyyy-MM-dd',
+  dateWithTime: 'yyyy-MM-dd HH:mm:ss',
+}

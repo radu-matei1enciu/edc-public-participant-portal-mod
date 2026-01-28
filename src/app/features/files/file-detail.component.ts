@@ -14,7 +14,7 @@ import {ModalService} from '../../core/services/modal.service';
 import {FileAsset} from '../../core/models/file-asset.model';
 import {UseCase} from '../../core/models/use-case.model';
 import {Partner} from '../../core/models/partner.model';
-import {formatFileSize} from '../../shared/utils/format.utils';
+import {DATE_FORMATS, formatFileSize} from '../../shared/utils/format.utils';
 import {DataspaceService} from "../../core/services/dataspace.service";
 import {EDCDataOperationsService} from "../../core/redline";
 
@@ -156,17 +156,6 @@ export class FileDetailComponent implements OnInit {
     }
   }
 
-  formatDate(dateString: string): string {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('it-IT', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
 
   getAgreementStatusClass(status: string): string {
     switch (status?.toUpperCase()) {
@@ -239,4 +228,6 @@ export class FileDetailComponent implements OnInit {
       }
     });
   }
+
+  protected readonly DATE_FORMATS = DATE_FORMATS;
 }
