@@ -136,12 +136,16 @@ export class ExploreListComponent implements OnInit {
     if (!this.redlineUser || !this.catenaX || !this.partners) return;
     this.files = this.filteredFiles = [];
     this.loading = true;
-
-    (await this.catalogService.getCatalogForAllPartners()).forEach(file => this.files.push(file));
-    await this.catalogService.matchContractsToFiles(this.files);
-    this.files = this.files.sort((a, b) => a.name.localeCompare(b.name));
-    this.filteredFiles = this.files
-    this.loading = false;
+    try {
+      (await this.catalogService.getCatalogForAllPartners()).forEach(file => this.files.push(file));
+      await this.catalogService.matchContractsToFiles(this.files);
+      this.files = this.files.sort((a, b) => a.name.localeCompare(b.name));
+    } catch(error) {
+      this.notificationService.showError('Error', (error as Error).message);
+    } finally {
+      this.applyFilters();
+      this.loading = false;
+    }
   }
 
   applyFilters(): void {

@@ -5,6 +5,7 @@ import {FileAsset} from "../models/file-asset.model";
 import {firstValueFrom} from "rxjs";
 import {DataspaceService} from "./dataspace.service";
 import {UseCaseService} from "./use-case.service";
+import {NotificationService} from "../../shared/services/notification.service";
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +16,7 @@ export class CatalogService {
   private readonly useCaseService = inject(UseCaseService);
   private readonly edcDataOperationsService = inject(EDCDataOperationsService);
   private readonly tenantOperationsService = inject(TenantOperationsService);
+  private readonly notificationService = inject(NotificationService);
 
   public async getCatalogForAllPartners(): Promise<FileAsset[]> {
     const redlineUser = this.authService.getRedlineUser();
@@ -23,8 +25,20 @@ export class CatalogService {
     if (!redlineUser || !catenaX) return [];
     const partners = await firstValueFrom(this.tenantOperationsService.getPartners(
         redlineUser.providerId, redlineUser.tenantId, redlineUser.participantId, catenaX.id));
-    const catalogs = await Promise.all(partners.map(partner => this.getPartnerCatalog(partner)));
-    return catalogs.flat();
+
+    const catalogResults =
+        await Promise.allSettled(partners.map(partner => this.getPartnerCatalog(partner)));
+
+    catalogResults.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        this.notificationService.showError('Partner Error', `Failed to fetch catalog for partner: ${partners[index].nickname}`);
+      }
+    });
+
+    return catalogResults
+        .filter((result): result is PromiseFulfilledResult<FileAsset[]> => result.status === 'fulfilled')
+        .map(result => result.value)
+        .flat();
   }
 
   public async getPartnerCatalog(partner: PartnerReference): Promise<FileAsset[]> {
