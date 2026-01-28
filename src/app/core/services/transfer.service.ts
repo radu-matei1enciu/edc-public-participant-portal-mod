@@ -15,7 +15,7 @@ export class TransferService {
 
   public async requestTransferAndDownload(file: FileAsset): Promise<void> {
     const redlineUser = this.authService.getRedlineUser();
-    if (!redlineUser || !file.accessRestrictions || !file.accessRestrictions[0].contractId || !file.catalogDataset?.distribution) {
+    if (!redlineUser || !file.agreements || !file.agreements[0].id || !file.catalogDataset?.distribution) {
       this.notificationService.showError('Error', 'Missing File Data');
       return;
     }
@@ -23,7 +23,7 @@ export class TransferService {
     const transferProcessId = await firstValueFrom(this.edcDataOperationsService.requestTransfer(
         redlineUser.providerId, redlineUser.tenantId, redlineUser.participantId,
         {
-          contractId: file.accessRestrictions[0].contractId,
+          contractId: file.agreements[0].id,
           counterPartyId: file.partnerDid,
           transferType: file.catalogDataset.distribution[0].format
         },

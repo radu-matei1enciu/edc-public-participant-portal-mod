@@ -189,7 +189,7 @@ export class ExploreListComponent implements OnInit {
   }
 
   hasAccess(file: FileAsset): boolean {
-    return file.origin === 'remote' && !!file.accessRestrictions && file.accessRestrictions.length > 0;
+    return file.origin === 'remote' && !!file.agreements && file.agreements.length > 0;
   }
 
   async requestAccess(file: FileAsset): Promise<void> {

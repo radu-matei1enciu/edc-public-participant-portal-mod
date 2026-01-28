@@ -16,6 +16,7 @@ import {UseCase} from '../../core/models/use-case.model';
 import {Partner} from '../../core/models/partner.model';
 import {formatFileSize} from '../../shared/utils/format.utils';
 import {DataspaceService} from "../../core/services/dataspace.service";
+import {EDCDataOperationsService} from "../../core/redline";
 
 @Component({
   selector: 'app-file-detail',
@@ -35,6 +36,7 @@ export class FileDetailComponent implements OnInit {
   private modalService = inject(ModalService);
   private destroyRef = inject(DestroyRef);
   private readonly dataspaceService = inject(DataspaceService)
+  private readonly edcDataOperationsService = inject(EDCDataOperationsService)
 
   @Input() file: FileAsset | null = null;
   @Output() closeDetails = new EventEmitter<void>();
@@ -101,8 +103,37 @@ export class FileDetailComponent implements OnInit {
         this.notificationService.showError('Error', 'Failed to load user profile');
       }
     });
+
+    await this.getTransfers();
   }
 
+  async getTransfers(): Promise<void> {
+    this.loading = true;
+    const redlineUser = this.authService.getRedlineUser();
+    if (!redlineUser || !this.file || !this.file.agreements) return;
+    this.file.transactionHistory = [];
+    try {
+      const transfers = await firstValueFrom(this.edcDataOperationsService.listTransferProcesses(
+          redlineUser.providerId, redlineUser.tenantId, redlineUser.participantId));
+      for (const agreement of this.file.agreements) {
+        transfers.filter(transfer => transfer.contractId === agreement.id)
+            .forEach(transfer => {
+              this.file!.transactionHistory!.push({
+                id: transfer.correlationId ?? 'N/A',
+                partnerId: agreement.partnerId,
+                partnerName: agreement.partnerName,
+                type: transfer.type === 'CONSUMER' ? 'access' : 'share',
+                status: transfer.state === 'STARTED' ? 'success' : 'failed',
+                timestamp: new Date(transfer.stateTimestamp!).toISOString()
+              })
+            })
+      }
+    } catch (e) {
+      this.notificationService.showError('Error', (e as Error).message);
+    } finally {
+      this.loading = false;
+    }
+  }
 
   goBack(): void {
     this.closeDetails.emit();
@@ -115,13 +146,13 @@ export class FileDetailComponent implements OnInit {
   getTransactionStatusClass(status: string): string {
     switch (status?.toLowerCase()) {
       case 'success':
-        return 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        return 'px-2 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
       case 'failed':
-        return 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+        return 'px-2 inline-flex text-sm leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
       case 'pending':
-        return 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+        return 'px-2 inline-flex text-sm leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
       default:
-        return 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return 'px-2 inline-flex text-sm leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     }
   }
 
@@ -140,14 +171,14 @@ export class FileDetailComponent implements OnInit {
   getAgreementStatusClass(status: string): string {
     switch (status?.toUpperCase()) {
       case 'ACTIVE':
-        return 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        return 'px-2 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
       case 'PENDING':
-        return 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+        return 'px-2 inline-flex text-sm leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
       case 'EXPIRED':
       case 'CANCELLED':
-        return 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+        return 'px-2 inline-flex text-sm leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
       default:
-        return 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return 'px-2 inline-flex text-sm leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     }
   }
 

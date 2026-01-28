@@ -68,14 +68,12 @@
                   </dd>
                 }
               </div>
-              @if (file.type) {
-                <div>
-                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">File Type</dt>
-                  <dd class="px-2 inline-flex text-xs leading-5 font-medium rounded bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
-                    {{ file.name.split('.')[1] | uppercase }}
-                  </dd>
-                </div>
-              }
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">File Type</dt>
+                <dd class="px-2 inline-flex text-xs leading-5 font-medium rounded bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                  {{ file.name.split('.')[1] | uppercase }}
+                </dd>
+              </div>
               @if (file.size) {
                 <div>
                   <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Size</dt>
@@ -88,11 +86,11 @@
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Type</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">
                   @if (file.origin) {
-                    <span [class]="file.origin === 'owned' ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'">
+                    <span [class]="file.origin === 'owned' ? 'px-2 py-1 inline-flex text-sm font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'px-2 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'">
                       {{ file.origin | titlecase }}
                     </span>
                   } @else {
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                    <span class="px-2 inline-flex text-sm leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
                       N/A
                       </span>
                   }
@@ -195,33 +193,39 @@
             <div class="mb-6">
               <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Agreement</h3>
               <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+<table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
                   <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
-                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                      <th class="w-1/3 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                      <th class="w-1/3 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Partner</th>
+                      <th class="w-1/3 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+<!--                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>-->
                     </tr>
                   </thead>
                   <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     @if (file.agreements && file.agreements.length > 0) {
                       @for (agreement of file.agreements; track agreement.id) {
                         <tr>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          <td class="w-1/3 px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                             {{ formatDate(agreement.createdAt) }}
                           </td>
-                          <td class="px-6 py-4 whitespace-nowrap">
+                          <td class="w-1/3 px-6 py-4">
+                            <div class="text-sm inline-flex px-2 rounded bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                              {{ agreement.partnerName }}
+                            </div>
+                          </td>
+                          <td class="w-1/3 px-6 py-4 whitespace-nowrap">
                             <span [class]="getAgreementStatusClass(agreement.status)">
                               {{ agreement.status }}
                             </span>
                           </td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button
-                              (click)="downloadAgreement(agreement.id)"
-                              class="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300">
-                              View/Download
-                            </button>
-                          </td>
+<!--                          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">-->
+<!--                            <button-->
+<!--                              (click)="downloadAgreement(agreement.id)"-->
+<!--                              class="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300">-->
+<!--                              View/Download-->
+<!--                            </button>-->
+<!--                          </td>-->
                         </tr>
                       }
                     } @else {
@@ -239,26 +243,34 @@
             <div class="mb-6">
               <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Transaction History</h3>
               <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+<table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
                   <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
-                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                      <th class="w-1/3 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                      <th class="w-1/3 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Partner</th>
+                      <th class="w-1/3 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
                     </tr>
                   </thead>
                   <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     @if (file.transactionHistory && file.transactionHistory.length > 0) {
                       @for (transaction of file.transactionHistory; track transaction.id) {
                         <tr>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ transaction.type }}</td>
-                          <td class="px-6 py-4 whitespace-nowrap">
-                            <span [class]="getTransactionStatusClass(transaction.status)">
-                              {{ transaction.status || '-' }}
-                            </span>
-                          </td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                          <td class="w-1/3 px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                             {{ transaction.timestamp ? formatDate(transaction.timestamp) : '-' }}
+                          </td>
+                          <td class="w-1/3 px-6 py-4">
+                            <div class="text-sm inline-flex px-2 rounded bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                              {{ transaction.partnerName }}
+                            </div>
+                          </td>
+                          <td class="w-1/3 px-6 py-4 whitespace-nowrap">
+                            <span [class]="getTransactionStatusClass(transaction.status)">
+                              @if (transaction.status === 'success') {
+                                Completed
+                              } @else {
+                                {{ transaction.status | titlecase }}
+                              }
+                            </span>
                           </td>
                         </tr>
                       }
