@@ -124,7 +124,7 @@ export class FilesListComponent implements OnInit {
           .filter(file => file.accessRestrictions)
           .forEach(file => this.files.push(file));
     } catch (error) {
-      this.notificationService.showError('Error', 'Failed to load some files');
+      this.notificationService.showError('Error', (error as Error).message);
     } finally {
       this.files = this.files.sort((a, b) => a.name.localeCompare(b.name));
       this.applyFilters();
