@@ -68,14 +68,12 @@
                   </dd>
                 }
               </div>
-              @if (file.type) {
-                <div>
-                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">File Type</dt>
-                  <dd class="px-2 inline-flex text-xs leading-5 font-medium rounded bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
-                    {{ file.name.split('.')[1] | uppercase }}
-                  </dd>
-                </div>
-              }
+              <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">File Type</dt>
+                <dd class="px-2 inline-flex text-xs leading-5 font-medium rounded bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                  {{ file.name.split('.')[1] | uppercase }}
+                </dd>
+              </div>
               @if (file.size) {
                 <div>
                   <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Size</dt>
