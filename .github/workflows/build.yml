@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - demo/madrid
-      - feature/registration-aligment
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: Aruba-it-S-p-A/edc-public-participant-portal
