@@ -9,7 +9,6 @@ import {
   NewDataspaceInfo
 } from '../models/tenant.model';
 import { ConfigService } from './config.service';
-import { ParticipantService } from './participant.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +16,6 @@ import { ParticipantService } from './participant.service';
 export class TenantService {
   private http = inject(HttpClient);
   private configService = inject(ConfigService);
-  private participantService = inject(ParticipantService);
 
   private get baseUrl(): string {
     return this.configService.config?.apiUrl || 'http://localhost:3001/api/ui';
@@ -47,8 +45,6 @@ export class TenantService {
       catchError(this.handleError)
     );
   }
-
-
 
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'An unknown error occurred';

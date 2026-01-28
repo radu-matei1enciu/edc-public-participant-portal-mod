@@ -459,7 +459,6 @@ export class RegistrationComponent implements OnInit, AfterViewInit {
             next: () => {
               this.isLoading = false;
               this.successMessage = `Registration completed successfully! The company "${tenant.name}" has been registered.`;
-
               this.router.navigate(['/success'], {
                 queryParams: {
                   tenantId: tenant.id.toString(),

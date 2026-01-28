@@ -2,18 +2,36 @@
   <div class="max-w-2xl w-full">
     <div class="bg-white shadow-xl rounded-lg overflow-hidden">
       <div class="px-8 py-12 text-center">
-        <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-100 mb-6">
-          <svg class="h-12 w-12 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
+        @if (provisioning) {
+          <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-primary-100 mb-6">
+            <svg class="h-12 w-12 text-primary-600 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v2m0 12v2m8-8h-2M6 12H4m13.657-5.657l-1.414 1.414M7.757 16.243l-1.414 1.414m0-11.314 1.414 1.414m10.486 10.486 1.414 1.414" />
+            </svg>
+          </div>
+        } @else {
+          <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-100 mb-6">
+            <svg class="h-12 w-12 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+        }
 
         <h1 class="text-3xl font-bold text-gray-900 mb-4">
-          Registration Completed!
+          @if (provisioning) {
+            @if (finalizing) { Finalizing setup } @else { Provisioning in progress }
+          } @else { Registration completed }
         </h1>
 
         <p class="text-lg text-gray-600 mb-8">
-          Your company has been successfully registered in DataSpace.
+          @if (provisioning) {
+            @if (finalizing) {
+              We are completing the final setup steps. This may take a few seconds.
+            } @else {
+              We are activating your participant services. This may take a few minutes.
+            }
+          } @else {
+            Your company has been successfully registered in DataSpace.
+          }
         </p>
 
         <div *ngIf="participantId" class="bg-gray-50 rounded-lg p-6 mb-8">
@@ -33,33 +51,75 @@
             </div>
             <div>
               <dt class="font-medium text-gray-500">Status:</dt>
-              <dd class="text-green-600 font-medium">✓ Successfully registered</dd>
+              @if (provisioning) {
+                @if (finalizing) {
+                  <dd class="text-primary-700 font-medium">⏳ Finalizing setup</dd>
+                } @else {
+                  <dd class="text-primary-700 font-medium">⏳ Provisioning in progress</dd>
+                }
+              } @else {
+                <dd class="text-green-600 font-medium">✓ Provisioning completed</dd>
+              }
             </div>
             <div>
               <dt class="font-medium text-gray-500">Registration Date:</dt>
               <dd class="text-gray-900">{{ getCurrentDate() }}</dd>
             </div>
-            <div>
-              <dt class="font-medium text-gray-500">Access:</dt>
-              <dd class="text-gray-900">Ready for portal access</dd>
-            </div>
+            @if (agentsSorted.length) {
+              <div>
+                <dt class="font-medium text-gray-500">Agents:</dt>
+                <dd class="text-gray-900">
+                  <div class="space-y-2 mt-2">
+                    @for (agent of agentsSorted; track agent.id) {
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-600">{{ agent.type }}</span>
+                        <span class="text-xs font-medium"
+                              [class.text-green-600]="agent.state === 'ACTIVE'"
+                              [class.text-primary-700]="agent.state !== 'ACTIVE'">
+                          {{ agent.state }}
+                        </span>
+                      </div>
+                    }
+                  </div>
+                </dd>
+              </div>
+            }
           </dl>
         </div>
 
-        <div class="bg-primary-50 rounded-lg p-6 mb-8">
-          <h3 class="text-lg font-medium text-primary-900 mb-4">Access Portal</h3>
-          <p class="text-sm text-primary-800 mb-6">
-            You can now access the portal with the credentials you just created and start exploring DataSpace.
-          </p>
-          <button
-            (click)="goToLogin()"
-            class="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center">
-            <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1" />
-            </svg>
-            Access Portal
-          </button>
-        </div>
+        @if (provisionError) {
+          <div class="bg-red-50 rounded-lg p-6 mb-8">
+            <h3 class="text-lg font-medium text-red-900 mb-2">Provisioning not completed</h3>
+            <p class="text-sm text-red-800 mb-4">{{ provisionError }}</p>
+            <button (click)="retryProvisioning()" class="btn-primary w-full">
+              Retry
+            </button>
+          </div>
+        } @else {
+          <div class="bg-primary-50 rounded-lg p-6 mb-8">
+            <h3 class="text-lg font-medium text-primary-900 mb-4">Access Portal</h3>
+            <p class="text-sm text-primary-800 mb-6">
+              @if (provisioning) {
+                @if (finalizing) {
+                  Access will be available as soon as finalization completes.
+                } @else {
+                  Access will be available as soon as provisioning completes.
+                }
+              } @else {
+                You can now access the portal and start exploring DataSpace.
+              }
+            </p>
+            <button
+              (click)="goToLogin()"
+              [disabled]="provisioning"
+              class="w-full bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center">
+              <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1" />
+              </svg>
+              Access Portal
+            </button>
+          </div>
+        }
 
         <div class="bg-gray-50 rounded-lg p-6 mb-8">
           <h3 class="text-lg font-medium text-gray-900 mb-4">Need help?</h3>
@@ -86,6 +146,7 @@
           <button
             (click)="goToLogin()"
             class="btn-primary"
+            [disabled]="provisioning"
           >
             <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1" />

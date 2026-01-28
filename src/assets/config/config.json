@@ -21,6 +21,10 @@
       "image/png"
     ]
   },
+  "provisioning": {
+    "pollIntervalMs": 2000,
+    "maxWaitMs": 90000
+  },
   "useCases": [
     {
       "id": "uc-certificate-management",

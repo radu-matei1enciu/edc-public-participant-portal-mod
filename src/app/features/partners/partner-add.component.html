@@ -39,6 +39,27 @@
             }
           </div>
 
+          <div class="sm:col-span-2">
+            <label for="partnerParticipantIdentifier" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Partner (Participant) <span class="text-red-500">*</span>
+            </label>
+            <select 
+              id="partnerParticipantIdentifier"
+              formControlName="partnerParticipantIdentifier"
+              class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+              <option value="">Select a participant</option>
+              @for (opt of partnerParticipantOptions; track opt.participantId) {
+                <option [value]="opt.participantIdentifier">{{ opt.displayName }}</option>
+              }
+            </select>
+            @if (partnerForm.get('partnerParticipantIdentifier')?.invalid && partnerForm.get('partnerParticipantIdentifier')?.touched) {
+              <p class="mt-1 text-sm text-red-600 dark:text-red-400">Please select the partner participant</p>
+            }
+            @if (partnerParticipantOptions.length === 0 && !loading) {
+              <p class="mt-1 text-sm text-amber-600 dark:text-amber-400">No participants available</p>
+            }
+          </div>
+
           <div>
             <label for="nickname" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Nickname <span class="text-red-500">*</span>
@@ -55,27 +76,6 @@
                   Nickname is required
                 } @else if (partnerForm.get('nickname')?.errors?.['minlength']) {
                   Nickname must be at least 2 characters
-                }
-              </p>
-            }
-          </div>
-
-          <div>
-            <label for="identifier" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Identifier <span class="text-red-500">*</span>
-            </label>
-            <input 
-              type="text"
-              id="identifier"
-              formControlName="identifier"
-              class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm font-mono"
-              placeholder="did:web:example.com">
-            @if (partnerForm.get('identifier')?.invalid && partnerForm.get('identifier')?.touched) {
-              <p class="mt-1 text-sm text-red-600 dark:text-red-400">
-                @if (partnerForm.get('identifier')?.errors?.['required']) {
-                  Identifier is required
-                } @else if (partnerForm.get('identifier')?.errors?.['minlength']) {
-                  Identifier must be at least 2 characters
                 }
               </p>
             }
