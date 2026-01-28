@@ -123,12 +123,12 @@ export class FilesListComponent implements OnInit {
       (await this.catalogService.matchContractsToFiles(catalogFiles))
           .filter(file => file.accessRestrictions)
           .forEach(file => this.files.push(file));
+    } catch (error) {
+      this.notificationService.showError('Error', 'Failed to load some files');
+    } finally {
       this.files = this.files.sort((a, b) => a.name.localeCompare(b.name));
       this.applyFilters();
       this.loading = false;
-    } catch (error) {
-      this.loading = false;
-      this.notificationService.showError('Error', 'Failed to load files');
     }
   }
 
