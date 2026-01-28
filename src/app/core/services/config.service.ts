@@ -20,6 +20,10 @@ export interface AppConfig {
     maxFileSize: number;
     allowedFileTypes: string[];
   };
+  provisioning?: {
+    pollIntervalMs: number;
+    maxWaitMs: number;
+  };
 }
 
 @Injectable({

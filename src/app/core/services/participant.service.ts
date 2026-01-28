@@ -19,6 +19,19 @@ import {
 } from '../models/tenant.model';
 import { ConfigService } from './config.service';
 
+export interface ParticipantAgentStatus {
+  id: number;
+  type: string;
+  state: string;
+}
+
+export interface ParticipantActivation {
+  id: number;
+  identifier: string;
+  agents: ParticipantAgentStatus[];
+  dataspaceInfos?: Array<unknown>;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -135,6 +148,31 @@ export class ParticipantService {
   ): Observable<ParticipantResource> {
     return this.http.get<ParticipantResource>(
       `${this.baseUrl}/service-providers/${providerId}/tenants/${tenantId}/participants/${participantId}`
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  getParticipantActivationByTenant(
+    providerId: number,
+    tenantId: number,
+    participantId: number
+  ): Observable<ParticipantActivation> {
+    return this.http.get<ParticipantActivation>(
+      `${this.baseUrl}/service-providers/${providerId}/tenants/${tenantId}/participants/${participantId}`
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  registerDataPlaneByTenant(
+    providerId: number,
+    tenantId: number,
+    participantId: number
+  ): Observable<unknown> {
+    return this.http.post(
+      `${this.baseUrl}/service-providers/${providerId}/tenants/${tenantId}/participants/${participantId}/dataplanes`,
+      null
     ).pipe(
       catchError(this.handleError)
     );
