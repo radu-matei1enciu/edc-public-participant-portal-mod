@@ -11,9 +11,10 @@ import {ModalService} from '../../core/services/modal.service';
 import {UseCase} from '../../core/models/use-case.model';
 import {Partner} from '../../core/models/partner.model';
 import {formatFileSize} from '../../shared/utils/format.utils';
-import {EDCDataOperationsService} from "../../core/redline";
+import {Constraint, EDCDataOperationsService, Permission, PolicySet} from "../../core/redline";
 import {DataspaceService} from "../../core/services/dataspace.service";
 import {firstValueFrom} from "rxjs";
+import {PARTNER_ACCESS_EXPRESSION} from "../../shared/utils/cel-expressions.utils";
 
 @Component({
   selector: 'app-file-upload',
@@ -221,8 +222,20 @@ export class FileUploadComponent implements OnInit {
     this.edcDataOperationsService.uploadFile(userIds.participantId, userIds.tenantId, userIds.providerId,
         JSON.stringify(publicMetadata),
         JSON.stringify(privateMetadata),
-        this.selectedFiles[0])
-        .subscribe({
+        this.selectedFiles[0],
+        JSON.stringify([PARTNER_ACCESS_EXPRESSION]),
+        {
+          permission: [
+            {
+              action: "use",
+              constraint: [{
+                leftOperand: "CounterPartyId",
+                operator: "eq",
+                rightOperand: privateMetadata.partnerId
+              } as Constraint]
+            } as Permission]
+        } as PolicySet
+    ).subscribe({
       next: () => {
         this.uploading = false;
         this.notificationService.showSuccess('Success', `Successfully uploaded ${this.selectedFiles.length} file(s)`);
