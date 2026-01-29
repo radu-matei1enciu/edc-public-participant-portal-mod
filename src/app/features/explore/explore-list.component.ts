@@ -225,20 +225,22 @@ export class ExploreListComponent implements OnInit {
     ))
 
     let negotiationState = '';
-    while (negotiationState !== 'FINALIZED' && negotiationState !== 'TERMINATED') {
+    const startTime = Date.now();
+    const maxWaitTime = 15000;
+    while (negotiationState !== 'FINALIZED' && (Date.now() - startTime < maxWaitTime)) {
       await new Promise(resolve => setTimeout(resolve, 500));
       negotiationState = (await firstValueFrom(this.edcDataOperationsService.getContractNegotiation(
-       this.redlineUser.providerId,
-       this.redlineUser.tenantId,
-       this.redlineUser.participantId,
-       negotiationId
+          this.redlineUser.providerId,
+          this.redlineUser.tenantId,
+          this.redlineUser.participantId,
+          negotiationId
       ))).state ?? '';
     }
     if (negotiationState === 'FINALIZED') {
       this.notificationService.showSuccess('Success', 'Access granted');
       await this.catalogService.matchContractsToFiles(this.files);
     } else {
-      this.notificationService.showError('Error', 'Failed to request access');
+      this.notificationService.showError('Error', `Failed to request access. Negotiation state: ${negotiationState}`);
     }
     this.requestingAccess = null;
   }
