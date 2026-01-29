@@ -11,6 +11,8 @@ import { PartnerService } from '../../core/services/partner.service';
 import { DataspaceResource } from '../../core/models/dataspace.model';
 import { Partner } from '../../core/models/partner.model';
 import { EDCDataOperationsService } from '../../core/redline';
+import { UseCaseService } from '../../core/services/use-case.service';
+import { UseCase } from '../../core/models/use-case.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -30,14 +32,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
   membershipsCount = 0;
   partnersCount = 0;
   filesCount = 0;
+  useCasesCount = 0;
   lastUpdateTime = new Date();
   recentMemberships: DataspaceResource[] = [];
+  useCases: UseCase[] = [];
 
   private authService = inject(AuthService);
   private router = inject(Router);
   private dataspaceService = inject(DataspaceService);
   private partnerService = inject(PartnerService);
   private edcDataOperationsService = inject(EDCDataOperationsService);
+  private useCaseService = inject(UseCaseService);
   private notificationService = inject(NotificationService);
 
   ngOnInit(): void {
@@ -95,14 +100,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
       catchError(() => of([]))
     );
 
+    const useCases$ = this.useCaseService.getUseCases().pipe(
+      catchError(() => of([] as UseCase[]))
+    );
+
     forkJoin({
       dataspaces: dataspaces$,
-      files: files$
+      files: files$,
+      useCases: useCases$
     }).pipe(
-      switchMap(({ dataspaces, files }) => {
+      switchMap(({ dataspaces, files, useCases }) => {
         this.membershipsCount = dataspaces.length;
         this.recentMemberships = [...dataspaces].reverse().slice(0, 6);
         this.filesCount = files.length;
+        this.useCases = useCases;
+        this.useCasesCount = useCases.length;
         this.lastUpdateTime = new Date();
 
         if (dataspaces.length > 0) {
@@ -128,6 +140,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.membershipsCount = 0;
         this.filesCount = 0;
         this.partnersCount = 0;
+        this.useCasesCount = 0;
+        this.useCases = [];
         return of([] as Partner[][]);
       })
     ).subscribe({

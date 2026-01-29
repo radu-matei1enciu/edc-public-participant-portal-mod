@@ -49,6 +49,11 @@
   <div class="px-6 py-6">
     @if (uploadStep === 1) {
       <div class="space-y-4">
+        @if (preselectedUseCaseId) {
+          <div class="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200">
+            Use case preselected. You can review it in Step 2.
+          </div>
+        }
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select File</label>
           <input

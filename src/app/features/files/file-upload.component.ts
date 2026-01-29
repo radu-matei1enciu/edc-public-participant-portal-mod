@@ -1,6 +1,6 @@
 import {Component, DestroyRef, inject, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {Router} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {FileAssetService} from '../../core/services/file-asset.service';
 import {UseCaseService} from '../../core/services/use-case.service';
@@ -31,6 +31,7 @@ export class FileUploadComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private modalService = inject(ModalService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private edcDataOperationsService = inject(EDCDataOperationsService);
@@ -45,6 +46,7 @@ export class FileUploadComponent implements OnInit {
   uploadForm!: FormGroup;
   uploading = false;
   filePreviewData: Array<{ name: string; size: number; type: string; useCase?: string; partner?: string }> = [];
+  preselectedUseCaseId: string | null = null;
 
   uploadSteps = [
     { label: 'Select File', number: 1 },
@@ -61,6 +63,9 @@ export class FileUploadComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.route.queryParamMap.subscribe(params => {
+      this.preselectedUseCaseId = params.get('useCase');
+    });
     this.authService.loadUserProfile().subscribe({
       next: (profile) => {
         this.participantId = profile.participant.id;
@@ -78,6 +83,9 @@ export class FileUploadComponent implements OnInit {
     this.useCaseService.getUseCases().subscribe({
       next: (useCases) => {
         this.useCases = useCases;
+        if (this.preselectedUseCaseId) {
+          this.uploadForm.patchValue({ useCase: this.preselectedUseCaseId });
+        }
       },
       error: () => {
         this.useCases = [];
