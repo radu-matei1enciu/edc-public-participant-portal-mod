@@ -217,9 +217,9 @@ export class ExploreListComponent implements OnInit {
 
     let negotiationState = '';
     const startTime = Date.now();
-    const maxWaitTime = 15000;
-    while (negotiationState !== 'FINALIZED' && (Date.now() - startTime < maxWaitTime)) {
-      await new Promise(resolve => setTimeout(resolve, 500));
+    const maxWaitTime = 30000;
+    while (negotiationState !== 'FINALIZED' && Date.now() - startTime < maxWaitTime) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
       negotiationState = (await firstValueFrom(this.edcDataOperationsService.getContractNegotiation(
           this.redlineUser.providerId,
           this.redlineUser.tenantId,

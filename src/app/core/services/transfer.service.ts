@@ -19,12 +19,10 @@ export class TransferService {
       this.notificationService.showError('Error', 'Missing File Data');
       return;
     }
-
-        if (file.catalogDataset.distribution.length == 0) {
-            this.notificationService.showError("The provider is unable to serve this file", "No appropriate distribution found. The provider might not have a suitable data plane available.");
-            return;
-        }
-
+    if (!file.catalogDataset.distribution) {
+      this.notificationService.showError("The provider is unable to serve this file", "No appropriate distribution found. The provider might not have a suitable data plane available.");
+      return;
+    }
     const transferProcessId = await firstValueFrom(this.edcDataOperationsService.requestTransfer(
         redlineUser.providerId, redlineUser.tenantId, redlineUser.participantId,
         {
@@ -36,15 +34,26 @@ export class TransferService {
     ))
 
     let transferProcess: TransferProcess | undefined = undefined;
-    while (transferProcess?.state !== 'STARTED' && transferProcess?.state !== 'TERMINATED') {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      transferProcess = await firstValueFrom(this.edcDataOperationsService.getTransferProcess(
-          redlineUser.providerId, redlineUser.tenantId, redlineUser.participantId,
-          transferProcessId
-      ));
+    const startTime = Date.now();
+    const maxWaitTime = 30000;
+    while (transferProcess?.state !== 'STARTED' && Date.now() - startTime < maxWaitTime) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      try {
+        transferProcess = await firstValueFrom(this.edcDataOperationsService.getTransferProcess(
+            redlineUser.providerId, redlineUser.tenantId, redlineUser.participantId,
+            transferProcessId
+        ));
+      } catch {
+        this.notificationService.showError('Transfer Process', 'Failed to get the transfer process state');
+        return;
+      }
     }
-    if (transferProcess.state === 'STARTED') {
-      const token = (transferProcess.contentDataAddress?.["properties"] as Record<string, string>)?.["https://w3id.org/edc/v0.0.1/ns/authorization"];
+    if (transferProcess!.state === 'STARTED') {
+      const token = (transferProcess!.contentDataAddress?.["properties"] as Record<string, string>)?.["https://w3id.org/edc/v0.0.1/ns/authorization"];
+      if (!token) {
+        this.notificationService.showError('Download', 'No auth token for the download found');
+        return;
+      }
       const data: Blob = await firstValueFrom(this.edcDataOperationsService.downloadData(
           redlineUser.providerId, redlineUser.tenantId, redlineUser.participantId,
           file.id,
