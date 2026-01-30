@@ -20,6 +20,11 @@ export class TransferService {
       return;
     }
 
+        if (file.catalogDataset.distribution.length == 0) {
+            this.notificationService.showError("The provider is unable to serve this file", "No appropriate distribution found. The provider might not have a suitable data plane available.");
+            return;
+        }
+
     const transferProcessId = await firstValueFrom(this.edcDataOperationsService.requestTransfer(
         redlineUser.providerId, redlineUser.tenantId, redlineUser.participantId,
         {
