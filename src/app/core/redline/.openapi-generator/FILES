@@ -19,8 +19,9 @@ model/contractRequest.ts
 model/counterPartyIdWrapper.ts
 model/dataService.ts
 model/dataset.ts
-model/dataspace.ts
 model/dataspaceInfo.ts
+model/dataspaceRequest.ts
+model/dataspaceResponse.ts
 model/distribution.ts
 model/fileResource.ts
 model/models.ts
@@ -31,9 +32,9 @@ model/participantDeployment.ts
 model/partnerReference.ts
 model/partnerReferenceRequest.ts
 model/permission.ts
-model/policySet.ts
 model/prohibition.ts
 model/serviceProvider.ts
+model/serviceProviderResponse.ts
 model/tenant.ts
 model/tenantRegistration.ts
 model/transferProcess.ts

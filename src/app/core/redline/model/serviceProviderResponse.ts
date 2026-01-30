@@ -9,7 +9,8 @@
  */
 
 
-export interface ServiceProvider { 
+export interface ServiceProviderResponse { 
+    id?: number;
     name?: string;
 }
 

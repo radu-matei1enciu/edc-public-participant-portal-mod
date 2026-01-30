@@ -9,7 +9,8 @@
  */
 
 
-export interface ServiceProvider { 
+export interface DataspaceRequest { 
     name?: string;
+    properties?: { [key: string]: object; };
 }
 
