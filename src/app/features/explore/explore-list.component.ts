@@ -70,8 +70,7 @@ export class ExploreListComponent implements OnInit {
       console.error('Redline user is undefined');
       return;
     }
-    this.catenaX = (await firstValueFrom(this.dataspaceService.getDataspaces()))
-        .find(ds => ds.name.toLowerCase().includes('catena'));
+    this.catenaX = await this.dataspaceService.getCatenaDataspace(this.redlineUser);
     if (!this.catenaX) {
       console.error('No Catena-X dataspace found');
       return;
@@ -79,16 +78,8 @@ export class ExploreListComponent implements OnInit {
     this.partners = await firstValueFrom(this.tenantOperationsService.getPartners(
         this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId, this.catenaX.id));
 
-    this.authService.loadUserProfile().subscribe({
-      next: (profile) => {
-        this.userProfile = profile;
-        this.loadUseCases();
-        this.loadFiles().then();
-      },
-      error: () => {
-        this.notificationService.showError('Error', 'Failed to load user profile');
-      }
-    });
+    this.loadUseCases();
+    await this.loadFiles();
 
     // this.preferences$.pipe(
     //   takeUntilDestroyed(this.destroyRef)

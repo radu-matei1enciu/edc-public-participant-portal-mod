@@ -95,11 +95,10 @@ export class FileUploadComponent implements OnInit {
   }
 
   async loadPartners(): Promise<void> {
-    if (!this.participantId) return;
-    const cx = (await firstValueFrom(this.dataspaceService.getDataspaces()))
-        .find(ds => ds.name.toLowerCase().includes('catena'));
     const redlineUser = this.authService.getRedlineUser();
-    if (!cx || !redlineUser) return ;
+    if (!redlineUser) return;
+    const cx = await this.dataspaceService.getCatenaDataspace(redlineUser);
+    if (!cx) return;
     this.partnerService.getPartners(
         redlineUser.providerId,
         redlineUser.tenantId,

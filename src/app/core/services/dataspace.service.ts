@@ -1,10 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import {firstValueFrom, Observable, of} from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { Ecosystem } from '../models/ecosystem.model';
 import { DataspaceResource } from '../models/dataspace.model';
 import { ConfigService } from './config.service';
+import {RedlineUser} from "../models/redline-user.model";
 
 @Injectable({
   providedIn: 'root'
@@ -35,5 +36,10 @@ export class DataspaceService {
     ).pipe(
       catchError(() => of([]))
     );
+  }
+
+  async getCatenaDataspace(redlineUser: RedlineUser): Promise<DataspaceResource> {
+    return (await firstValueFrom(this.getParticipantDataspaces(redlineUser.providerId, redlineUser.tenantId, redlineUser.participantId)))
+        .find(ds => ds.name.toLowerCase().includes('catena')) ?? await Promise.reject('No Catena-X Dataspace found');
   }
 }
