@@ -1,8 +1,7 @@
-import {Component, DestroyRef, inject, OnInit} from '@angular/core';
+import {Component, inject, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute, Router} from '@angular/router';
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
-import {FileAssetService} from '../../core/services/file-asset.service';
 import {UseCaseService} from '../../core/services/use-case.service';
 import {PartnerService} from '../../core/services/partner.service';
 import {AuthService} from '../../core/services/auth.service';
@@ -11,10 +10,9 @@ import {ModalService} from '../../core/services/modal.service';
 import {UseCase} from '../../core/models/use-case.model';
 import {Partner} from '../../core/models/partner.model';
 import {formatFileSize} from '../../shared/utils/format.utils';
-import {Constraint, EDCDataOperationsService, Permission } from "../../core/redline";
 import {DataspaceService} from "../../core/services/dataspace.service";
-import {firstValueFrom} from "rxjs";
-import {getAccessRestrictionPolicy, PARTNER_ACCESS_EXPRESSION} from "../../shared/utils/cel-expressions.utils";
+import {getAccessRestrictionPolicy, PARTNER_ACCESS_EXPRESSION} from "../../shared/utils/policy.utils";
+import {RedlineUploadService} from "../../core/services/redline-upload.service";
 
 @Component({
   selector: 'app-file-upload',
@@ -25,7 +23,6 @@ import {getAccessRestrictionPolicy, PARTNER_ACCESS_EXPRESSION} from "../../share
 export class FileUploadComponent implements OnInit {
   formatFileSize = formatFileSize;
   
-  private fileAssetService = inject(FileAssetService);
   private useCaseService = inject(UseCaseService);
   private partnerService = inject(PartnerService);
   private authService = inject(AuthService);
@@ -33,10 +30,9 @@ export class FileUploadComponent implements OnInit {
   private modalService = inject(ModalService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
-  private edcDataOperationsService = inject(EDCDataOperationsService);
   private dataspaceService = inject(DataspaceService);
+  private redlineUploadService = inject(RedlineUploadService);
 
   participantId: number | null = null;
 
@@ -208,7 +204,6 @@ export class FileUploadComponent implements OnInit {
     this.uploading = true;
     const uploadMetadata = this.uploadForm.value;
 
-
     const userIds = this.authService.getRedlineUser()!;
     const publicMetadata = {
       useCase: uploadMetadata.useCase,
@@ -218,11 +213,11 @@ export class FileUploadComponent implements OnInit {
       partnerId: uploadMetadata.partnerId,
       origin: 'owned'
     }
-    this.edcDataOperationsService.uploadFile(userIds.participantId, userIds.tenantId, userIds.providerId,
-        JSON.stringify(publicMetadata),
-        JSON.stringify(privateMetadata),
+    this.redlineUploadService.uploadFile(userIds.participantId, userIds.tenantId, userIds.providerId,
+        publicMetadata,
+        privateMetadata,
         this.selectedFiles[0],
-        uploadMetadata.partnerId ? JSON.stringify([PARTNER_ACCESS_EXPRESSION]) : undefined,
+        uploadMetadata.partnerId ? ([PARTNER_ACCESS_EXPRESSION]) : undefined,
         uploadMetadata.partnerId ? getAccessRestrictionPolicy(uploadMetadata.partnerId) : undefined
     ).subscribe({
       next: () => {
