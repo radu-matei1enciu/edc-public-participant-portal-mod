@@ -11,6 +11,7 @@ encoder.ts
 git_push.sh
 index.ts
 model/catalog.ts
+model/celExpression.ts
 model/constraint.ts
 model/contract.ts
 model/contractNegotiation.ts

@@ -1,4 +1,5 @@
 export * from './catalog';
+export * from './celExpression';
 export * from './constraint';
 export * from './contract';
 export * from './contractNegotiation';

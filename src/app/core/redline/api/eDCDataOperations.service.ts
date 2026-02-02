@@ -19,6 +19,8 @@ import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 // @ts-ignore
 import { Catalog } from '../model/catalog';
 // @ts-ignore
+import { CelExpression } from '../model/celExpression';
+// @ts-ignore
 import { Contract } from '../model/contract';
 // @ts-ignore
 import { ContractNegotiation } from '../model/contractNegotiation';
@@ -696,8 +698,6 @@ export class EDCDataOperationsService extends BaseService {
      * @param participantId Database ID of the participant
      * @param tenantId Database ID of the tenant
      * @param providerId Database ID of the service provider
-     * @param publicMetadata 
-     * @param privateMetadata 
      * @param file 
      * @param celExpressions 
      * @param policySet 
@@ -705,10 +705,10 @@ export class EDCDataOperationsService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public uploadFile(participantId: number, tenantId: number, providerId: number, publicMetadata: string, privateMetadata: string, file: Blob, celExpressions?: string, policySet?: PolicySet, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
-    public uploadFile(participantId: number, tenantId: number, providerId: number, publicMetadata: string, privateMetadata: string, file: Blob, celExpressions?: string, policySet?: PolicySet, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
-    public uploadFile(participantId: number, tenantId: number, providerId: number, publicMetadata: string, privateMetadata: string, file: Blob, celExpressions?: string, policySet?: PolicySet, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
-    public uploadFile(participantId: number, tenantId: number, providerId: number, publicMetadata: string, privateMetadata: string, file: Blob, celExpressions?: string, policySet?: PolicySet, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public uploadFile(participantId: number, tenantId: number, providerId: number, file: Blob, celExpressions?: Array<CelExpression>, policySet?: PolicySet, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
+    public uploadFile(participantId: number, tenantId: number, providerId: number, file: Blob, celExpressions?: Array<CelExpression>, policySet?: PolicySet, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
+    public uploadFile(participantId: number, tenantId: number, providerId: number, file: Blob, celExpressions?: Array<CelExpression>, policySet?: PolicySet, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
+    public uploadFile(participantId: number, tenantId: number, providerId: number, file: Blob, celExpressions?: Array<CelExpression>, policySet?: PolicySet, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (participantId === null || participantId === undefined) {
             throw new Error('Required parameter participantId was null or undefined when calling uploadFile.');
         }
@@ -717,12 +717,6 @@ export class EDCDataOperationsService extends BaseService {
         }
         if (providerId === null || providerId === undefined) {
             throw new Error('Required parameter providerId was null or undefined when calling uploadFile.');
-        }
-        if (publicMetadata === null || publicMetadata === undefined) {
-            throw new Error('Required parameter publicMetadata was null or undefined when calling uploadFile.');
-        }
-        if (privateMetadata === null || privateMetadata === undefined) {
-            throw new Error('Required parameter privateMetadata was null or undefined when calling uploadFile.');
         }
         if (file === null || file === undefined) {
             throw new Error('Required parameter file was null or undefined when calling uploadFile.');
@@ -759,14 +753,14 @@ export class EDCDataOperationsService extends BaseService {
             localVarFormParams = new HttpParams({encoder: this.encoder});
         }
 
-        if (publicMetadata !== undefined) {
-            localVarFormParams = localVarFormParams.append('publicMetadata', <any>publicMetadata) as any || localVarFormParams;
-        }
-        if (privateMetadata !== undefined) {
-            localVarFormParams = localVarFormParams.append('privateMetadata', <any>privateMetadata) as any || localVarFormParams;
-        }
-        if (celExpressions !== undefined) {
-            localVarFormParams = localVarFormParams.append('celExpressions', <any>celExpressions) as any || localVarFormParams;
+        if (celExpressions) {
+            if (localVarUseForm) {
+                celExpressions.forEach((element) => {
+                    localVarFormParams = localVarFormParams.append('celExpressions', <any>element) as any || localVarFormParams;
+            })
+            } else {
+                localVarFormParams = localVarFormParams.append('celExpressions', [...celExpressions].join(COLLECTION_FORMATS['csv'])) as any || localVarFormParams;
+            }
         }
         if (policySet !== undefined) {
             localVarFormParams = localVarFormParams.append('policySet', localVarUseForm ? new Blob([JSON.stringify(policySet)], {type: 'application/json'}) : <any>policySet) as any || localVarFormParams;
