@@ -29,6 +29,8 @@ import { CounterPartyIdWrapper } from '../model/counterPartyIdWrapper';
 // @ts-ignore
 import { FileResource } from '../model/fileResource';
 // @ts-ignore
+import { PolicySet } from '../model/policySet';
+// @ts-ignore
 import { TransferProcess } from '../model/transferProcess';
 // @ts-ignore
 import { TransferProcessRequest } from '../model/transferProcessRequest';
@@ -703,10 +705,10 @@ export class EDCDataOperationsService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public uploadFile(participantId: number, tenantId: number, providerId: number, publicMetadata: string, privateMetadata: string, file: Blob, celExpressions?: string, policySet?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
-    public uploadFile(participantId: number, tenantId: number, providerId: number, publicMetadata: string, privateMetadata: string, file: Blob, celExpressions?: string, policySet?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
-    public uploadFile(participantId: number, tenantId: number, providerId: number, publicMetadata: string, privateMetadata: string, file: Blob, celExpressions?: string, policySet?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
-    public uploadFile(participantId: number, tenantId: number, providerId: number, publicMetadata: string, privateMetadata: string, file: Blob, celExpressions?: string, policySet?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public uploadFile(participantId: number, tenantId: number, providerId: number, publicMetadata: string, privateMetadata: string, file: Blob, celExpressions?: string, policySet?: PolicySet, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
+    public uploadFile(participantId: number, tenantId: number, providerId: number, publicMetadata: string, privateMetadata: string, file: Blob, celExpressions?: string, policySet?: PolicySet, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
+    public uploadFile(participantId: number, tenantId: number, providerId: number, publicMetadata: string, privateMetadata: string, file: Blob, celExpressions?: string, policySet?: PolicySet, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
+    public uploadFile(participantId: number, tenantId: number, providerId: number, publicMetadata: string, privateMetadata: string, file: Blob, celExpressions?: string, policySet?: PolicySet, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (participantId === null || participantId === undefined) {
             throw new Error('Required parameter participantId was null or undefined when calling uploadFile.');
         }
@@ -767,7 +769,7 @@ export class EDCDataOperationsService extends BaseService {
             localVarFormParams = localVarFormParams.append('celExpressions', <any>celExpressions) as any || localVarFormParams;
         }
         if (policySet !== undefined) {
-            localVarFormParams = localVarFormParams.append('policySet', <any>policySet) as any || localVarFormParams;
+            localVarFormParams = localVarFormParams.append('policySet', localVarUseForm ? new Blob([JSON.stringify(policySet)], {type: 'application/json'}) : <any>policySet) as any || localVarFormParams;
         }
         if (file !== undefined) {
             localVarFormParams = localVarFormParams.append('file', <any>file) as any || localVarFormParams;

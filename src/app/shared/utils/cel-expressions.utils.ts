@@ -1,3 +1,5 @@
+import {PolicySet} from "../../core/redline";
+
 export const PARTNER_ACCESS_EXPRESSION = {
     "@id": "cert-partner-access-policy-expression",
     leftOperand: "CounterPartyId",
@@ -6,10 +8,11 @@ export const PARTNER_ACCESS_EXPRESSION = {
     expression: "ctx.agent.id == this.rightOperand"
 }
 
-export function getAccessRestrictionPolicy(partnerId: string): string {
-    return JSON.stringify({
+export function getAccessRestrictionPolicy(partnerId: string): PolicySet {
+    return {
         permission: [
             {
+                action: "use",
                 constraint: [
                     {
                         leftOperand: "CounterPartyId",
@@ -19,5 +22,5 @@ export function getAccessRestrictionPolicy(partnerId: string): string {
                 ]
             }
         ]
-    });
+    };
 }

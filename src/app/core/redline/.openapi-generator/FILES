@@ -32,6 +32,7 @@ model/participantDeployment.ts
 model/partnerReference.ts
 model/partnerReferenceRequest.ts
 model/permission.ts
+model/policySet.ts
 model/prohibition.ts
 model/serviceProvider.ts
 model/serviceProviderResponse.ts

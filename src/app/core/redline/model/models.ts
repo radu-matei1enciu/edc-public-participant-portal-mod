@@ -19,6 +19,7 @@ export * from './participantDeployment';
 export * from './partnerReference';
 export * from './partnerReferenceRequest';
 export * from './permission';
+export * from './policySet';
 export * from './prohibition';
 export * from './serviceProvider';
 export * from './serviceProviderResponse';
