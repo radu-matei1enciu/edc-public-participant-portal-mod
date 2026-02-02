@@ -14,7 +14,7 @@ import {formatFileSize} from '../../shared/utils/format.utils';
 import {Constraint, EDCDataOperationsService, Permission } from "../../core/redline";
 import {DataspaceService} from "../../core/services/dataspace.service";
 import {firstValueFrom} from "rxjs";
-import {PARTNER_ACCESS_EXPRESSION} from "../../shared/utils/cel-expressions.utils";
+import {getAccessRestrictionPolicy, PARTNER_ACCESS_EXPRESSION} from "../../shared/utils/cel-expressions.utils";
 
 @Component({
   selector: 'app-file-upload',
@@ -223,11 +223,7 @@ export class FileUploadComponent implements OnInit {
         JSON.stringify(privateMetadata),
         this.selectedFiles[0],
         uploadMetadata.partnerId ? JSON.stringify([PARTNER_ACCESS_EXPRESSION]) : undefined,
-        uploadMetadata.partnerId ? JSON.stringify([{
-                leftOperand: "CounterPartyId",
-                operator: "eq",
-                rightOperand: privateMetadata.partnerId
-              }]) : undefined
+        uploadMetadata.partnerId ? getAccessRestrictionPolicy(uploadMetadata.partnerId) : undefined
     ).subscribe({
       next: () => {
         this.uploading = false;
