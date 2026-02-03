@@ -17,7 +17,9 @@ import { Observable }                                        from 'rxjs';
 import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
 // @ts-ignore
-import { Dataspace } from '../model/dataspace';
+import { DataspaceRequest } from '../model/dataspaceRequest';
+// @ts-ignore
+import { DataspaceResponse } from '../model/dataspaceResponse';
 // @ts-ignore
 import { Participant } from '../model/participant';
 // @ts-ignore
@@ -28,6 +30,8 @@ import { PartnerReference } from '../model/partnerReference';
 import { PartnerReferenceRequest } from '../model/partnerReferenceRequest';
 // @ts-ignore
 import { ServiceProvider } from '../model/serviceProvider';
+// @ts-ignore
+import { ServiceProviderResponse } from '../model/serviceProviderResponse';
 // @ts-ignore
 import { Tenant } from '../model/tenant';
 // @ts-ignore
@@ -47,6 +51,71 @@ export class TenantOperationsService extends BaseService {
 
     constructor(protected httpClient: HttpClient, @Optional() @Inject(BASE_PATH) basePath: string|string[], @Optional() configuration?: Configuration) {
         super(basePath, configuration);
+    }
+
+    /**
+     * @endpoint post /api/ui/dataspaces
+     * @param dataspaceRequest 
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     * @param options additional options
+     */
+    public createDataspace(dataspaceRequest: DataspaceRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<DataspaceResponse>;
+    public createDataspace(dataspaceRequest: DataspaceRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<DataspaceResponse>>;
+    public createDataspace(dataspaceRequest: DataspaceRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<DataspaceResponse>>;
+    public createDataspace(dataspaceRequest: DataspaceRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (dataspaceRequest === null || dataspaceRequest === undefined) {
+            throw new Error('Required parameter dataspaceRequest was null or undefined when calling createDataspace.');
+        }
+
+        let localVarHeaders = this.defaultHeaders;
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'application/json'
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json'
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
+        }
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/api/ui/dataspaces`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<DataspaceResponse>('post', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                body: dataspaceRequest,
+                responseType: <any>responseType_,
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
+                reportProgress: reportProgress
+            }
+        );
     }
 
     /**
@@ -141,9 +210,9 @@ export class TenantOperationsService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public createServiceProvider(serviceProvider: ServiceProvider, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<ServiceProvider>;
-    public createServiceProvider(serviceProvider: ServiceProvider, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ServiceProvider>>;
-    public createServiceProvider(serviceProvider: ServiceProvider, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ServiceProvider>>;
+    public createServiceProvider(serviceProvider: ServiceProvider, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<ServiceProviderResponse>;
+    public createServiceProvider(serviceProvider: ServiceProvider, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ServiceProviderResponse>>;
+    public createServiceProvider(serviceProvider: ServiceProvider, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ServiceProviderResponse>>;
     public createServiceProvider(serviceProvider: ServiceProvider, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (serviceProvider === null || serviceProvider === undefined) {
             throw new Error('Required parameter serviceProvider was null or undefined when calling createServiceProvider.');
@@ -185,7 +254,7 @@ export class TenantOperationsService extends BaseService {
 
         let localVarPath = `/api/ui/service-providers`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<ServiceProvider>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<ServiceProviderResponse>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: serviceProvider,
@@ -286,9 +355,9 @@ export class TenantOperationsService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getDataspaces(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<Dataspace>>;
-    public getDataspaces(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<Dataspace>>>;
-    public getDataspaces(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<Dataspace>>>;
+    public getDataspaces(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<DataspaceResponse>>;
+    public getDataspaces(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<DataspaceResponse>>>;
+    public getDataspaces(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<DataspaceResponse>>>;
     public getDataspaces(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
@@ -318,7 +387,7 @@ export class TenantOperationsService extends BaseService {
 
         let localVarPath = `/api/ui/dataspaces`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<Array<Dataspace>>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<Array<DataspaceResponse>>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -407,9 +476,9 @@ export class TenantOperationsService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getParticipantDataspaces(serviceProviderId: number, tenantId: number, participantId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<Dataspace>>;
-    public getParticipantDataspaces(serviceProviderId: number, tenantId: number, participantId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<Dataspace>>>;
-    public getParticipantDataspaces(serviceProviderId: number, tenantId: number, participantId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<Dataspace>>>;
+    public getParticipantDataspaces(serviceProviderId: number, tenantId: number, participantId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<DataspaceResponse>>;
+    public getParticipantDataspaces(serviceProviderId: number, tenantId: number, participantId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<DataspaceResponse>>>;
+    public getParticipantDataspaces(serviceProviderId: number, tenantId: number, participantId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<DataspaceResponse>>>;
     public getParticipantDataspaces(serviceProviderId: number, tenantId: number, participantId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (serviceProviderId === null || serviceProviderId === undefined) {
             throw new Error('Required parameter serviceProviderId was null or undefined when calling getParticipantDataspaces.');
@@ -448,7 +517,7 @@ export class TenantOperationsService extends BaseService {
 
         let localVarPath = `/api/ui/service-providers/${this.configuration.encodeParam({name: "serviceProviderId", value: serviceProviderId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/tenants/${this.configuration.encodeParam({name: "tenantId", value: tenantId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/participants/${this.configuration.encodeParam({name: "participantId", value: participantId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/dataspaces`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<Array<Dataspace>>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<Array<DataspaceResponse>>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -538,9 +607,9 @@ export class TenantOperationsService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getServiceProviders(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<ServiceProvider>>;
-    public getServiceProviders(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<ServiceProvider>>>;
-    public getServiceProviders(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<ServiceProvider>>>;
+    public getServiceProviders(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<ServiceProviderResponse>>;
+    public getServiceProviders(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<ServiceProviderResponse>>>;
+    public getServiceProviders(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<ServiceProviderResponse>>>;
     public getServiceProviders(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
@@ -570,7 +639,7 @@ export class TenantOperationsService extends BaseService {
 
         let localVarPath = `/api/ui/service-providers`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<Array<ServiceProvider>>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<Array<ServiceProviderResponse>>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,

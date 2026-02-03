@@ -7,9 +7,11 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { Permission } from './permission';
 
 
-export interface ServiceProvider { 
-    name?: string;
+export interface PolicySet { 
+    permission?: Array<Permission>;
+    '@type'?: string;
 }
 

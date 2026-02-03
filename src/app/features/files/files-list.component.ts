@@ -65,7 +65,7 @@ export class FilesListComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    this.redlineUser = await this.authService.getRedlineUser();
+    this.redlineUser = this.authService.getRedlineUser();
     this.loadUseCases();
     await this.loadFiles();
 
@@ -134,9 +134,9 @@ export class FilesListComponent implements OnInit {
   }
 
   private async addToFiles(file: FileResource): Promise<void> {
-    const cx = (await firstValueFrom(this.dataspaceService.getDataspaces()))
-        .find(ds => ds.name.toLowerCase().includes('catena'));
-    if (!this.redlineUser || !cx) return ;
+    if (!this.redlineUser) return;
+    const cx = await this.dataspaceService.getCatenaDataspace(this.redlineUser);
+    if (!cx) return;
 
     const useCaseId = file.metadata?.['useCase'] as unknown as string;
     const partnerId = file.metadata?.['partnerId'] as unknown as string;

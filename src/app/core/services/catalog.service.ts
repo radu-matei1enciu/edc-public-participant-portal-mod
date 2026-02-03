@@ -22,9 +22,9 @@ export class CatalogService {
 
   public async getCatalogForAllPartners(): Promise<FileAsset[]> {
     const redlineUser = this.authService.getRedlineUser();
-    const catenaX = (await firstValueFrom(this.dataspaceService.getDataspaces()))
-        .find(ds => ds.name.toLowerCase().includes('catena'));
-    if (!redlineUser || !catenaX) return [];
+    if (!redlineUser) return [];
+    const catenaX = await this.dataspaceService.getCatenaDataspace(redlineUser)
+    if (!catenaX) return [];
     const partners = await firstValueFrom(this.tenantOperationsService.getPartners(
         redlineUser.providerId, redlineUser.tenantId, redlineUser.participantId, catenaX.id));
 
@@ -45,10 +45,10 @@ export class CatalogService {
 
   public async getPartnerCatalog(partner: PartnerReference): Promise<FileAsset[]> {
     const redlineUser = this.authService.getRedlineUser();
+    if (!redlineUser) return [];
+    const catenaX = await this.dataspaceService.getCatenaDataspace(redlineUser)
+    if (!catenaX) return [];
     const useCases = await firstValueFrom(this.useCaseService.getUseCases());
-    const catenaX = (await firstValueFrom(this.dataspaceService.getDataspaces()))
-        .find(ds => ds.name.toLowerCase().includes('catena'));
-    if (!redlineUser || !catenaX) return [];
     const catalog = await firstValueFrom(this.edcDataOperationsService.requestCatalog(
         redlineUser.providerId, redlineUser.tenantId, redlineUser.participantId,
         { counterPartyIdentifier: partner.identifier! }
@@ -78,9 +78,9 @@ export class CatalogService {
 
   public async matchContractsToFiles(files: FileAsset[]): Promise<FileAsset[]> {
     const redlineUser = this.authService.getRedlineUser();
-    const cx = (await firstValueFrom(this.dataspaceService.getDataspaces()))
-        .find(ds => ds.name.toLowerCase().includes('catena'));
-    if (!redlineUser || !cx) return files;
+    if (!redlineUser) return files;
+    const cx = await this.dataspaceService.getCatenaDataspace(redlineUser);
+    if (!cx) return files;
     const partners = (await firstValueFrom(this.partnerService.getPartners(
         redlineUser.providerId, redlineUser.tenantId, redlineUser.participantId, cx.id)));
     const contracts = await firstValueFrom(this.edcDataOperationsService.listContracts(

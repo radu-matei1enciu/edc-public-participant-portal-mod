@@ -58,9 +58,9 @@ export class FileDetailComponent implements OnInit {
     });
 
     const redlineUser = this.authService.getRedlineUser();
-    const cx = (await firstValueFrom(this.dataspaceService.getDataspaces()))
-        .find(ds => ds.name.toLowerCase().includes('catena'));
-    if (!redlineUser || !cx) return;
+    if (!redlineUser) return;
+    const cx = await this.dataspaceService.getCatenaDataspace(redlineUser);
+    if (!cx) return;
 
     this.authService.loadUserProfile().pipe(
       switchMap((profile) => {
