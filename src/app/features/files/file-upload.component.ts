@@ -213,7 +213,7 @@ export class FileUploadComponent implements OnInit {
       partnerId: uploadMetadata.partnerId,
       origin: 'owned'
     }
-    this.redlineUploadService.uploadFile(userIds.participantId, userIds.tenantId, userIds.providerId,
+    this.redlineUploadService.uploadFile(userIds.providerId, userIds.tenantId, userIds.participantId,
         publicMetadata,
         privateMetadata,
         this.selectedFiles[0],
