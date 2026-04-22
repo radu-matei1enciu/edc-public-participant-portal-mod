@@ -8,134 +8,190 @@ import { DataspaceService } from '../../core/services/dataspace.service';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../shared/services/notification.service';
 import { UserPreferencesService, UserPreferences } from '../../core/services/user-preferences.service';
-import { ConfigService } from '../../core/services/config.service';
 import { DataspaceResource } from '../../core/models/dataspace.model';
 import { UserProfile } from '../../core/models/participant.model';
 
 @Component({
-  selector: 'app-memberships-list',
-  standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
-  templateUrl: './memberships-list.component.html',
-  })
+    selector: 'app-memberships-list',
+    standalone: true,
+    imports: [CommonModule, RouterLink, ReactiveFormsModule],
+    templateUrl: './memberships-list.component.html',
+})
 export class MembershipsListComponent implements OnInit {
-  private dataspaceService = inject(DataspaceService);
-  private authService = inject(AuthService);
-  private notificationService = inject(NotificationService);
-  private preferencesService = inject(UserPreferencesService);
-  private configService = inject(ConfigService);
-  private destroyRef = inject(DestroyRef);
-  private fb = inject(FormBuilder);
+    private dataspaceService = inject(DataspaceService);
+    private authService = inject(AuthService);
+    private notificationService = inject(NotificationService);
+    private preferencesService = inject(UserPreferencesService);
+    private destroyRef = inject(DestroyRef);
+    private fb = inject(FormBuilder);
 
-  memberships: DataspaceResource[] = [];
-  filteredMemberships: DataspaceResource[] = [];
-  filterForm: FormGroup;
-  loading = false;
-  preferences$: Observable<UserPreferences>;
-  currentPage = 1;
-  itemsPerPage = 10;
-  userProfile: UserProfile | null = null;
-  participantId: number | null = null;
+    memberships: DataspaceResource[] = [];
+    filteredMemberships: DataspaceResource[] = [];
+    filterForm: FormGroup;
+    loading = false;
+    preferences$: Observable<UserPreferences>;
+    currentPage = 1;
+    itemsPerPage = 10;
+    userProfile: UserProfile | null = null;
+    participantId: number | null = null;
 
-  constructor() {
-    this.filterForm = this.fb.group({
-      searchTerm: ['']
-    });
-    this.preferences$ = this.preferencesService.preferences$;
-  }
+    showAddDialog = false;
+    joinableDataspaces: DataspaceResource[] = [];
+    joining = false;
 
-  ngOnInit(): void {
-    this.authService.loadUserProfile().subscribe({
-      next: (profile) => {
-        this.userProfile = profile;
-      },
-      error: () => {
-        this.notificationService.showError('Error', 'Failed to load user profile');
-      }
-    });
+    constructor() {
+        this.filterForm = this.fb.group({
+            searchTerm: ['']
+        });
+        this.preferences$ = this.preferencesService.preferences$;
+    }
 
-    this.preferences$.pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(prefs => {
-      this.itemsPerPage = prefs.defaultPageSize || 10;
-      this.currentPage = 1;
-    });
-
-    this.filterForm.get('searchTerm')?.valueChanges.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(() => {
-      this.applyFilters();
-    });
-
-    this.loading = true;
-    this.preferences$.pipe(
-      switchMap(prefs => {
-        const intervalMs = (prefs.autoRefreshInterval || 30) * 1000;
-        return interval(intervalMs).pipe(
-          startWith(0),
-          switchMap(() => {
-            const userIds = this.authService.getRedlineUser();
-            if (!userIds) {
-              return of([]);
+    ngOnInit(): void {
+        this.authService.loadUserProfile().subscribe({
+            next: (profile) => {
+                this.userProfile = profile;
+            },
+            error: () => {
+                this.notificationService.showError('Error', 'Failed to load user profile');
             }
-            return this.dataspaceService.getParticipantDataspaces(userIds.providerId, userIds.tenantId, userIds.participantId).pipe(
-              catchError(() => of([]))
+        });
+
+        this.preferences$.pipe(
+            takeUntilDestroyed(this.destroyRef)
+        ).subscribe(prefs => {
+            this.itemsPerPage = prefs.defaultPageSize || 10;
+            this.currentPage = 1;
+        });
+
+        this.filterForm.get('searchTerm')?.valueChanges.pipe(
+            debounceTime(300),
+            distinctUntilChanged(),
+            takeUntilDestroyed(this.destroyRef)
+        ).subscribe(() => {
+            this.applyFilters();
+        });
+
+        this.loading = true;
+        this.preferences$.pipe(
+            switchMap(prefs => {
+                const intervalMs = (prefs.autoRefreshInterval || 30) * 1000;
+                return interval(intervalMs).pipe(
+                    startWith(0),
+                    switchMap(() => {
+                        const userIds = this.authService.getRedlineUser();
+                        if (!userIds) {
+                            return of([] as DataspaceResource[]);
+                        }
+                        return this.dataspaceService.getTenantDataspaces(userIds.providerId, userIds.tenantId).pipe(
+                            catchError(() => of([] as DataspaceResource[]))
+                        );
+                    })
+                );
+            }),
+            takeUntilDestroyed(this.destroyRef)
+        ).subscribe({
+            next: (memberships: DataspaceResource[]) => {
+                this.memberships = memberships;
+                this.applyFilters();
+                this.loading = false;
+            },
+            error: () => {
+                this.loading = false;
+                this.notificationService.showError('Error', 'Failed to load memberships');
+            }
+        });
+    }
+
+    applyFilters(): void {
+        const searchTerm = this.filterForm.get('searchTerm')?.value?.toLowerCase() || '';
+        this.filteredMemberships = this.memberships.filter((m: DataspaceResource) => {
+            return !searchTerm ||
+                m.name.toLowerCase().includes(searchTerm) ||
+                (m.properties && m.properties.description?.toLowerCase().includes(searchTerm));
+        });
+        this.currentPage = 1;
+    }
+
+    getPaginatedMemberships(): DataspaceResource[] {
+        const start = (this.currentPage - 1) * this.itemsPerPage;
+        const end = start + this.itemsPerPage;
+        return this.filteredMemberships.slice(start, end);
+    }
+
+    getTotalPages(): number {
+        return Math.ceil(this.filteredMemberships.length / this.itemsPerPage);
+    }
+
+    previousPage(): void {
+        if (this.currentPage > 1) this.currentPage--;
+    }
+
+    nextPage(): void {
+        if (this.currentPage < this.getTotalPages()) this.currentPage++;
+    }
+
+    async openAddMembershipDialog(): Promise<void> {
+        const user = this.authService.getRedlineUser();
+        if (!user) {
+            this.notificationService.showError('Error', 'Not logged in');
+            return;
+        }
+
+        try {
+            const all = await new Promise<DataspaceResource[]>((resolve, reject) =>
+                this.dataspaceService.getDataspaces().subscribe({ next: resolve, error: reject })
             );
-          })
-        );
-      }),
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe({
-      next: (memberships) => {
-        this.memberships = memberships;
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-        this.notificationService.showError('Error', 'Failed to load memberships');
-      }
-    });
-  }
+            const mine = await new Promise<DataspaceResource[]>((resolve, reject) =>
+                this.dataspaceService
+                    .getTenantDataspaces(user.providerId, user.tenantId)
+                    .subscribe({ next: resolve, error: reject })
+            );
 
-  applyFilters(): void {
-    const searchTerm = this.filterForm.get('searchTerm')?.value?.toLowerCase() || '';
+            const mineIds = new Set(mine.map((d: DataspaceResource) => d.id));
+            this.joinableDataspaces = all.filter((d: DataspaceResource) => !mineIds.has(d.id));
 
-    this.filteredMemberships = this.memberships.filter(m => {
-      const matchesSearch = !searchTerm || 
-        m.name.toLowerCase().includes(searchTerm) ||
-        (m.properties && m.properties.description.toLowerCase().includes(searchTerm)) ||
-        (m.properties && m.properties.region.toLowerCase().includes(searchTerm)) ||
-        (m.properties && m.properties.protocol.toLowerCase().includes(searchTerm));
-      return matchesSearch;
-    });
+            if (this.joinableDataspaces.length === 0) {
+                this.notificationService.showInfo('Info', 'You are already a member of every available dataspace.');
+                return;
+            }
 
-    this.currentPage = 1;
-  }
-
-  getPaginatedMemberships(): DataspaceResource[] {
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    return this.filteredMemberships.slice(start, end);
-  }
-
-  getTotalPages(): number {
-    return Math.ceil(this.filteredMemberships.length / this.itemsPerPage);
-  }
-
-  previousPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
+            this.showAddDialog = true;
+        } catch {
+            this.notificationService.showError('Error', 'Failed to load available dataspaces');
+        }
     }
-  }
 
-  nextPage(): void {
-    if (this.currentPage < this.getTotalPages()) {
-      this.currentPage++;
+    closeAddDialog(): void {
+        this.showAddDialog = false;
+        this.joinableDataspaces = [];
     }
-  }
 
+    async joinAndDeploy(dataspace: DataspaceResource): Promise<void> {
+        const user = this.authService.getRedlineUser();
+        if (!user) {
+            this.notificationService.showError('Error', 'Not logged in');
+            return;
+        }
 
+        this.joining = true;
+        try {
+            await new Promise((resolve, reject) =>
+                this.dataspaceService
+                    .joinDataspace(user.providerId, user.tenantId, user.participantId, dataspace.id)
+                    .subscribe({ next: resolve, error: reject })
+            );
+
+            this.joining = false;
+            this.showAddDialog = false;
+            this.notificationService.showSuccess(
+                'Success',
+                `Joined ${dataspace.name} successfully.`
+            );
+
+            setTimeout(() => window.location.reload(), 1500);
+        } catch (err: any) {
+            this.joining = false;
+            this.notificationService.showError('Error', err?.error?.message || err?.message || 'Join failed');
+        }
+    }
 }

@@ -7,6 +7,9 @@ import { AuthService } from './core/services/auth.service';
 import { UserPreferencesService } from './core/services/user-preferences.service';
 import { ModalComponent } from './shared/components/modal/modal.component';
 import { NotificationsComponent } from './shared/services/notifications.component';
+import { HttpClient } from '@angular/common/http';
+import { ConfigService } from './core/services/config.service';
+import { SelectedParticipant } from './core/models/auth.model';
 
 @Component({
   selector: 'app-root',
@@ -21,7 +24,11 @@ export class App implements OnInit, OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private destroy$ = new Subject<void>();
-  
+  private http = inject(HttpClient);
+  private configService = inject(ConfigService);
+  availableParticipants: SelectedParticipant[] = [];
+  currentParticipantId: number | null = null;
+
   title = 'DataSpace Portal';
   isMobileMenuOpen = false;
   isUserMenuOpen = false;
@@ -34,8 +41,16 @@ export class App implements OnInit, OnDestroy {
       if (!target.closest('.dropdown-container')) {
         this.isUserMenuOpen = false;
         this.isNotificationsOpen = false;
+
       }
-    });
+            // Load the current tenant's participants for the in-app switcher.
+            this.loadTenantParticipants();
+
+// Reload the list whenever authentication state changes (e.g. after login or join).
+            this.authService.currentUser$.pipe(
+                takeUntil(this.destroy$)
+            ).subscribe(() => this.loadTenantParticipants());}
+    );
 
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd),
@@ -80,6 +95,47 @@ export class App implements OnInit, OnDestroy {
     
     this.preferencesService.updatePreferences({ theme: newTheme });
   }
+
+    private loadTenantParticipants(): void {
+        const user = this.authService.getRedlineUser();
+        if (!user) {
+            this.availableParticipants = [];
+            this.currentParticipantId = null;
+            return;
+        }
+        this.currentParticipantId = user.participantId;
+
+        const apiUrl = this.configService.config?.apiUrl || '';
+        this.http.get<any>(
+            `${apiUrl}/service-providers/${user.providerId}/tenants/${user.tenantId}`
+        ).subscribe({
+            next: (tenant) => {
+                this.availableParticipants = (tenant.participants || []).map((p: any) => ({
+                    tenantId: tenant.id,
+                    participantId: p.id,
+                    tenantName: tenant.name,
+                    participantIdentifier: p.identifier,
+                    tenantProperties: tenant.properties
+                }));
+            },
+            error: () => { this.availableParticipants = []; }
+        });
+    }
+
+    switchParticipant(participant: SelectedParticipant): void {
+        if (participant.participantId === this.currentParticipantId) {
+            this.isUserMenuOpen = false;
+            return;
+        }
+        this.authService.setSelectedParticipant(participant);
+        window.location.reload();
+    }
+
+    participantShortLabel(p: SelectedParticipant): string {
+        // Take the last colon-separated segment of the DID — more readable than the full DID.
+        const id = p.participantIdentifier || '';
+        return id.split(':').pop() || id;
+    }
 
   toggleMobileMenu(): void {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
