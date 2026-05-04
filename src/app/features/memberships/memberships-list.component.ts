@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Observable, interval, startWith, switchMap, catchError, of, debounceTime, distinctUntilChanged } from 'rxjs';
 import { DataspaceService } from '../../core/services/dataspace.service';
@@ -24,6 +24,7 @@ export class MembershipsListComponent implements OnInit {
     private preferencesService = inject(UserPreferencesService);
     private destroyRef = inject(DestroyRef);
     private fb = inject(FormBuilder);
+    private router = inject(Router);
 
     memberships: DataspaceResource[] = [];
     filteredMemberships: DataspaceResource[] = [];
@@ -166,32 +167,28 @@ export class MembershipsListComponent implements OnInit {
         this.joinableDataspaces = [];
     }
 
-    async joinAndDeploy(dataspace: DataspaceResource): Promise<void> {
+    // Navigate to registration in join mode instead of calling the API directly.
+    // The registration component will handle the actual join + deploy flow,
+    // then redirect back to /memberships on completion.
+    joinAndDeploy(dataspace: DataspaceResource): void {
         const user = this.authService.getRedlineUser();
         if (!user) {
             this.notificationService.showError('Error', 'Not logged in');
             return;
         }
 
-        this.joining = true;
-        try {
-            await new Promise((resolve, reject) =>
-                this.dataspaceService
-                    .joinDataspace(user.providerId, user.tenantId, user.participantId, dataspace.id)
-                    .subscribe({ next: resolve, error: reject })
-            );
+        this.closeAddDialog();
 
-            this.joining = false;
-            this.showAddDialog = false;
-            this.notificationService.showSuccess(
-                'Success',
-                `Joined ${dataspace.name} successfully.`
-            );
+        // Pass the company name from the current user profile so it can be pre-filled
+        // and locked in the registration form (step 3).
+        const companyName = this.authService.getSelectedParticipant()?.tenantName || '';
 
-            setTimeout(() => window.location.reload(), 1500);
-        } catch (err: any) {
-            this.joining = false;
-            this.notificationService.showError('Error', err?.error?.message || err?.message || 'Join failed');
-        }
+        this.router.navigate(['/registration'], {
+            queryParams: {
+                mode: 'join',
+                dataspaceId: dataspace.id,
+                companyName: companyName
+            }
+        });
     }
 }
