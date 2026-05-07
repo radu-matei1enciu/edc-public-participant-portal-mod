@@ -81,25 +81,31 @@ export class CatalogService {
                     }
                 }
             } catch {
-                // non-fatal — skip this dataspace's partners if fetch fails
             }
         }
 
         return allPartners;
     }
 
-    public async getPartnerCatalog(partner: PartnerReference): Promise<FileAsset[]> {
+    /**
+     * Fetches the EDC catalog from a specific partner's connector.
+     *
+     * The `dataspaceLabel` parameter is optional — when the explore-list component
+     * calls this directly it has already resolved the label via partnerDataspaceMap
+     * and will overwrite file.dataspace afterwards. Passing it here avoids a second
+     * call to getActiveDataspace() which could fail and break the entire catalog fetch.
+     */
+    public async getPartnerCatalog(partner: PartnerReference, dataspaceLabel?: string): Promise<FileAsset[]> {
         const redlineUser = this.authService.getRedlineUser();
         if (!redlineUser) return [];
 
-        // Use the active dataspace for display label — fall back gracefully
-        const activeDs = await this.dataspaceService.getActiveDataspace(redlineUser).catch(() => null);
-
         const useCases = await firstValueFrom(this.useCaseService.getUseCases());
+
         const catalog = await firstValueFrom(this.edcDataOperationsService.requestCatalog(
             redlineUser.providerId, redlineUser.tenantId, redlineUser.participantId,
             { counterPartyIdentifier: partner.identifier! }
         ));
+
         if (catalog.dataset) {
             return catalog.dataset.map(ds => {
                 const useCaseId = ds["edc:properties"]?.["edc:useCase"] as unknown as string;
@@ -112,12 +118,14 @@ export class CatalogService {
                     id: ds["edc:properties"]?.["edc:fileId"] ?? 'N/A',
                     origin: "remote",
                     uploadedAt: 'N/A',
-                    dataspace: activeDs?.name,
+                    // Use the passed label if available, otherwise leave undefined —
+                    // the explore-list component will fill it in from partnerDataspaceMap
+                    dataspace: dataspaceLabel,
                     catalogDataset: ds,
                     partnerName: partner.nickname,
                     partnerDid: partner.identifier,
                     assetId: ds["edc:properties"]?.["edc:assetId"] as unknown as string
-                } as FileAsset
+                } as FileAsset;
             });
         }
         return [];

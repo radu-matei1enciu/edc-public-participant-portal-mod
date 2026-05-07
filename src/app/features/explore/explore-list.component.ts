@@ -13,7 +13,6 @@ import {UserProfile} from '../../core/models/participant.model';
 import {EDCDataOperationsService, PartnerReference, TenantOperationsService} from "../../core/redline";
 import {RedlineUser} from "../../core/models/redline-user.model";
 import {DataspaceService} from "../../core/services/dataspace.service";
-import {DataspaceResource} from "../../core/models/dataspace.model";
 import {CatalogService} from "../../core/services/catalog.service";
 import {TransferService} from "../../core/services/transfer.service";
 
@@ -30,11 +29,11 @@ export class ExploreListComponent implements OnInit {
     private preferencesService = inject(UserPreferencesService);
     private destroyRef = inject(DestroyRef);
     private fb = inject(FormBuilder);
-    private readonly tenantOperationsService = inject(TenantOperationsService)
-    private readonly edcDataOperationsService = inject(EDCDataOperationsService)
-    private readonly dataspaceService = inject(DataspaceService)
-    private readonly catalogService = inject(CatalogService)
-    private readonly transferService = inject(TransferService)
+    private readonly tenantOperationsService = inject(TenantOperationsService);
+    private readonly edcDataOperationsService = inject(EDCDataOperationsService);
+    private readonly dataspaceService = inject(DataspaceService);
+    private readonly catalogService = inject(CatalogService);
+    private readonly transferService = inject(TransferService);
 
     files: FileAsset[] = [];
     filteredFiles: FileAsset[] = [];
@@ -48,8 +47,7 @@ export class ExploreListComponent implements OnInit {
     redlineUser?: RedlineUser;
     requestingAccess: string | null = null;
     requestingTransfer?: string;
-    catenaX?: DataspaceResource;
-    partners?: PartnerReference[];
+    partners: PartnerReference[] = [];
     partnerDataspaceMap = new Map<string, string>();
     useCaseFilter?: string;
     companyFilter?: string;
@@ -68,37 +66,52 @@ export class ExploreListComponent implements OnInit {
         this.redlineUser = this.authService.getRedlineUser();
         if (!this.redlineUser) {
             this.notificationService.showError('Error', 'Failed to get user information');
-            console.error('Redline user is undefined');
             return;
         }
 
-        this.catenaX = await this.dataspaceService.getCatenaDataspace(this.redlineUser);
-        if (!this.catenaX) {
-            console.error('No Catena-X dataspace found');
+        // Load all dataspaces this participant belongs to
+        let allDataspaces = [];
+        try {
+            allDataspaces = await firstValueFrom(
+                this.dataspaceService.getParticipantDataspaces(
+                    this.redlineUser.providerId,
+                    this.redlineUser.tenantId,
+                    this.redlineUser.participantId
+                )
+            );
+        } catch {
+            this.notificationService.showError('Error', 'Failed to load dataspaces');
             return;
         }
 
-        // Fetch all dataspaces this participant belongs to using DataspaceService
-        const allDataspaces = await firstValueFrom(
-            this.dataspaceService.getParticipantDataspaces(
-                this.redlineUser.providerId, this.redlineUser.tenantId, this.redlineUser.participantId));
+        if (allDataspaces.length === 0) {
+            this.notificationService.showError('Error', 'You are not a member of any dataspace');
+            return;
+        }
 
         const seen = new Set<string>();
         const mergedPartners: PartnerReference[] = [];
 
         for (const dataspace of allDataspaces) {
-            const dsPartners = await firstValueFrom(
-                this.tenantOperationsService.getPartners(
-                    this.redlineUser!.providerId!, this.redlineUser!.tenantId!,
-                    this.redlineUser!.participantId!, dataspace.id!
-                )) as PartnerReference[];
-            for (const p of dsPartners) {
-                if (!seen.has(p.identifier!)) {
-                    seen.add(p.identifier!);
-                    mergedPartners.push(p);
-                    // Track which dataspace each partner belongs to for the Dataspace column
-                    this.partnerDataspaceMap.set(p.identifier!, dataspace.name ?? 'N/A');
+            try {
+                const dsPartners = await firstValueFrom(
+                    this.tenantOperationsService.getPartners(
+                        this.redlineUser.providerId,
+                        this.redlineUser.tenantId,
+                        this.redlineUser.participantId,
+                        dataspace.id
+                    )
+                ) as PartnerReference[];
+
+                for (const p of dsPartners) {
+                    if (p.identifier && !seen.has(p.identifier)) {
+                        seen.add(p.identifier);
+                        mergedPartners.push(p);
+                        this.partnerDataspaceMap.set(p.identifier, dataspace.name ?? 'N/A');
+                    }
                 }
+            } catch {
+                // Non-fatal — skip this dataspace's partners if fetch fails
             }
         }
 
@@ -133,30 +146,30 @@ export class ExploreListComponent implements OnInit {
 
     loadUseCases(): void {
         this.useCaseService.getUseCases().subscribe({
-            next: (useCases) => {
-                this.useCases = useCases;
-            },
-            error: () => {
-                this.useCases = [];
-            }
+            next: (useCases) => { this.useCases = useCases; },
+            error: () => { this.useCases = []; }
         });
     }
 
     async loadFiles(): Promise<void> {
-        if (!this.redlineUser || !this.catenaX || !this.partners) return;
+        if (!this.redlineUser || this.partners.length === 0) {
+            this.applyFilters();
+            return;
+        }
+
         this.files = this.filteredFiles = [];
         this.loading = true;
+
         try {
-            // Call getPartnerCatalog directly for each partner in this.partners.
-            // this.partners contains partners from ALL dataspaces so both Catena-X
-            // and Bike-X provider files are fetched. catalog.service.ts is unchanged.
             const catalogResults = await Promise.allSettled(
                 this.partners.map(partner => this.catalogService.getPartnerCatalog(partner))
             );
+
             catalogResults
                 .filter((r): r is PromiseFulfilledResult<FileAsset[]> => r.status === 'fulfilled')
                 .forEach(r => r.value.forEach(file => {
-                    // Fix the dataspace label using the partner to dataspace mapping
+                    // Override the dataspace label with the one we resolved from the
+                    // partner→dataspace map — more reliable than getActiveDataspace()
                     if (file.partnerDid && this.partnerDataspaceMap.has(file.partnerDid)) {
                         file.dataspace = this.partnerDataspaceMap.get(file.partnerDid);
                     }
@@ -165,7 +178,7 @@ export class ExploreListComponent implements OnInit {
 
             await this.catalogService.matchContractsToFiles(this.files);
             this.files = this.files.sort((a, b) => a.name.localeCompare(b.name));
-        } catch(error) {
+        } catch (error) {
             this.notificationService.showError('Error', (error as Error).message);
         } finally {
             this.applyFilters();
@@ -176,12 +189,12 @@ export class ExploreListComponent implements OnInit {
     applyFilters(): void {
         this.filteredFiles = [...this.files];
         if (this.searchText) {
-            this.filteredFiles = this.filteredFiles.filter(file => {
-                return file.name.toLowerCase().includes(this.searchText!) ||
-                    file.useCase?.toLowerCase().includes(this.searchText!) ||
-                    file.type?.toLowerCase().includes(this.searchText!) ||
-                    file.partnerName?.toLowerCase().includes(this.searchText!)
-            })
+            this.filteredFiles = this.filteredFiles.filter(file =>
+                file.name.toLowerCase().includes(this.searchText!) ||
+                file.useCase?.toLowerCase().includes(this.searchText!) ||
+                file.type?.toLowerCase().includes(this.searchText!) ||
+                file.partnerName?.toLowerCase().includes(this.searchText!)
+            );
         }
         if (this.useCaseFilter && this.useCaseFilter !== 'All Use Cases') {
             this.filteredFiles = this.filteredFiles.filter(file => file.useCase === this.useCaseFilter);
@@ -202,15 +215,11 @@ export class ExploreListComponent implements OnInit {
     }
 
     previousPage(): void {
-        if (this.currentPage > 1) {
-            this.currentPage--;
-        }
+        if (this.currentPage > 1) this.currentPage--;
     }
 
     nextPage(): void {
-        if (this.currentPage < this.getTotalPages()) {
-            this.currentPage++;
-        }
+        if (this.currentPage < this.getTotalPages()) this.currentPage++;
     }
 
     hasAccess(file: FileAsset): boolean {
@@ -218,56 +227,61 @@ export class ExploreListComponent implements OnInit {
     }
 
     async requestAccess(file: FileAsset): Promise<void> {
-        if (!this.redlineUser || !file.partnerDid || !file.catalogDataset || !file.catalogDataset["edc:properties"]) {
-            console.error('missing data');
-            this.notificationService.showError('Error', 'Missing Data');
+        if (!this.redlineUser || !file.partnerDid || !file.catalogDataset?.["edc:properties"]) {
+            this.notificationService.showError('Error', 'Missing data');
             return;
         }
-
         if (!file.catalogDataset["edc:properties"]["edc:assetId"]) {
-            console.error('missing assest id');
             this.notificationService.showError('Error', 'Missing asset ID');
             return;
         }
         if (!file.catalogDataset.hasPolicy) {
-            console.error('missing offers');
             this.notificationService.showError('Error', 'This file has no data sharing offers');
             return;
         }
 
         this.requestingAccess = file.id;
-        const negotiationId = await firstValueFrom(this.edcDataOperationsService.requestContract(
-            this.redlineUser.providerId,
-            this.redlineUser.tenantId,
-            this.redlineUser.participantId,
-            {
-                assetId: file.catalogDataset["edc:properties"]["edc:assetId"] as unknown as string,
-                providerId: file.partnerDid,
-                offerId: file.catalogDataset.hasPolicy?.at(0)?.["@id"],
-                permissions: file.catalogDataset.hasPolicy!.at(0)!.permission!.flatMap(pm => pm.constraint ?? [])
-            },
-            "body", false, {httpHeaderAccept: "text/plain"}
-        ))
 
-        let negotiationState = '';
-        const startTime = Date.now();
-        const maxWaitTime = 30000;
-        while (negotiationState !== 'FINALIZED' && Date.now() - startTime < maxWaitTime) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            negotiationState = (await firstValueFrom(this.edcDataOperationsService.getContractNegotiation(
+        try {
+            const negotiationId = await firstValueFrom(this.edcDataOperationsService.requestContract(
                 this.redlineUser.providerId,
                 this.redlineUser.tenantId,
                 this.redlineUser.participantId,
-                negotiationId
-            ))).state ?? '';
+                {
+                    assetId: file.catalogDataset["edc:properties"]["edc:assetId"] as unknown as string,
+                    providerId: file.partnerDid,
+                    offerId: file.catalogDataset.hasPolicy?.at(0)?.["@id"],
+                    permissions: file.catalogDataset.hasPolicy!.at(0)!.permission!.flatMap(pm => pm.constraint ?? [])
+                },
+                "body", false, { httpHeaderAccept: "text/plain" }
+            ));
+
+            let negotiationState = '';
+            const startTime = Date.now();
+            const maxWaitTime = 30000;
+
+            while (negotiationState !== 'FINALIZED' && Date.now() - startTime < maxWaitTime) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                negotiationState = (await firstValueFrom(this.edcDataOperationsService.getContractNegotiation(
+                    this.redlineUser.providerId,
+                    this.redlineUser.tenantId,
+                    this.redlineUser.participantId,
+                    negotiationId
+                ))).state ?? '';
+            }
+
+            if (negotiationState === 'FINALIZED') {
+                this.notificationService.showSuccess('Success', 'Access granted');
+                await this.catalogService.matchContractsToFiles(this.files);
+                this.applyFilters();
+            } else {
+                this.notificationService.showError('Error', `Negotiation timed out in state: ${negotiationState}`);
+            }
+        } catch (error) {
+            this.notificationService.showError('Error', (error as Error).message || 'Failed to request access');
+        } finally {
+            this.requestingAccess = null;
         }
-        if (negotiationState === 'FINALIZED') {
-            this.notificationService.showSuccess('Success', 'Access granted');
-            await this.catalogService.matchContractsToFiles(this.files);
-        } else {
-            this.notificationService.showError('Error', `Failed to request access. Negotiation state: ${negotiationState}`);
-        }
-        this.requestingAccess = null;
     }
 
     async requestTransferAndDownload(file: FileAsset): Promise<void> {
@@ -275,5 +289,4 @@ export class ExploreListComponent implements OnInit {
         await this.transferService.requestTransferAndDownload(file);
         this.requestingTransfer = undefined;
     }
-
 }
