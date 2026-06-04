@@ -3,7 +3,7 @@
   <div class="mb-8">
     <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Discover Data</h1>
     <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-      Explore and discover remote files from the ecosystem
+      Explore and discover data from the ecosystem
     </p>
   </div>
 
@@ -75,7 +75,7 @@
                   Name
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  File Type
+                  Data Type
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Use Case
@@ -140,18 +140,14 @@
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         @if (hasAccess(file)) {
-                          <button (click)="requestTransferAndDownload(file)"
-                                  class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-300 dark:hover:bg-primary-900/50 transition-colors duration-200 disabled:opacity-50">
-                            @if (requestingTransfer === file.id) {
-                              <div class="w-3 h-3 mr-1.5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                              Transferring...
-                            } @else {
-                              <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                              </svg>
-                              Download
-                            }
-                          </button>
+                          <a [routerLink]="['/files/view', file.assetId]"
+                             class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-300 dark:hover:bg-primary-900/50 transition-colors duration-200">
+                            <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                            View Data
+                          </a>
                         } @else {
                           <button
                             (click)="requestAccess(file)"
@@ -177,7 +173,7 @@
                       <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                       </svg>
-                      <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No files found</h3>
+                      <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No data found</h3>
                       <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                         Try adjusting your search criteria or filters.
                       </p>

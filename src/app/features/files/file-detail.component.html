@@ -5,7 +5,7 @@
       <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
       </svg>
-      Back to Files
+      Back to Data
     </button>
   </div>
 
@@ -69,7 +69,7 @@
                 }
               </div>
               <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">File Type</dt>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Data Type</dt>
                 <dd class="px-2 inline-flex text-xs leading-5 font-medium rounded bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
                   {{ file.name.split('.')[1] | uppercase }}
                 </dd>
@@ -153,7 +153,7 @@
             } @else {
               <div class="mt-6">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Access Restrictions</h3>
-                <div class="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200">
+                <div class="rounded-md border border-blue-200 bg-primary-50 px-4 py-3 text-sm text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200">
                   This file is shared with all members of the ecosystem.
                 </div>
               </div>
@@ -217,7 +217,7 @@
                             {{ agreement.createdAt ? (agreement.createdAt | date: DATE_FORMATS.dateWithTime) : 'N/A' }}
                           </td>
                           <td class="w-1/3 px-6 py-4">
-                            <div class="text-sm inline-flex px-2 rounded bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                            <div class="text-sm inline-flex px-2 rounded bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200">
                               {{ agreement.partnerName }}
                             </div>
                           </td>
@@ -266,7 +266,7 @@
                             {{ transaction.timestamp ? (transaction.timestamp | date: DATE_FORMATS.dateWithTime) : 'N/A' }}
                           </td>
                           <td class="w-1/3 px-6 py-4">
-                            <div class="text-sm inline-flex px-2 rounded bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                            <div class="text-sm inline-flex px-2 rounded bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200">
                               {{ transaction.partnerName }}
                             </div>
                           </td>
@@ -307,7 +307,7 @@
         <div class="mt-6">
           <button type="button" (click)="goBack()"
                   class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
-            Back to Files
+            Back to Data
           </button>
         </div>
       </div>

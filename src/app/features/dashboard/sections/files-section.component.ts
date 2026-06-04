@@ -1,163 +1,107 @@
 import { Component, Input, Output, EventEmitter, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { FileAssetService } from '../../../core/services/file-asset.service';
 import { FileAsset } from '../../../core/models/file-asset.model';
 import { UseCase } from '../../../core/models/use-case.model';
 import { NotificationService } from '../../../shared/services/notification.service';
-import {DATE_FORMATS} from "../../../shared/utils/format.utils";
+import { EndpointService } from '../../../core/services/endpoint.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { DATE_FORMATS } from '../../../shared/utils/format.utils';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
-  selector: 'app-files-section',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './files-section.component.html',
-  })
+    selector: 'app-files-section',
+    standalone: true,
+    imports: [CommonModule, ReactiveFormsModule],
+    templateUrl: './files-section.component.html'
+})
 export class FilesSectionComponent implements OnInit {
-  @Input() participantId: number | null = null;
-  @Input() useCases: UseCase[] = [];
-  @Output() viewDetails = new EventEmitter<string>();
-  @Output() uploadFile = new EventEmitter<string>();
+    @Input() participantId: number | null = null;
+    @Input() useCases: UseCase[] = [];
+    @Output() viewDetails = new EventEmitter<string>();
+    @Output() uploadFile  = new EventEmitter<string>();
 
-  files: FileAsset[] = [];
-  loading = false;
-  filterForm!: FormGroup;
-  uploadForm!: FormGroup;
-  showExploreSelection = false;
-  showUploadDialog = false;
-  uploadStep = 1;
-  selectedFiles: File[] = [];
-  uploading = false;
+    files: FileAsset[] = [];
+    loading = false;
 
-  private fileAssetService = inject(FileAssetService);
-  private notificationService = inject(NotificationService);
-  private fb = inject(FormBuilder);
+    // ── Dialog state — kept for template compatibility ─────────────────────
+    // The inline upload dialog is never shown (showUploadDialog always false).
+    // "Share Data" action navigates to /files/upload.
+    showExploreSelection = false;
+    showUploadDialog     = false;
+    uploadStep           = 1;
+    selectedFiles: File[] = [];
+    uploading            = false;
+    filterForm!: FormGroup;
+    uploadForm!: FormGroup;
 
-  ngOnInit(): void {
-    this.filterForm = this.fb.group({
-      searchQuery: [''],
-      selectedUseCase: [''],
-      selectedOrigin: ['']
-    });
+    private endpointService     = inject(EndpointService);
+    private authService         = inject(AuthService);
+    private notificationService = inject(NotificationService);
+    private router              = inject(Router);
+    private fb                  = inject(FormBuilder);
 
-    this.uploadForm = this.fb.group({
-      useCase: [''],
-      partnerId: ['']
-    });
-
-    this.filterForm.valueChanges.subscribe(() => {
-      this.loadFiles();
-    });
-
-    if (this.participantId) {
-      this.loadFiles();
-    }
-  }
-
-  loadFiles(): void {
-    if (!this.participantId) return;
-    this.loading = true;
-    const formValue = this.filterForm.value;
-    const selectedOrigin = formValue.selectedOrigin;
-    this.fileAssetService.getFiles(this.participantId, {
-      search: formValue.searchQuery || undefined,
-      useCase: formValue.selectedUseCase || undefined,
-      origin: selectedOrigin === 'owned' || selectedOrigin === 'remote' ? selectedOrigin : undefined
-    }).subscribe({
-      next: (files) => {
-        this.files = files;
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-        this.notificationService.showError('Error', 'Failed to load files');
-      }
-    });
-  }
-
-
-  viewFileDetails(fileId: string): void {
-    this.viewDetails.emit(fileId);
-  }
-
-  openUploadDialog(): void {
-    this.showExploreSelection = false;
-    this.showUploadDialog = true;
-    this.uploadStep = 1;
-    this.selectedFiles = [];
-    this.uploadForm.reset();
-  }
-
-  closeUploadDialog(): void {
-    this.showUploadDialog = false;
-    this.uploadStep = 1;
-    this.selectedFiles = [];
-    this.uploadForm.reset();
-  }
-
-  closeExploreSelection(): void {
-    this.showExploreSelection = false;
-  }
-
-  openSearchDialog(): void {
-    this.showExploreSelection = false;
-    this.uploadFile.emit('explore');
-  }
-
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files) {
-      this.selectedFiles = Array.from(input.files);
-    }
-  }
-
-  nextStep(): void {
-    if (this.canProceed()) {
-      this.uploadStep++;
-    }
-  }
-
-  previousStep(): void {
-    if (this.uploadStep > 1) {
-      this.uploadStep--;
-    }
-  }
-
-  canProceed(): boolean {
-    if (this.uploadStep === 1) {
-      return this.selectedFiles.length > 0;
-    }
-    if (this.uploadStep === 2) {
-      return !!this.uploadForm.get('useCase')?.value;
-    }
-    return true;
-  }
-
-  uploadFiles(): void {
-    if (this.selectedFiles.length === 0 || !this.participantId) return;
-
-    this.uploading = true;
-    const uploadMetadata = this.uploadForm.value;
-
-    this.fileAssetService.uploadFiles(this.participantId, this.selectedFiles, uploadMetadata).subscribe({
-      next: () => {
-        this.uploading = false;
-        this.closeUploadDialog();
+    ngOnInit(): void {
+        this.filterForm = this.fb.group({ searchQuery: [''], selectedUseCase: [''], selectedOrigin: [''] });
+        this.uploadForm = this.fb.group({ useCase: [''], partnerId: [''] });
         this.loadFiles();
-        this.notificationService.showSuccess('Success', 'Files uploaded successfully');
-      },
-      error: () => {
-        this.uploading = false;
-        this.notificationService.showError('Error', 'Failed to upload files');
-      }
-    });
-  }
+    }
 
-  getUseCaseLabel(useCaseId?: string): string {
-    if (!useCaseId) return 'N/A';
-    const useCase = this.useCases.find(uc => uc.id === useCaseId);
-    return useCase ? useCase.label : useCaseId;
-  }
+    loadFiles(): void {
+        const user = this.authService.getRedlineUser();
+        if (!user) return;
+        this.loading = true;
+        firstValueFrom(
+            this.endpointService.listEndpoints(user.providerId, user.tenantId, user.participantId)
+        ).then(endpoints => {
+            this.files = endpoints.map(ep => ({
+                id:          ep.assetId,
+                name:        ep.name,
+                assetId:     ep.assetId,
+                description: ep.endpointUrl,
+                origin:      'owned' as const,
+                uploadedAt:  (ep.metadata?.['registeredAt'] as string) ?? new Date().toISOString()
+            }));
+        }).catch(() => {
+            this.notificationService.showError('Error', 'Failed to load data endpoints');
+        }).finally(() => { this.loading = false; });
+    }
 
-  protected readonly DATE_FORMATS = DATE_FORMATS;
+    viewFileDetails(fileId: string): void { this.viewDetails.emit(fileId); }
+
+    // Navigate to /files/upload instead of showing inline dialog
+    openUploadDialog(): void {
+        this.showExploreSelection = false;
+        this.router.navigate(['/files/upload']);
+    }
+
+    closeUploadDialog(): void   { this.showUploadDialog = false; }
+    closeExploreSelection(): void { this.showExploreSelection = false; }
+
+    openSearchDialog(): void {
+        this.showExploreSelection = false;
+        this.uploadFile.emit('explore');
+    }
+
+    // Stubs — dialog is never shown but template references these
+    onFileSelected(_event: Event): void { /* no file upload */ }
+
+    nextStep(): void     { if (this.uploadStep < 3) this.uploadStep++; }
+    previousStep(): void { if (this.uploadStep > 1) this.uploadStep--; }
+
+    canProceed(): boolean { return true; }
+
+    uploadFiles(): void {
+        // Redirect to the proper upload page instead of inline upload
+        this.closeUploadDialog();
+        this.router.navigate(['/files/upload']);
+    }
+
+    getUseCaseLabel(useCaseId?: string): string {
+        if (!useCaseId) return 'N/A';
+        return this.useCases.find(uc => uc.id === useCaseId)?.label ?? useCaseId;
+    }
+
+    protected readonly DATE_FORMATS = DATE_FORMATS;
 }

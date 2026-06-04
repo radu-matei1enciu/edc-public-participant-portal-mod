@@ -2,7 +2,7 @@
     <div class="bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <div class="flex justify-between items-center">
-                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Upload Files</h2>
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Share Data</h2>
                 <button (click)="closeUpload()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -49,28 +49,61 @@
 
         <div class="px-6 py-6">
 
-            <!-- Step 1: Select File -->
+            <!-- Step 1: Endpoint Details -->
             @if (uploadStep === 1) {
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select File</label>
-                        <input
-                                type="file"
-                                multiple
-                                (change)="onFileSelected($event)"
-                                class="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-primary-900 dark:file:text-primary-200">
+                <div class="space-y-5">
+                    <!-- Use-case info banner -->
+                    <div class="rounded-lg border border-primary-200 bg-primary-50 dark:bg-primary-900/20 dark:border-primary-800 px-4 py-3 flex items-start space-x-3">
+                        <svg class="w-5 h-5 text-primary-600 dark:text-primary-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <p class="text-xs text-primary-700 dark:text-primary-300">
+                            Register a live data endpoint. UCB partners with access will be able to query this URL in real time — no static file upload required.
+                        </p>
                     </div>
-                    @if (selectedFiles.length > 0) {
-                        <div class="mt-4 border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
-                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Selected File:</p>
-                            <ul class="space-y-2">
-                                @for (file of selectedFiles; track file.name) {
-                                    <li class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 p-2 rounded">
-                                        <span>{{ file.name }}</span>
-                                        <span class="text-xs text-gray-500">{{ formatFileSize(file.size) }}</span>
-                                    </li>
-                                }
-                            </ul>
+
+                    <!-- Endpoint Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Endpoint Name <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            [formControl]="endpointNameControl"
+                            placeholder="e.g. PharmaLab QC Results"
+                            class="w-full px-3 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition">
+                        @if (endpointNameControl.invalid && endpointNameControl.touched) {
+                            <p class="mt-1 text-xs text-red-500">Name is required.</p>
+                        }
+                    </div>
+
+                    <!-- Endpoint URL -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Endpoint URL <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="url"
+                            [formControl]="endpointUrlControl"
+                            placeholder="http://dp.localhost/app/public/api/qc/qcresults"
+                            class="w-full px-3 py-2.5 text-sm font-mono border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition">
+                        @if (endpointUrlControl.invalid && endpointUrlControl.touched) {
+                            <p class="mt-1 text-xs text-red-500">A valid URL is required.</p>
+                        }
+                        <p class="mt-1.5 text-xs text-gray-400">
+                            The URL of the live data source (e.g. your LIMS API). This will be registered as an EDC asset.
+                        </p>
+                    </div>
+
+                    <!-- Preview -->
+                    @if (endpointUrlControl.value && endpointNameControl.value) {
+                        <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4">
+                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Preview</p>
+                            <div class="flex items-center space-x-2">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary-100 text-primary-700">LIVE</span>
+                                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ endpointNameControl.value }}</span>
+                            </div>
+                            <p class="mt-1 text-xs font-mono text-gray-500 break-all">{{ endpointUrlControl.value }}</p>
                         </div>
                     }
                 </div>
@@ -131,20 +164,7 @@
                         <input type="hidden" formControlName="dataspaceId">
                     </div>
 
-                    <!-- File reminder -->
-                    @if (selectedFiles.length > 0) {
-                        <div class="mt-4 border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
-                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Selected File(s):</p>
-                            <ul class="space-y-2">
-                                @for (file of selectedFiles; track file.name) {
-                                    <li class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 p-2 rounded">
-                                        <span>{{ file.name }}</span>
-                                        <span class="text-xs text-gray-500">{{ formatFileSize(file.size) }}</span>
-                                    </li>
-                                }
-                            </ul>
-                        </div>
-                    }
+                    <!-- Data reminder -->
                 </div>
             }
 
@@ -163,7 +183,7 @@
                     }
 
                     @if (!uploadForm.get('partnerId')?.value) {
-                        <div class="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200">
+                        <div class="rounded-md border border-blue-200 bg-primary-50 px-4 py-3 text-sm text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200">
                             If you don't select a partner, this file will be available to all members of <strong>{{ getSelectedDataspace()?.name }}</strong>.
                         </div>
                     }
@@ -197,44 +217,30 @@
             @if (uploadStep === 4) {
                 <div class="space-y-4">
                     <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
-                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Upload Summary:</h4>
-                        <div class="space-y-3">
-                            @for (preview of filePreviewData; track preview.name) {
-                                <div class="bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700">
-                                    <div class="grid grid-cols-2 gap-2 text-sm">
-                                        <div>
-                                            <span class="font-medium text-gray-700 dark:text-gray-300">Name:</span>
-                                            <span class="ml-2 text-gray-600 dark:text-gray-400">{{ preview.name }}</span>
-                                        </div>
-                                        <div>
-                                            <span class="font-medium text-gray-700 dark:text-gray-300">Size:</span>
-                                            <span class="ml-2 text-gray-600 dark:text-gray-400">{{ formatFileSize(preview.size) }}</span>
-                                        </div>
-                                        <div>
-                                            <span class="font-medium text-gray-700 dark:text-gray-300">Type:</span>
-                                            <span class="ml-2 text-gray-600 dark:text-gray-400">{{ preview.type }}</span>
-                                        </div>
-                                        @if (preview.dataspace) {
-                                            <div>
-                                                <span class="font-medium text-gray-700 dark:text-gray-300">Dataspace:</span>
-                                                <span class="ml-2 text-gray-600 dark:text-gray-400">{{ preview.dataspace }}</span>
-                                            </div>
-                                        }
-                                        @if (preview.partner) {
-                                            <div>
-                                                <span class="font-medium text-gray-700 dark:text-gray-300">Restricted to:</span>
-                                                <span class="ml-2 text-gray-600 dark:text-gray-400">{{ preview.partner }}</span>
-                                            </div>
-                                        } @else {
-                                            <div>
-                                                <span class="font-medium text-gray-700 dark:text-gray-300">Access:</span>
-                                                <span class="ml-2 text-gray-600 dark:text-gray-400">All ecosystem members</span>
-                                            </div>
-                                        }
-                                    </div>
+                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Sharing Summary:</h4>
+                        @if (previewData) {
+                            <div class="bg-white dark:bg-gray-800 p-4 rounded border border-gray-200 dark:border-gray-700 space-y-3 text-sm">
+                                <div class="flex items-center space-x-2">
+                                    <span class="inline-flex px-2 py-0.5 rounded text-xs font-bold bg-primary-100 text-primary-700">LIVE</span>
+                                    <span class="font-medium text-gray-900 dark:text-white">{{ previewData.name }}</span>
                                 </div>
-                            }
-                        </div>
+                                <div>
+                                    <span class="font-medium text-gray-700 dark:text-gray-300">Endpoint URL:</span>
+                                    <p class="mt-0.5 text-xs font-mono text-gray-500 break-all">{{ previewData.url }}</p>
+                                </div>
+                                @if (previewData.dataspace) {
+                                    <div><span class="font-medium text-gray-700 dark:text-gray-300">Dataspace:</span>
+                                    <span class="ml-2 text-gray-600 dark:text-gray-400">{{ previewData.dataspace }}</span></div>
+                                }
+                                @if (previewData.partner) {
+                                    <div><span class="font-medium text-gray-700 dark:text-gray-300">Restricted to:</span>
+                                    <span class="ml-2 text-gray-600 dark:text-gray-400">{{ previewData.partner }}</span></div>
+                                } @else {
+                                    <div><span class="font-medium text-gray-700 dark:text-gray-300">Access:</span>
+                                    <span class="ml-2 text-gray-600 dark:text-gray-400">All ecosystem members</span></div>
+                                }
+                            </div>
+                        }
                     </div>
                 </div>
             }
@@ -266,10 +272,10 @@
                     }
                     @if (uploadStep === 4) {
                         <button
-                                (click)="uploadFiles()"
+                                (click)="registerEndpoint()"
                                 [disabled]="uploading"
                                 class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                            @if (!uploading) { Finish Upload } @else { Uploading... }
+                            @if (!uploading) { Share } @else { Sharing... }
                         </button>
                     }
                 </div>

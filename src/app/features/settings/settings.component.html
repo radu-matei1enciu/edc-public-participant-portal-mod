@@ -1,143 +1,143 @@
 <div class="p-6 max-w-6xl mx-auto">
-  <!-- Header -->
-  <div class="mb-8">
-    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
-    <p class="mt-2 text-gray-600 dark:text-gray-400">
-      Manage your preferences and configurations
-    </p>
-  </div>
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
+        <p class="mt-2 text-gray-600 dark:text-gray-400">
+            Manage your preferences and configurations
+        </p>
+    </div>
 
-  @if (preferences$ | async; as prefs) {
-    <div>
-    <!-- Profile Section -->
-      <div class="mb-8">
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="text-lg font-medium text-gray-900 dark:text-white">Profile</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                View your participant profile information
-              </p>
+    @if (preferences$ | async; as prefs) {
+        <div>
+            <!-- Profile Section -->
+            <div class="mb-8">
+                <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Profile</h3>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                View your participant profile information
+                            </p>
+                        </div>
+                        <a routerLink="/settings/profile"
+                           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            View Profile
+                        </a>
+                    </div>
+                </div>
             </div>
-            <a routerLink="/settings/profile"
-               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-              <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-              </svg>
-              View Profile
-            </a>
-          </div>
-        </div>
-      </div>
 
-    <!-- Appearance Section -->
-      <div class="space-y-8">
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-6">Theme and Appearance</h3>
-        
-        <!-- Theme Selection -->
-        <div class="mb-6">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-            Color Theme
-          </label>
-          <div class="grid grid-cols-3 gap-3">
-            <button *ngFor="let theme of themeOptions" 
-                    (click)="updatePreference('theme', theme.value)"
-                    [class.ring-2]="prefs.theme === theme.value"
-                    [class.ring-primary-500]="prefs.theme === theme.value"
-                    class="relative p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
-              <div class="flex items-center space-x-3">
-                <span [innerHTML]="theme.icon" class="w-5 h-5"></span>
-                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ theme.label }}</span>
-              </div>
-            </button>
-          </div>
-        </div>
+            <!-- Appearance Section -->
+            <div class="space-y-8">
+                <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-6">Theme and Appearance</h3>
 
-        <!-- Color Scheme -->
-        <div class="mb-6">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-            Color Scheme
-          </label>
-          <div class="flex space-x-3">
-            <button *ngFor="let scheme of colorSchemes" 
-                    (click)="updatePreference('colorScheme', scheme.value)"
-                    [class.ring-2]="prefs.colorScheme === scheme.value"
-                    [class.ring-primary-500]="prefs.colorScheme === scheme.value"
-                    class="w-12 h-12 rounded-full border-2 border-white dark:border-gray-800 shadow-md hover:scale-110 transition-transform"
-                    [style.background]="scheme.color"
-                    [title]="scheme.label">
-            </button>
-          </div>
-        </div>
+                    <!-- Theme Selection -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                            Color Theme
+                        </label>
+                        <div class="grid grid-cols-3 gap-3">
+                            <button *ngFor="let theme of themeOptions"
+                                    (click)="updatePreference('theme', theme.value)"
+                                    [class.ring-2]="prefs.theme === theme.value"
+                                    [class.ring-primary-500]="prefs.theme === theme.value"
+                                    class="relative p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+                                <div class="flex items-center space-x-3">
+                                    <span [innerHTML]="theme.icon" class="w-5 h-5"></span>
+                                    <span class="text-sm font-medium text-gray-900 dark:text-white">{{ theme.label }}</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
 
-        <!-- Language Selection -->
-        <form [formGroup]="settingsForm">
-          <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-              Language
-            </label>
-            <select formControlName="language"
-                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white">
-              @for (lang of getSupportedLanguages(); track lang.code) {
-                <option [value]="lang.code">{{ lang.name }}</option>
-              }
-            </select>
-          </div>
+                    <!-- Color Scheme -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                            Color Scheme
+                        </label>
+                        <div class="flex space-x-3">
+                            <button *ngFor="let scheme of colorSchemes"
+                                    (click)="updatePreference('colorScheme', scheme.value)"
+                                    [class.ring-2]="prefs.colorScheme === scheme.value"
+                                    [class.ring-primary-500]="prefs.colorScheme === scheme.value"
+                                    class="w-12 h-12 rounded-full border-2 border-white dark:border-gray-800 shadow-md hover:scale-110 transition-transform"
+                                    [style.background]="scheme.color"
+                                    [title]="scheme.label">
+                            </button>
+                        </div>
+                    </div>
 
-          <!-- Font Size -->
-          <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-              Font Size
-            </label>
-            <select formControlName="fontSize"
-                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white">
-              <option value="small">Small</option>
-              <option value="medium">Medium</option>
-              <option value="large">Large</option>
-            </select>
-          </div>
-        </form>
+                    <!-- Language Selection -->
+                    <form [formGroup]="settingsForm">
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                Language
+                            </label>
+                            <select formControlName="language"
+                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white">
+                                @for (lang of getSupportedLanguages(); track lang.code) {
+                                    <option [value]="lang.code">{{ lang.name }}</option>
+                                }
+                            </select>
+                        </div>
 
-        <!-- Toggle Options -->
-        <div class="space-y-4">
-          <div class="flex items-center justify-between">
-            <div>
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Compact Mode</label>
-              <p class="text-xs text-gray-500 dark:text-gray-400">Reduces spacing between elements</p>
-            </div>
-            <button type="button" 
-                    (click)="updatePreference('compactMode', !prefs.compactMode)"
-                    [class.bg-primary-600]="prefs.compactMode"
-                    [class.bg-gray-200]="!prefs.compactMode"
-                    [class.dark:bg-gray-600]="!prefs.compactMode"
-                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                        <!-- Font Size -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                Font Size
+                            </label>
+                            <select formControlName="fontSize"
+                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white">
+                                <option value="small">Small</option>
+                                <option value="medium">Medium</option>
+                                <option value="large">Large</option>
+                            </select>
+                        </div>
+                    </form>
+
+                    <!-- Toggle Options -->
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Compact Mode</label>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Reduces spacing between elements</p>
+                            </div>
+                            <button type="button"
+                                    (click)="updatePreference('compactMode', !prefs.compactMode)"
+                                    [class.bg-primary-600]="prefs.compactMode"
+                                    [class.bg-gray-200]="!prefs.compactMode"
+                                    [class.dark:bg-gray-600]="!prefs.compactMode"
+                                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
               <span [class.translate-x-5]="prefs.compactMode"
                     [class.translate-x-0]="!prefs.compactMode"
                     class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
-            </button>
-          </div>
+                            </button>
+                        </div>
 
-          <div class="flex items-center justify-between">
-            <div>
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Animations</label>
-              <p class="text-xs text-gray-500 dark:text-gray-400">Enable interface animations</p>
-            </div>
-            <button type="button" 
-                    (click)="updatePreference('animations', !prefs.animations)"
-                    [class.bg-primary-600]="prefs.animations"
-                    [class.bg-gray-200]="!prefs.animations"
-                    [class.dark:bg-gray-600]="!prefs.animations"
-                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Animations</label>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Enable interface animations</p>
+                            </div>
+                            <button type="button"
+                                    (click)="updatePreference('animations', !prefs.animations)"
+                                    [class.bg-primary-600]="prefs.animations"
+                                    [class.bg-gray-200]="!prefs.animations"
+                                    [class.dark:bg-gray-600]="!prefs.animations"
+                                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
               <span [class.translate-x-5]="prefs.animations"
                     [class.translate-x-0]="!prefs.animations"
                     class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    </div>
-  }
+        </div>
+    }
 </div>

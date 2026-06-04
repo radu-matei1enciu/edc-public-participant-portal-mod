@@ -1,11 +1,10 @@
-
 .hero-gradient {
-  background: linear-gradient(135deg, #1E3A8A 0%, #F97316 100%);
+  background: linear-gradient(135deg, #1B3A99 0%, #2D5CBE 100%);
 }
 
 .feature-card {
   transition: all 0.3s ease;
-  
+
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
@@ -13,18 +12,18 @@
 }
 
 .step-number {
-  background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
-  box-shadow: 0 4px 14px 0 rgba(30, 58, 138, 0.3);
+  background: linear-gradient(135deg, #1B3A99 0%, #4771D5 100%);
+  box-shadow: 0 4px 14px 0 rgba(27, 58, 153, 0.3);
 }
 
 .cta-button {
-  background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
-  box-shadow: 0 4px 14px 0 rgba(249, 115, 22, 0.3);
-  
+  background: linear-gradient(135deg, #1B3A99 0%, #2D5CBE 100%);
+  box-shadow: 0 4px 14px 0 rgba(27, 58, 153, 0.3);
+
   &:hover {
-    background: linear-gradient(135deg, #EA580C 0%, #F97316 100%);
+    background: linear-gradient(135deg, #152D77 0%, #1B3A99 100%);
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px 0 rgba(249, 115, 22, 0.4);
+    box-shadow: 0 8px 25px 0 rgba(27, 58, 153, 0.4);
   }
 }
 
@@ -48,7 +47,7 @@
     font-size: 2.5rem;
     line-height: 1.2;
   }
-  
+
   .hero-subtitle {
     font-size: 1.125rem;
   }

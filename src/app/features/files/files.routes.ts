@@ -1,16 +1,25 @@
 import { Routes } from '@angular/router';
 
 export const FILES_ROUTES: Routes = [
-  {
-    path: '',
-    loadComponent: () => import('./files-list.component').then(m => m.FilesListComponent)
-  },
-  {
-    path: 'upload',
-    loadComponent: () => import('./file-upload.component').then(m => m.FileUploadComponent)
-  },
-  {
-    path: ':id',
-    loadComponent: () => import('./file-detail.component').then(m => m.FileDetailComponent)
-  }
+    {
+        path: '',
+        loadComponent: () =>
+            import('./files-list.component').then(m => m.FilesListComponent)
+    },
+    {
+        path: 'upload',
+        loadComponent: () =>
+            import('./file-upload.component').then(m => m.FileUploadComponent)
+    },
+    {
+        // Live data view — navigated to from Explore when consumer has access
+        path: 'view/:assetId',
+        loadComponent: () =>
+            import('./data-view.component').then(m => m.DataViewComponent)
+    },
+    {
+        path: ':id',
+        loadComponent: () =>
+            import('./file-detail.component').then(m => m.FileDetailComponent)
+    }
 ];

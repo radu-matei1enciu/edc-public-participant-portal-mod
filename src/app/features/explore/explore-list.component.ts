@@ -1,39 +1,37 @@
-import {Component, DestroyRef, inject, OnInit} from '@angular/core';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {CommonModule} from '@angular/common';
-import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
-import {debounceTime, distinctUntilChanged, firstValueFrom, Observable} from 'rxjs';
-import {UseCaseService} from '../../core/services/use-case.service';
-import {AuthService} from '../../core/services/auth.service';
-import {NotificationService} from '../../shared/services/notification.service';
-import {UserPreferences, UserPreferencesService} from '../../core/services/user-preferences.service';
-import {FileAsset} from '../../core/models/file-asset.model';
-import {UseCase} from '../../core/models/use-case.model';
-import {UserProfile} from '../../core/models/participant.model';
-import {EDCDataOperationsService, PartnerReference, TenantOperationsService} from "../../core/redline";
-import {RedlineUser} from "../../core/models/redline-user.model";
-import {DataspaceService} from "../../core/services/dataspace.service";
-import {CatalogService} from "../../core/services/catalog.service";
-import {TransferService} from "../../core/services/transfer.service";
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { debounceTime, distinctUntilChanged, firstValueFrom, Observable } from 'rxjs';
+import { UseCaseService } from '../../core/services/use-case.service';
+import { AuthService } from '../../core/services/auth.service';
+import { NotificationService } from '../../shared/services/notification.service';
+import { UserPreferences, UserPreferencesService } from '../../core/services/user-preferences.service';
+import { FileAsset } from '../../core/models/file-asset.model';
+import { UseCase } from '../../core/models/use-case.model';
+import { EDCDataOperationsService, PartnerReference, TenantOperationsService } from '../../core/redline';
+import { RedlineUser } from '../../core/models/redline-user.model';
+import { DataspaceService } from '../../core/services/dataspace.service';
+import { CatalogService } from '../../core/services/catalog.service';
 
 @Component({
     selector: 'app-explore-list',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule],
-    templateUrl: './explore-list.component.html',
+    imports: [CommonModule, ReactiveFormsModule, RouterLink],
+    templateUrl: './explore-list.component.html'
 })
 export class ExploreListComponent implements OnInit {
-    private useCaseService = inject(UseCaseService);
-    private authService = inject(AuthService);
+    private useCaseService      = inject(UseCaseService);
+    private authService         = inject(AuthService);
     private notificationService = inject(NotificationService);
-    private preferencesService = inject(UserPreferencesService);
-    private destroyRef = inject(DestroyRef);
-    private fb = inject(FormBuilder);
-    private readonly tenantOperationsService = inject(TenantOperationsService);
-    private readonly edcDataOperationsService = inject(EDCDataOperationsService);
-    private readonly dataspaceService = inject(DataspaceService);
-    private readonly catalogService = inject(CatalogService);
-    private readonly transferService = inject(TransferService);
+    private preferencesService  = inject(UserPreferencesService);
+    private destroyRef          = inject(DestroyRef);
+    private fb                  = inject(FormBuilder);
+    private tenantOperationsService = inject(TenantOperationsService);
+    private edcDataOperationsService = inject(EDCDataOperationsService);
+    private dataspaceService    = inject(DataspaceService);
+    private catalogService      = inject(CatalogService);
 
     files: FileAsset[] = [];
     filteredFiles: FileAsset[] = [];
@@ -43,10 +41,8 @@ export class ExploreListComponent implements OnInit {
     preferences$: Observable<UserPreferences>;
     currentPage = 1;
     itemsPerPage = 10;
-    userProfile: UserProfile | null = null;
     redlineUser?: RedlineUser;
     requestingAccess: string | null = null;
-    requestingTransfer?: string;
     partners: PartnerReference[] = [];
     partnerDataspaceMap = new Map<string, string>();
     useCaseFilter?: string;
@@ -55,7 +51,7 @@ export class ExploreListComponent implements OnInit {
 
     constructor() {
         this.filterForm = this.fb.group({
-            searchTerm: [''],
+            searchTerm:    [''],
             useCaseFilter: [''],
             companyFilter: ['']
         });
@@ -69,7 +65,6 @@ export class ExploreListComponent implements OnInit {
             return;
         }
 
-        // Load all dataspaces this participant belongs to
         let allDataspaces = [];
         try {
             allDataspaces = await firstValueFrom(
@@ -110,38 +105,25 @@ export class ExploreListComponent implements OnInit {
                         this.partnerDataspaceMap.set(p.identifier, dataspace.name ?? 'N/A');
                     }
                 }
-            } catch {
-                // Non-fatal — skip this dataspace's partners if fetch fails
-            }
+            } catch { /* non-fatal */ }
         }
 
         this.partners = mergedPartners;
-
         this.loadUseCases();
         await this.loadFiles();
 
         this.filterForm.get('searchTerm')?.valueChanges.pipe(
-            debounceTime(300),
-            distinctUntilChanged(),
+            debounceTime(300), distinctUntilChanged(),
             takeUntilDestroyed(this.destroyRef)
-        ).subscribe(value => {
-            this.searchText = (value as string).toLowerCase();
-            this.applyFilters();
-        });
+        ).subscribe(value => { this.searchText = (value as string).toLowerCase(); this.applyFilters(); });
 
         this.filterForm.get('useCaseFilter')?.valueChanges.pipe(
             takeUntilDestroyed(this.destroyRef)
-        ).subscribe(value => {
-            this.useCaseFilter = value;
-            this.applyFilters();
-        });
+        ).subscribe(value => { this.useCaseFilter = value; this.applyFilters(); });
 
         this.filterForm.get('companyFilter')?.valueChanges.pipe(
             takeUntilDestroyed(this.destroyRef)
-        ).subscribe(value => {
-            this.companyFilter = value;
-            this.applyFilters();
-        });
+        ).subscribe(value => { this.companyFilter = value; this.applyFilters(); });
     }
 
     loadUseCases(): void {
@@ -152,10 +134,7 @@ export class ExploreListComponent implements OnInit {
     }
 
     async loadFiles(): Promise<void> {
-        if (!this.redlineUser || this.partners.length === 0) {
-            this.applyFilters();
-            return;
-        }
+        if (!this.redlineUser || this.partners.length === 0) { this.applyFilters(); return; }
 
         this.files = this.filteredFiles = [];
         this.loading = true;
@@ -168,8 +147,6 @@ export class ExploreListComponent implements OnInit {
             catalogResults
                 .filter((r): r is PromiseFulfilledResult<FileAsset[]> => r.status === 'fulfilled')
                 .forEach(r => r.value.forEach(file => {
-                    // Override the dataspace label with the one we resolved from the
-                    // partner→dataspace map — more reliable than getActiveDataspace()
                     if (file.partnerDid && this.partnerDataspaceMap.has(file.partnerDid)) {
                         file.dataspace = this.partnerDataspaceMap.get(file.partnerDid);
                     }
@@ -189,80 +166,67 @@ export class ExploreListComponent implements OnInit {
     applyFilters(): void {
         this.filteredFiles = [...this.files];
         if (this.searchText) {
-            this.filteredFiles = this.filteredFiles.filter(file =>
-                file.name.toLowerCase().includes(this.searchText!) ||
-                file.useCase?.toLowerCase().includes(this.searchText!) ||
-                file.type?.toLowerCase().includes(this.searchText!) ||
-                file.partnerName?.toLowerCase().includes(this.searchText!)
+            this.filteredFiles = this.filteredFiles.filter(f =>
+                f.name.toLowerCase().includes(this.searchText!) ||
+                f.useCase?.toLowerCase().includes(this.searchText!) ||
+                f.partnerName?.toLowerCase().includes(this.searchText!)
             );
         }
         if (this.useCaseFilter && this.useCaseFilter !== 'All Use Cases') {
-            this.filteredFiles = this.filteredFiles.filter(file => file.useCase === this.useCaseFilter);
+            this.filteredFiles = this.filteredFiles.filter(f => f.useCase === this.useCaseFilter);
         }
         if (this.companyFilter && this.companyFilter !== 'All Companies') {
-            this.filteredFiles = this.filteredFiles.filter(file => file.partnerDid === this.companyFilter);
+            this.filteredFiles = this.filteredFiles.filter(f => f.partnerDid === this.companyFilter);
         }
     }
 
     getPaginatedFiles(): FileAsset[] {
         const start = (this.currentPage - 1) * this.itemsPerPage;
-        const end = start + this.itemsPerPage;
-        return this.filteredFiles.slice(start, end);
+        return this.filteredFiles.slice(start, start + this.itemsPerPage);
     }
 
     getTotalPages(): number {
         return Math.ceil(this.filteredFiles.length / this.itemsPerPage);
     }
 
-    previousPage(): void {
-        if (this.currentPage > 1) this.currentPage--;
-    }
-
-    nextPage(): void {
-        if (this.currentPage < this.getTotalPages()) this.currentPage++;
-    }
+    previousPage(): void { if (this.currentPage > 1) this.currentPage--; }
+    nextPage(): void { if (this.currentPage < this.getTotalPages()) this.currentPage++; }
 
     hasAccess(file: FileAsset): boolean {
         return file.origin === 'remote' && !!file.agreements && file.agreements.length > 0;
     }
 
     async requestAccess(file: FileAsset): Promise<void> {
-        if (!this.redlineUser || !file.partnerDid || !file.catalogDataset?.["edc:properties"]) {
-            this.notificationService.showError('Error', 'Missing data');
-            return;
+        if (!this.redlineUser || !file.partnerDid || !file.catalogDataset?.['edc:properties']) {
+            this.notificationService.showError('Error', 'Missing data'); return;
         }
-        if (!file.catalogDataset["edc:properties"]["edc:assetId"]) {
-            this.notificationService.showError('Error', 'Missing asset ID');
-            return;
+        if (!file.catalogDataset['edc:properties']['edc:assetId']) {
+            this.notificationService.showError('Error', 'Missing asset ID'); return;
         }
         if (!file.catalogDataset.hasPolicy) {
-            this.notificationService.showError('Error', 'This file has no data sharing offers');
-            return;
+            this.notificationService.showError('Error', 'This endpoint has no data sharing offers'); return;
         }
 
         this.requestingAccess = file.id;
-
         try {
             const negotiationId = await firstValueFrom(this.edcDataOperationsService.requestContract(
                 this.redlineUser.providerId,
                 this.redlineUser.tenantId,
                 this.redlineUser.participantId,
                 {
-                    assetId: file.catalogDataset["edc:properties"]["edc:assetId"] as unknown as string,
-                    providerId: file.partnerDid,
-                    offerId: file.catalogDataset.hasPolicy?.at(0)?.["@id"],
+                    assetId:     file.catalogDataset['edc:properties']['edc:assetId'] as unknown as string,
+                    providerId:  file.partnerDid,
+                    offerId:     file.catalogDataset.hasPolicy?.at(0)?.['@id'],
                     permissions: file.catalogDataset.hasPolicy!.at(0)!.permission!.flatMap(pm => pm.constraint ?? [])
                 },
-                "body", false, { httpHeaderAccept: "text/plain" }
+                'body', false, { httpHeaderAccept: 'text/plain' }
             ));
 
-            let negotiationState = '';
-            const startTime = Date.now();
-            const maxWaitTime = 30000;
-
-            while (negotiationState !== 'FINALIZED' && Date.now() - startTime < maxWaitTime) {
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                negotiationState = (await firstValueFrom(this.edcDataOperationsService.getContractNegotiation(
+            let state = '';
+            const deadline = Date.now() + 30_000;
+            while (state !== 'FINALIZED' && Date.now() < deadline) {
+                await new Promise(r => setTimeout(r, 1000));
+                state = (await firstValueFrom(this.edcDataOperationsService.getContractNegotiation(
                     this.redlineUser.providerId,
                     this.redlineUser.tenantId,
                     this.redlineUser.participantId,
@@ -270,23 +234,17 @@ export class ExploreListComponent implements OnInit {
                 ))).state ?? '';
             }
 
-            if (negotiationState === 'FINALIZED') {
-                this.notificationService.showSuccess('Success', 'Access granted');
+            if (state === 'FINALIZED') {
+                this.notificationService.showSuccess('Success', 'Access granted — you can now view the live data');
                 await this.catalogService.matchContractsToFiles(this.files);
                 this.applyFilters();
             } else {
-                this.notificationService.showError('Error', `Negotiation timed out in state: ${negotiationState}`);
+                this.notificationService.showError('Error', `Negotiation timed out in state: ${state}`);
             }
         } catch (error) {
             this.notificationService.showError('Error', (error as Error).message || 'Failed to request access');
         } finally {
             this.requestingAccess = null;
         }
-    }
-
-    async requestTransferAndDownload(file: FileAsset): Promise<void> {
-        this.requestingTransfer = file.id;
-        await this.transferService.requestTransferAndDownload(file);
-        this.requestingTransfer = undefined;
     }
 }

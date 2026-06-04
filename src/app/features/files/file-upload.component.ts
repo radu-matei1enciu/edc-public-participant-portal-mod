@@ -1,18 +1,17 @@
-import {Component, inject, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {ActivatedRoute, Router} from '@angular/router';
-import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
-import {PartnerService} from '../../core/services/partner.service';
-import {AuthService} from '../../core/services/auth.service';
-import {NotificationService} from '../../shared/services/notification.service';
-import {ModalService} from '../../core/services/modal.service';
-import {Partner} from '../../core/models/partner.model';
-import {formatFileSize} from '../../shared/utils/format.utils';
-import {DataspaceService} from "../../core/services/dataspace.service";
-import {DataspaceResource} from "../../core/models/dataspace.model";
-import {getAccessRestrictionPolicy, PARTNER_ACCESS_EXPRESSION} from "../../shared/utils/policy.utils";
-import {RedlineUploadService} from "../../core/services/redline-upload.service";
-import {firstValueFrom} from "rxjs";
+import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { PartnerService } from '../../core/services/partner.service';
+import { AuthService } from '../../core/services/auth.service';
+import { NotificationService } from '../../shared/services/notification.service';
+import { ModalService } from '../../core/services/modal.service';
+import { Partner } from '../../core/models/partner.model';
+import { DataspaceService } from '../../core/services/dataspace.service';
+import { DataspaceResource } from '../../core/models/dataspace.model';
+import { getAccessRestrictionPolicy, PARTNER_ACCESS_EXPRESSION } from '../../shared/utils/policy.utils';
+import { RedlineUploadService } from '../../core/services/redline-upload.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
     selector: 'app-file-upload',
@@ -21,42 +20,41 @@ import {firstValueFrom} from "rxjs";
     templateUrl: './file-upload.component.html'
 })
 export class FileUploadComponent implements OnInit {
-    formatFileSize = formatFileSize;
 
-    private partnerService = inject(PartnerService);
-    private authService = inject(AuthService);
+    private partnerService     = inject(PartnerService);
+    private authService        = inject(AuthService);
     private notificationService = inject(NotificationService);
-    private modalService = inject(ModalService);
-    private router = inject(Router);
-    private route = inject(ActivatedRoute);
-    private fb = inject(FormBuilder);
-    private dataspaceService = inject(DataspaceService);
+    private modalService       = inject(ModalService);
+    private router             = inject(Router);
+    private route              = inject(ActivatedRoute);
+    private fb                 = inject(FormBuilder);
+    private dataspaceService   = inject(DataspaceService);
     private redlineUploadService = inject(RedlineUploadService);
 
     participantId: number | null = null;
-
-    // Dataspaces the current participant belongs to
     dataspaces: DataspaceResource[] = [];
     partners: Partner[] = [];
     loadingPartners = false;
+    uploading = false;   // true while the POST is in-flight (label: "Sharing...")
 
     uploadStep = 1;
-    selectedFiles: File[] = [];
     uploadForm!: FormGroup;
-    uploading = false;
-    filePreviewData: Array<{ name: string; size: number; type: string; dataspace?: string; partner?: string }> = [];
+
+    // Step 1 controls — bound directly in the template
+    endpointUrlControl  = new FormControl('', [Validators.required, Validators.pattern('https?://.+')]);
+    endpointNameControl = new FormControl('', [Validators.required]);
 
     uploadSteps = [
-        { label: 'Select File', number: 1 },
+        { label: 'Endpoint Details', number: 1 },
         { label: 'Select Dataspace', number: 2 },
-        { label: 'Manage Access', number: 3 },
-        { label: 'Upload', number: 4 }
+        { label: 'Manage Access',    number: 3 },
+        { label: 'Share',            number: 4 }
     ];
 
     constructor() {
         this.uploadForm = this.fb.group({
             dataspaceId: [''],
-            partnerId: ['']
+            partnerId:   ['']
         });
     }
 
@@ -90,7 +88,6 @@ export class FileUploadComponent implements OnInit {
                     redlineUser.participantId
                 )
             );
-            // Auto-select if participant is only in one dataspace
             if (this.dataspaces.length === 1) {
                 this.uploadForm.patchValue({ dataspaceId: this.dataspaces[0].id.toString() });
             }
@@ -110,59 +107,38 @@ export class FileUploadComponent implements OnInit {
             redlineUser.participantId,
             dataspaceId
         ).subscribe({
-            next: (partners) => {
-                this.partners = partners;
-                this.loadingPartners = false;
-            },
-            error: () => {
-                this.partners = [];
-                this.loadingPartners = false;
-            }
+            next: (partners) => { this.partners = partners; this.loadingPartners = false; },
+            error: () => { this.partners = []; this.loadingPartners = false; }
         });
     }
 
-    onFileSelected(event: Event): void {
-        const input = event.target as HTMLInputElement;
-        if (input.files) {
-            this.selectedFiles = Array.from(input.files);
-        }
-    }
+    // ── Navigation ────────────────────────────────────────────────────────
 
     nextStep(): void {
         if (!this.canProceed()) return;
-
-        if (this.uploadStep === 3) {
-            this.prepareFilePreview();
-        }
-
+        if (this.uploadStep === 3) this.preparePreview();
         this.uploadStep++;
     }
 
     previousStep(): void {
-        if (this.uploadStep > 1) {
-            this.uploadStep--;
-        }
+        if (this.uploadStep > 1) this.uploadStep--;
     }
 
     goToStep(stepNumber: number): void {
         if (!this.canNavigateToStep(stepNumber)) return;
-
-        if (stepNumber === 4) {
-            this.prepareFilePreview();
-        }
-
+        if (stepNumber === 4) this.preparePreview();
         this.uploadStep = stepNumber;
     }
 
     canNavigateToStep(stepNumber: number): boolean {
         if (stepNumber === 1) return true;
-        if (this.selectedFiles.length === 0) return false;
+        if (!this.endpointUrlControl.valid || !this.endpointNameControl.valid) return false;
         if (stepNumber >= 3 && !this.uploadForm.get('dataspaceId')?.value) return false;
         return true;
     }
 
     canProceed(): boolean {
-        if (this.uploadStep === 1) return this.selectedFiles.length > 0;
+        if (this.uploadStep === 1) return this.endpointUrlControl.valid && this.endpointNameControl.valid;
         if (this.uploadStep === 2) return !!this.uploadForm.get('dataspaceId')?.value;
         return true;
     }
@@ -172,26 +148,25 @@ export class FileUploadComponent implements OnInit {
         return this.dataspaces.find(ds => ds.id.toString() === id);
     }
 
-    prepareFilePreview(): void {
-        this.filePreviewData = this.selectedFiles.map(file => {
-            const dataspaceId = this.uploadForm.get('dataspaceId')?.value;
-            const partnerId = this.uploadForm.get('partnerId')?.value;
-            const dataspace = this.dataspaces.find(ds => ds.id.toString() === dataspaceId);
-            const partner = this.partners.find(p => p.identifier === partnerId);
+    // Preview data shown in the summary step
+    previewData: { name: string; url: string; dataspace?: string; partner?: string } | null = null;
 
-            return {
-                name: file.name,
-                size: file.size,
-                type: file.type || 'application/octet-stream',
-                dataspace: dataspace?.name,
-                partner: partner?.nickname
-            };
-        });
+    preparePreview(): void {
+        const dataspaceId = this.uploadForm.get('dataspaceId')?.value;
+        const partnerId   = this.uploadForm.get('partnerId')?.value;
+        this.previewData = {
+            name:      this.endpointNameControl.value ?? '',
+            url:       this.endpointUrlControl.value  ?? '',
+            dataspace: this.dataspaces.find(ds => ds.id.toString() === dataspaceId)?.name,
+            partner:   this.partners.find(p => p.identifier === partnerId)?.nickname
+        };
     }
 
-    async uploadFiles(): Promise<void> {
-        if (!this.participantId || this.selectedFiles.length === 0) {
-            this.notificationService.showError('Error', 'Please select at least one file');
+    // ── Submit ────────────────────────────────────────────────────────────
+
+    async registerEndpoint(): Promise<void> {
+        if (!this.endpointUrlControl.valid || !this.endpointNameControl.valid) {
+            this.notificationService.showError('Error', 'Please fill in the endpoint details');
             return;
         }
 
@@ -202,46 +177,40 @@ export class FileUploadComponent implements OnInit {
         }
 
         const confirmed = await this.modalService.confirm({
-            title: 'Confirm Upload',
-            message: 'Do you want to upload the file?',
+            title:       'Confirm Endpoint Registration',
+            message:     `Register "${this.endpointNameControl.value}" as a shared data endpoint?`,
             confirmText: 'Confirm',
-            cancelText: 'Cancel'
+            cancelText:  'Cancel'
         });
-
         if (!confirmed) return;
 
         this.uploading = true;
-        const uploadMetadata = this.uploadForm.value;
-        const userIds = this.authService.getRedlineUser()!;
+        const userIds    = this.authService.getRedlineUser()!;
+        const partnerId  = this.uploadForm.get('partnerId')?.value;
 
-        const publicMetadata = {
-            size: this.selectedFiles[0].size,
-        };
-        const privateMetadata = {
-            partnerId: uploadMetadata.partnerId,
-            origin: 'owned',
-            dataspaceId: dataspaceId   // stored so the file list can resolve partner names correctly
-        };
+        const publicMetadata:  Record<string, any> = {};
+        const privateMetadata: Record<string, any> = { dataspaceId };
 
-        this.redlineUploadService.uploadFile(
+        this.redlineUploadService.registerEndpoint(
             userIds.providerId,
             dataspaceId,
             userIds.tenantId,
             userIds.participantId,
+            this.endpointUrlControl.value!,
+            this.endpointNameControl.value!,
             publicMetadata,
             privateMetadata,
-            this.selectedFiles[0],
-            uploadMetadata.partnerId ? [PARTNER_ACCESS_EXPRESSION] : undefined,
-            uploadMetadata.partnerId ? getAccessRestrictionPolicy(uploadMetadata.partnerId) : undefined
+            partnerId ? [PARTNER_ACCESS_EXPRESSION] : undefined,
+            partnerId ? getAccessRestrictionPolicy(partnerId) : undefined
         ).subscribe({
             next: () => {
                 this.uploading = false;
-                this.notificationService.showSuccess('Success', `Successfully uploaded ${this.selectedFiles.length} file(s)`);
+                this.notificationService.showSuccess('Success', `"${this.endpointNameControl.value}" registered successfully`);
                 this.router.navigate(['/files']);
             },
             error: (error) => {
                 this.uploading = false;
-                this.notificationService.showError('Error', error.message || 'Failed to upload files');
+                this.notificationService.showError('Error', error.message || 'Failed to register endpoint');
             }
         });
     }

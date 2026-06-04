@@ -1,15 +1,28 @@
-<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-12">
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-blue-100 px-4 py-12">
   <div class="w-full max-w-4xl">
     <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-      <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
-        <h1 class="text-3xl font-bold text-white">Select User</h1>
-        <p class="text-blue-100 mt-2">Choose a user to access the portal</p>
+      <!-- UCB branded header -->
+      <div class="bg-primary-800 px-8 py-6">
+        <div class="flex items-center space-x-4 mb-4">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 flex-shrink-0">
+            <rect width="100" height="100" fill="white" rx="6"/>
+            <rect width="100" height="100" fill="#1B3A99" rx="6" opacity="0.95"/>
+            <circle cx="50" cy="50" r="41" fill="white"/>
+            <line x1="50" y1="9" x2="50" y2="91" stroke="#1B3A99" stroke-width="3"/>
+            <text x="54" y="67" font-family="Arial,sans-serif" font-size="23" font-weight="900" fill="#1B3A99" letter-spacing="-0.5">ucb</text>
+          </svg>
+          <div>
+            <h1 class="text-2xl font-bold text-white">UCB DataSpace Portal</h1>
+            <p class="text-primary-200 text-sm">Inspired by patients, driven by science</p>
+          </div>
+        </div>
+        <p class="text-primary-100 mt-1">Select your participant identity to access the portal</p>
       </div>
 
       <div class="p-8">
         @if (isLoading) {
           <div class="flex items-center justify-center py-12">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
           </div>
         } @else if (errorMessage) {
           <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
@@ -18,20 +31,20 @@
         } @else {
           <div class="mb-6">
             <label class="block text-sm font-medium text-gray-700 mb-2">
-              Search Users
+              Search Participants
             </label>
             <input
               type="text"
               [formControl]="searchControl"
-              placeholder="Search by tenant name or user identifier..."
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+              placeholder="Search by organisation name or participant identifier..."
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition"
             />
           </div>
 
           <div class="mb-6 max-h-96 overflow-y-auto border border-gray-200 rounded-lg">
             @if (filteredOptions.length === 0) {
               <div class="p-8 text-center text-gray-500">
-                <p>No users found</p>
+                <p>No participants found</p>
               </div>
             } @else {
               <div class="divide-y divide-gray-200">
@@ -39,16 +52,16 @@
                   <button
                     type="button"
                     (click)="selectParticipant(option)"
-                    [class.bg-blue-50]="selectedParticipant?.participantId === option.participantId"
-                    [class.border-blue-500]="selectedParticipant?.participantId === option.participantId"
+                    [class.bg-primary-50]="selectedParticipant?.participantId === option.participantId"
+                    [class.border-primary-500]="selectedParticipant?.participantId === option.participantId"
                     class="w-full px-6 py-4 text-left hover:bg-gray-50 transition border-l-4 border-transparent">
                     <div class="flex items-center justify-between">
                       <div>
                         <p class="font-semibold text-gray-900">{{ option.tenantName }}</p>
-                        <p class="text-sm text-gray-600 mt-1">{{ option.participantIdentifier }}</p>
+                        <p class="text-sm text-gray-600 mt-1 font-mono">{{ option.participantIdentifier }}</p>
                       </div>
                       @if (selectedParticipant?.participantId === option.participantId) {
-                        <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-6 h-6 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
                           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                         </svg>
                       }
@@ -72,8 +85,8 @@
               [disabled]="!selectedParticipant"
               [class.opacity-50]="!selectedParticipant"
               [class.cursor-not-allowed]="!selectedParticipant"
-              class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed">
-              Login
+              class="flex-1 px-6 py-3 bg-primary-700 text-white rounded-lg hover:bg-primary-800 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+              Access Portal
             </button>
           </div>
         }

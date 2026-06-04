@@ -9,93 +9,92 @@ import { FileAsset } from '../../core/models/file-asset.model';
 import { formatFileSize } from '../../shared/utils/format.utils';
 
 @Component({
-  selector: 'app-explore-detail',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './explore-detail.component.html'
+    selector: 'app-explore-detail',
+    standalone: true,
+    imports: [CommonModule, RouterLink],
+    templateUrl: './explore-detail.component.html'
 })
 export class ExploreDetailComponent implements OnInit {
-  formatFileSize = formatFileSize;
-  
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private fileAssetService = inject(FileAssetService);
-  private authService = inject(AuthService);
-  private notificationService = inject(NotificationService);
-  private destroyRef = inject(DestroyRef);
+    formatFileSize = formatFileSize;
 
-  file: FileAsset | null = null;
-  loading = true;
-  participantId: number | null = null;
-  requestingAccess = false;
+    private route               = inject(ActivatedRoute);
+    private router              = inject(Router);
+    private fileAssetService    = inject(FileAssetService);
+    private authService         = inject(AuthService);
+    private notificationService = inject(NotificationService);
+    private destroyRef          = inject(DestroyRef);
 
-  ngOnInit(): void {
-    this.authService.loadUserProfile().subscribe({
-      next: (profile) => {
-        this.participantId = profile.participant.id;
-        this.loadFile();
-      },
-      error: () => {
-        this.loading = false;
-        this.notificationService.showError('Error', 'Failed to load user profile');
-      }
-    });
-  }
+    file: FileAsset | null = null;
+    loading = true;
+    participantId: number | null = null;
+    requestingAccess = false;
 
-  loadFile(): void {
-    this.route.params.pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe({
-      next: (params) => {
-        const fileId = params['id'];
-        if (fileId && this.participantId) {
-          this.fileAssetService.getFileDetails(this.participantId, fileId).subscribe({
-            next: (file) => {
-              this.file = file;
-              this.loading = false;
+    ngOnInit(): void {
+        this.authService.loadUserProfile().subscribe({
+            next: (profile) => {
+                this.participantId = profile.participant.id;
+                this.loadFile();
             },
             error: () => {
-              this.loading = false;
-              this.notificationService.showError('Error', 'Failed to load file details');
+                this.loading = false;
+                this.notificationService.showError('Error', 'Failed to load user profile');
             }
-          });
-        } else {
-          this.loading = false;
-        }
-      }
-    });
-  }
-
-  goBack(): void {
-    this.router.navigate(['/explore']);
-  }
-
-  hasAccess(file: FileAsset): boolean {
-    return file.origin === 'remote' && !!file.accessRestrictions && file.accessRestrictions.length > 0;
-  }
-
-  getFileCompany(file: FileAsset): string {
-    if (file.accessRestrictions && file.accessRestrictions.length > 0) {
-      return file.accessRestrictions[0].partnerName || 'Unknown';
+        });
     }
-    return 'Unknown';
-  }
 
-  requestAccess(): void {
-    if (!this.participantId || !this.file) return;
+    loadFile(): void {
+        this.route.params.pipe(
+            takeUntilDestroyed(this.destroyRef)
+        ).subscribe({
+            next: (params) => {
+                const fileId = params['id'];
+                if (fileId && this.participantId) {
+                    this.fileAssetService.getFileDetails(this.participantId, fileId).subscribe({
+                        next: (file) => { this.file = file; this.loading = false; },
+                        error: () => {
+                            this.loading = false;
+                            this.notificationService.showError('Error', 'Failed to load details');
+                        }
+                    });
+                } else {
+                    this.loading = false;
+                }
+            }
+        });
+    }
 
-    this.requestingAccess = true;
-    this.fileAssetService.requestAccess(this.participantId, this.file.id).subscribe({
-      next: () => {
-        this.requestingAccess = false;
-        this.notificationService.showSuccess('Success', 'Access request submitted');
-        this.loadFile();
-      },
-      error: () => {
-        this.requestingAccess = false;
-        this.notificationService.showError('Error', 'Failed to request access');
-      }
-    });
-  }
+    goBack(): void { this.router.navigate(['/explore']); }
 
+    hasAccess(file: FileAsset): boolean {
+        if (file.agreements && file.agreements.length > 0) return true;
+        return file.origin === 'remote' &&
+               !!file.accessRestrictions &&
+               file.accessRestrictions.length > 0;
+    }
+
+    getFileCompany(file: FileAsset): string {
+        if (file.accessRestrictions && file.accessRestrictions.length > 0) {
+            return file.accessRestrictions[0].partnerName || 'Unknown';
+        }
+        if (file.agreements && file.agreements.length > 0) {
+            return file.agreements[0].partnerName || 'Unknown';
+        }
+        return 'Unknown';
+    }
+
+    requestAccess(): void {
+        if (!this.participantId || !this.file) return;
+        this.requestingAccess = true;
+        this.fileAssetService.requestAccess(this.participantId, this.file.id).subscribe({
+            next: () => {
+                this.requestingAccess = false;
+                this.notificationService.showSuccess('Success', 'Access request submitted');
+                this.loadFile();
+            },
+            error: () => {
+                this.requestingAccess = false;
+                this.notificationService.showError('Error', 'Failed to request access');
+            }
+        });
+    }
 }
