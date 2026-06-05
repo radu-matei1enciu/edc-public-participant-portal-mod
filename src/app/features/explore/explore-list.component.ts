@@ -206,11 +206,19 @@ export class ExploreListComponent implements OnInit {
         const token = await this.transferService.requestTransferAndViewData(file);
         this.navigatingToData = null;
 
-        if (!token) return; // error already shown by TransferService
+        if (!token) return;
 
-        // Extract the public endpoint URL from the catalog asset properties
         const props = file.catalogDataset?.['edc:properties'] as Record<string, any> | undefined;
-        const endpointUrl: string = props?.['endpointUrl'] ?? '';
+        const endpointUrl: string = props?.['edc:endpointUrl'] ?? '';
+
+        console.log('token:', token);
+        console.log('endpointUrl:', endpointUrl);
+        console.log('full catalogDataset:', JSON.stringify(file.catalogDataset, null, 2));
+
+        if (!endpointUrl) {
+            this.notificationService.showError('Error', 'Could not resolve endpoint URL from catalog');
+            return;
+        }
 
         this.router.navigate(
             ['/files/view', file.assetId],
@@ -259,6 +267,11 @@ export class ExploreListComponent implements OnInit {
             if (state === 'FINALIZED') {
                 this.notificationService.showSuccess('Success', 'Access granted — you can now view the live data');
                 await this.catalogService.matchContractsToFiles(this.files);
+                // Exclude own files in case they appear in the catalog
+                const ownDid = this.authService.getSelectedParticipant()?.participantIdentifier;
+                if (ownDid) {
+                    this.files = this.files.filter(f => f.partnerDid !== ownDid);
+                }
                 this.applyFilters();
             } else {
                 this.notificationService.showError('Error', `Negotiation timed out in state: ${state}`);

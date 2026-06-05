@@ -1,150 +1,160 @@
-@if (selectedFile) {
-    <app-file-detail
-            [file]="selectedFile"
-            (closeDetails)="selectedFile = undefined">
-    </app-file-detail>
-} @else {
-    <div class="p-6">
+<div class="p-6">
 
-        <div class="sm:flex sm:items-center mb-8">
-            <div class="sm:flex-auto">
-                <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Data</h1>
-                <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                    View and manage your data
-                </p>
-            </div>
-            <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-                <button (click)="openUploadSection()"
-                        class="inline-flex items-center justify-center rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600">
-                    <svg class="-ml-0.5 mr-1.5 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                    Share Data
-                </button>
+    <div class="sm:flex sm:items-center mb-8">
+        <div class="sm:flex-auto">
+            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Data</h1>
+            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                Your registered endpoints and data you have access to from partners.
+            </p>
+        </div>
+        <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+            <button (click)="openUploadSection()"
+                    class="inline-flex items-center justify-center rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500">
+                <svg class="-ml-0.5 mr-1.5 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Share Data
+            </button>
+        </div>
+    </div>
+
+    <form [formGroup]="filterForm" class="mb-6">
+        <div class="relative max-w-md">
+            <input type="text" formControlName="searchTerm"
+                   placeholder="Search data..."
+                   class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white sm:text-sm pl-10">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
             </div>
         </div>
+    </form>
 
-        <form [formGroup]="filterForm" class="mb-6">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 sm:space-x-4">
-                <div class="flex-1 min-w-0">
-                    <div class="relative">
-                        <input type="text" formControlName="searchTerm"
-                               placeholder="Search data..."
-                               class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white sm:text-sm pl-10">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-3">
-                    <button (click)="openSearchNetwork()"
-                            class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-300 dark:hover:bg-primary-900/50 transition-colors duration-200">
-                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
-                        Discover Data
-                    </button>
-                </div>
-            </div>
-        </form>
+    <div class="mt-8 flow-root">
+        <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
+                        <thead class="bg-gray-50 dark:bg-gray-800">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Endpoint URL</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Origin</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Partner</th>
+                            <th scope="col" class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
+                        </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                            @if (loading) {
+                                <tr>
+                                    <td colspan="5" class="px-6 py-12 text-center">
+                                        <div class="flex justify-center">
+                                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            } @else {
+                                @if (filteredFiles.length > 0) {
+                                    @for (file of filteredFiles; track file.id) {
+                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
 
-        <div class="mt-8 flow-root">
-            <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                    <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                        <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
-                            <thead class="bg-gray-50 dark:bg-gray-800">
-                            <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Endpoint URL</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Asset ID</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Registered</th>
-                                <th scope="col" class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
-                            </tr>
-                            </thead>
-                            <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                                @if (loading) {
-                                    <tr>
-                                        <td colspan="5" class="px-6 py-12 text-center">
-                                            <div class="flex justify-center">
-                                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                } @else {
-                                    @if (filteredFiles.length > 0) {
-                                        @for (file of filteredFiles; track file.id) {
-                                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="flex items-center space-x-2">
-                                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300">LIVE</span>
-                                                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ file.name }}</span>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 max-w-xs">
-                        <span class="text-xs font-mono text-gray-500 dark:text-gray-400 truncate block" [title]="file.description ?? ''">
-                          {{ file.description || '—' }}
+                                            <!-- Name -->
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center space-x-2">
+                                                    <span class="inline-flex px-1.5 py-0.5 rounded text-xs font-bold bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300">LIVE</span>
+                                                    <span class="text-sm font-medium text-gray-900 dark:text-white">
+                            {{ file.catalogDataset?.['edc:properties']?.['edc:name'] || file.name }}
+                          </span>
+                                                </div>
+                                            </td>
+
+                                            <!-- Endpoint URL -->
+                                            <td class="px-6 py-4 max-w-xs">
+                        <span class="text-xs font-mono text-gray-500 dark:text-gray-400 truncate block"
+                              [title]="file.catalogDataset?.['edc:properties']?.['edc:endpointUrl'] || file.description || ''">
+                          {{ file.catalogDataset?.['edc:properties']?.['edc:endpointUrl'] || file.description || '—' }}
                         </span>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-xs font-mono text-gray-400 dark:text-gray-500">
-                                                    {{ file.assetId || '—' }}
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                                    {{ file.uploadedAt ? (file.uploadedAt | date: DATE_FORMATS.dateWithTime) : 'N/A' }}
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                                    @if (file.assetId) {
-                                                        <a [routerLink]="['/files/view', file.assetId]"
-                                                           class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-300 dark:hover:bg-primary-900/50 transition-colors duration-200">
+                                            </td>
+
+                                            <!-- Origin -->
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                @if (file.origin === 'owned') {
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                            Owned
+                          </span>
+                                                } @else {
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                            Remote
+                          </span>
+                                                }
+                                            </td>
+
+                                            <!-- Partner -->
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                {{ file.partnerName || '—' }}
+                                            </td>
+
+                                            <!-- Actions -->
+                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                @if (file.origin === 'remote') {
+                                                    <button (click)="viewData(file)"
+                                                            [disabled]="navigatingToData === file.assetId"
+                                                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-300 dark:hover:bg-primary-900/50 transition-colors duration-200 disabled:opacity-50">
+                                                        @if (navigatingToData === file.assetId) {
+                                                            <div class="w-3 h-3 mr-1.5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                                                            Starting transfer...
+                                                        } @else {
                                                             <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                                       d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                                                             </svg>
                                                             View Data
-                                                        </a>
-                                                    }
-                                                    <a (click)="selectedFile = file"
-                                                       class="cursor-pointer inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-900/30 dark:text-gray-300 dark:hover:bg-gray-900/50 transition-colors duration-200">
-                                                        <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                                        </svg>
-                                                        Details
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        }
-                                    } @else {
-                                        <tr>
-                                            <td colspan="5" class="px-6 py-12 text-center">
-                                                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                                </svg>
-                                                <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No data</h3>
-                                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                                    Get started by sharing your first data asset.
-                                                </p>
-                                                <div class="mt-6">
-                                                    <button (click)="openUploadSection()"
-                                                            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
-                                                        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                                        </svg>
-                                                        Share Data
+                                                        }
                                                     </button>
-                                                </div>
+                                                } @else {
+                                                    <span class="text-xs text-gray-400">Published</span>
+                                                }
                                             </td>
+
                                         </tr>
                                     }
+                                } @else {
+                                    <tr>
+                                        <td colspan="5" class="px-6 py-12 text-center">
+                                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                            </svg>
+                                            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No data yet</h3>
+                                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                                Share your first data asset or request access to partner data from the Explore page.
+                                            </p>
+                                            <div class="mt-6 flex justify-center space-x-3">
+                                                <button (click)="openUploadSection()"
+                                                        class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
+                                                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                                    </svg>
+                                                    Share Data
+                                                </button>
+                                                <button (click)="openSearchNetwork()"
+                                                        class="inline-flex items-center px-4 py-2 border border-primary-600 shadow-sm text-sm font-medium rounded-md text-primary-700 bg-white hover:bg-primary-50">
+                                                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                                    </svg>
+                                                    Discover Data
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
                                 }
-                            </tbody>
-                        </table>
-                    </div>
+                            }
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-
     </div>
-}
+
+</div>

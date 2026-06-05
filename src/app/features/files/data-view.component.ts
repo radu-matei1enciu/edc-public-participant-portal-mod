@@ -47,6 +47,9 @@ export class DataViewComponent implements OnInit, OnDestroy {
         this.startPolling();
     }
 
+    getPassCount(): number { return this.results.filter(r => r.status === 'PASS').length; }
+    getFailCount(): number { return this.results.filter(r => r.status === 'FAIL').length; }
+
     private startPolling(): void {
         this.pollSub = interval(10_000).pipe(
             startWith(0),
