@@ -1,7 +1,7 @@
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Observable } from 'rxjs';
 import { UseCaseService } from '../../core/services/use-case.service';
@@ -14,37 +14,41 @@ import { EDCDataOperationsService, PartnerReference, TenantOperationsService } f
 import { RedlineUser } from '../../core/models/redline-user.model';
 import { DataspaceService } from '../../core/services/dataspace.service';
 import { CatalogService } from '../../core/services/catalog.service';
+import { TransferService } from '../../core/services/transfer.service';
 
 @Component({
     selector: 'app-explore-list',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterLink],
+    imports: [CommonModule, ReactiveFormsModule],
     templateUrl: './explore-list.component.html'
 })
 export class ExploreListComponent implements OnInit {
-    private useCaseService      = inject(UseCaseService);
-    private authService         = inject(AuthService);
-    private notificationService = inject(NotificationService);
-    private preferencesService  = inject(UserPreferencesService);
-    private destroyRef          = inject(DestroyRef);
-    private fb                  = inject(FormBuilder);
-    private tenantOperationsService = inject(TenantOperationsService);
+    private transferService          = inject(TransferService);
+    private router                   = inject(Router);
+    private useCaseService           = inject(UseCaseService);
+    private authService              = inject(AuthService);
+    private notificationService      = inject(NotificationService);
+    private preferencesService       = inject(UserPreferencesService);
+    private destroyRef               = inject(DestroyRef);
+    private fb                       = inject(FormBuilder);
+    private tenantOperationsService  = inject(TenantOperationsService);
     private edcDataOperationsService = inject(EDCDataOperationsService);
-    private dataspaceService    = inject(DataspaceService);
-    private catalogService      = inject(CatalogService);
+    private dataspaceService         = inject(DataspaceService);
+    private catalogService           = inject(CatalogService);
 
-    files: FileAsset[] = [];
+    files: FileAsset[]         = [];
     filteredFiles: FileAsset[] = [];
-    useCases: UseCase[] = [];
+    useCases: UseCase[]        = [];
     filterForm: FormGroup;
-    loading = false;
+    loading                    = false;
     preferences$: Observable<UserPreferences>;
-    currentPage = 1;
-    itemsPerPage = 10;
+    currentPage                = 1;
+    itemsPerPage               = 10;
     redlineUser?: RedlineUser;
-    requestingAccess: string | null = null;
-    partners: PartnerReference[] = [];
-    partnerDataspaceMap = new Map<string, string>();
+    requestingAccess: string | null  = null;
+    navigatingToData: string | null  = null;  // assetId currently being transferred
+    partners: PartnerReference[]     = [];
+    partnerDataspaceMap              = new Map<string, string>();
     useCaseFilter?: string;
     companyFilter?: string;
     searchText?: string;
@@ -194,6 +198,24 @@ export class ExploreListComponent implements OnInit {
 
     hasAccess(file: FileAsset): boolean {
         return file.origin === 'remote' && !!file.agreements && file.agreements.length > 0;
+    }
+
+    async viewData(file: FileAsset): Promise<void> {
+        this.navigatingToData = file.assetId ?? null;
+
+        const token = await this.transferService.requestTransferAndViewData(file);
+        this.navigatingToData = null;
+
+        if (!token) return; // error already shown by TransferService
+
+        // Extract the public endpoint URL from the catalog asset properties
+        const props = file.catalogDataset?.['edc:properties'] as Record<string, any> | undefined;
+        const endpointUrl: string = props?.['endpointUrl'] ?? '';
+
+        this.router.navigate(
+            ['/files/view', file.assetId],
+            { state: { token, endpointUrl } }
+        );
     }
 
     async requestAccess(file: FileAsset): Promise<void> {
