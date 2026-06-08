@@ -27,11 +27,13 @@ jobs:
       - name: Build Angular application
         run: npm run build -- --configuration production
 
-      - name: Set lowercase repository name
+      - name: Set image metadata
         id: repo
         run: |
           repo_lowercase=$(echo "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')
           echo "repo_lowercase=${repo_lowercase}" >> "$GITHUB_OUTPUT"
+          branch_tag=$(echo "${{ github.ref_name }}" | tr '/' '-' | tr '[:upper:]' '[:lower:]')
+          echo "branch_tag=${branch_tag}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -49,7 +51,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ steps.repo.outputs.repo_lowercase }}:latest
+            ghcr.io/${{ steps.repo.outputs.repo_lowercase }}:${{ steps.repo.outputs.branch_tag }}
             ghcr.io/${{ steps.repo.outputs.repo_lowercase }}:${{ github.sha }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
