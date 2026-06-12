@@ -7,51 +7,51 @@ import { AuthService } from '../../../core/services/auth.service';
 import { ConfigService } from '../../../core/services/config.service';
 
 @Component({
-  selector: 'app-memberships-section',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './memberships-section.component.html',
-  })
+    selector: 'app-memberships-section',
+    standalone: true,
+    imports: [CommonModule],
+    templateUrl: './memberships-section.component.html',
+})
 export class MembershipsSectionComponent implements OnInit {
-  @Output() viewDetails = new EventEmitter<number>();
+    @Output() viewDetails = new EventEmitter<number>();
 
-  memberships: DataspaceResource[] = [];
-  loading = false;
+    memberships: DataspaceResource[] = [];
+    loading = false;
 
-  private dataspaceService = inject(DataspaceService);
-  private notificationService = inject(NotificationService);
-  private authService = inject(AuthService);
-  private configService = inject(ConfigService);
+    private dataspaceService = inject(DataspaceService);
+    private notificationService = inject(NotificationService);
+    private authService = inject(AuthService);
+    private configService = inject(ConfigService);
 
-  ngOnInit(): void {
-    this.loadMemberships();
-  }
-
-  loadMemberships(): void {
-    const userIds = this.authService.getRedlineUser();
-    if (!userIds) {
-      this.notificationService.showError('Error', 'Failed to load user profile');
-      return;
+    ngOnInit(): void {
+        this.loadMemberships();
     }
 
-    this.loading = true;
-    this.dataspaceService.getParticipantDataspaces(userIds.providerId, userIds.tenantId, userIds.participantId).subscribe({
-      next: (memberships) => {
-        this.memberships = memberships;
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-        this.notificationService.showError('Error', 'Failed to load memberships');
-      }
-    });
-  }
+    loadMemberships(): void {
+        const userIds = this.authService.getRedlineUser();
+        if (!userIds) {
+            this.notificationService.showError('Error', 'Failed to load user profile');
+            return;
+        }
 
-  onViewDetails(membershipId: number): void {
-    this.viewDetails.emit(membershipId);
-  }
+        this.loading = true;
+        this.dataspaceService.getParticipantDataspaces(userIds.providerId, userIds.tenantId, userIds.participantId).subscribe({
+            next: (memberships) => {
+                this.memberships = memberships;
+                this.loading = false;
+            },
+            error: () => {
+                this.loading = false;
+                this.notificationService.showError('Error', 'Failed to load memberships');
+            }
+        });
+    }
 
-  startRegistration(): void {
-    window.location.href = '/registration';
-  }
+    onViewDetails(membershipId: number): void {
+        this.viewDetails.emit(membershipId);
+    }
+
+    startRegistration(): void {
+        window.location.href = '/registration';
+    }
 }

@@ -12,16 +12,17 @@
 
             <div class="flex items-center space-x-3">
                 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="h-9 w-9 flex-shrink-0">
-                    <rect width="100" height="100" fill="#1B3A99"/>
-                    <circle cx="50" cy="50" r="41" fill="white"/>
-                    <line x1="50" y1="9" x2="50" y2="91" stroke="#1B3A99" stroke-width="3"/>
-                    <text x="54" y="67" font-family="Arial,sans-serif" font-size="23" font-weight="900" fill="#1B3A99" letter-spacing="-0.5">ucb</text>
-                </svg>
+  <rect width="100" height="100" rx="22" fill="var(--primary, #0891B2)"/>
+  <circle cx="50" cy="28" r="10" fill="white"/>
+  <circle cx="26" cy="70" r="10" fill="white"/>
+  <circle cx="74" cy="70" r="10" fill="white"/>
+  <path d="M50 38 L29 61 M50 38 L71 61 M36 70 L64 70" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
                 <div>
                     <div class="flex items-center space-x-2">
-                        <h1 class="text-base font-bold text-gray-900 dark:text-white">QC Results — Live Feed</h1>
+                        <h1 class="text-base font-bold text-gray-900 dark:text-white">Live Data Feed</h1>
                         <span class="text-gray-300 dark:text-gray-600">·</span>
-                        <span class="text-sm text-gray-500">PharmaLab LIMS</span>
+                        <span class="text-sm text-gray-500">Connected Source System</span>
                     </div>
                     <p class="text-xs text-gray-400 font-mono mt-0.5">{{ assetId }}</p>
                 </div>
@@ -50,8 +51,8 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
         </svg>
         <p class="text-xs text-primary-700 dark:text-primary-300 font-medium">
-            Use Case 3 — Near-real-time QC Data Exchange &nbsp;·&nbsp;
-            <span class="font-normal">Structured results pushed from PharmaLab LIMS as tests are approved via EDC dataspace contract.</span>
+            Live Standardized Data Exchange &nbsp;·&nbsp;
+            <span class="font-normal">Structured records pushed from the connected source system in real time via the dataspace contract.</span>
         </p>
         @if (results.length > 0) {
             <div class="ml-auto flex items-center space-x-3 text-xs flex-shrink-0">
@@ -68,7 +69,7 @@
     @if (isLoading) {
         <div class="flex-1 flex flex-col items-center justify-center">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mb-3"></div>
-            <p class="text-sm text-gray-500">Connecting to QC data feed…</p>
+            <p class="text-sm text-gray-500">Connecting to live data feed…</p>
         </div>
     }
 
@@ -122,7 +123,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                   d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
-                        <p class="text-sm text-gray-400 font-medium">Awaiting QC results from the lab…</p>
+                        <p class="text-sm text-gray-400 font-medium">Awaiting live data from the source…</p>
                     </div>
                 } @else {
                     <table class="min-w-full table-fixed divide-y divide-gray-100 dark:divide-gray-800">

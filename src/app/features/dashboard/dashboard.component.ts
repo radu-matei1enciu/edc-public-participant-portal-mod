@@ -15,151 +15,151 @@ import { UseCaseService } from '../../core/services/use-case.service';
 import { UseCase } from '../../core/models/use-case.model';
 
 @Component({
-  selector: 'app-dashboard',
-  standalone: true,
-  imports: [
-    CommonModule,
-    DatePipe,
-    RouterLink
-  ],
-  templateUrl: './dashboard.component.html'
+    selector: 'app-dashboard',
+    standalone: true,
+    imports: [
+        CommonModule,
+        DatePipe,
+        RouterLink
+    ],
+    templateUrl: './dashboard.component.html'
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  userProfile: UserProfile | null = null;
-  loading = true;
-  error: string | null = null;
-  isAuthenticated = false;
-  membershipsCount = 0;
-  partnersCount = 0;
-  filesCount = 0;
-  useCasesCount = 0;
-  lastUpdateTime = new Date();
-  recentMemberships: DataspaceResource[] = [];
-  useCases: UseCase[] = [];
+    userProfile: UserProfile | null = null;
+    loading = true;
+    error: string | null = null;
+    isAuthenticated = false;
+    membershipsCount = 0;
+    partnersCount = 0;
+    filesCount = 0;
+    useCasesCount = 0;
+    lastUpdateTime = new Date();
+    recentMemberships: DataspaceResource[] = [];
+    useCases: UseCase[] = [];
 
-  private authService = inject(AuthService);
-  private router = inject(Router);
-  private dataspaceService = inject(DataspaceService);
-  private partnerService = inject(PartnerService);
-  private edcDataOperationsService = inject(EDCDataOperationsService);
-  private useCaseService = inject(UseCaseService);
-  private notificationService = inject(NotificationService);
+    private authService = inject(AuthService);
+    private router = inject(Router);
+    private dataspaceService = inject(DataspaceService);
+    private partnerService = inject(PartnerService);
+    private edcDataOperationsService = inject(EDCDataOperationsService);
+    private useCaseService = inject(UseCaseService);
+    private notificationService = inject(NotificationService);
 
-  ngOnInit(): void {
-    const loggedIn = this.authService.isAuthenticated();
-    this.isAuthenticated = loggedIn;
-    
-    if (!loggedIn) {
-      this.authService.login();
-      return;
-    }
-    
-    this.loadUserProfile();
-  }
+    ngOnInit(): void {
+        const loggedIn = this.authService.isAuthenticated();
+        this.isAuthenticated = loggedIn;
 
-  ngOnDestroy(): void {
-  }
+        if (!loggedIn) {
+            this.authService.login();
+            return;
+        }
 
-  loadUserProfile(): void {
-    this.loading = true;
-    this.error = null;
-
-    this.authService.loadUserProfile().subscribe({
-      next: (profile) => {
-        this.userProfile = profile;
-        this.loading = false;
-        this.loadStats();
-      },
-      error: (error) => {
-        this.loading = false;
-        this.error = 'Failed to load user profile';
-        this.notificationService.showError('Error', 'Failed to load user profile');
-      }
-    });
-  }
-
-  loadStats(): void {
-    const userIds = this.authService.getRedlineUser();
-    if (!userIds) {
-      return;
+        this.loadUserProfile();
     }
 
-    const dataspaces$ = this.dataspaceService.getParticipantDataspaces(
-      userIds.providerId,
-      userIds.tenantId,
-      userIds.participantId
-    ).pipe(
-      catchError(() => of([] as DataspaceResource[]))
-    );
+    ngOnDestroy(): void {
+    }
 
-    const files$ = this.edcDataOperationsService.listFiles(
-      userIds.participantId,
-      userIds.tenantId,
-      userIds.providerId
-    ).pipe(
-      catchError(() => of([]))
-    );
+    loadUserProfile(): void {
+        this.loading = true;
+        this.error = null;
 
-    const useCases$ = this.useCaseService.getUseCases().pipe(
-      catchError(() => of([] as UseCase[]))
-    );
+        this.authService.loadUserProfile().subscribe({
+            next: (profile) => {
+                this.userProfile = profile;
+                this.loading = false;
+                this.loadStats();
+            },
+            error: (error) => {
+                this.loading = false;
+                this.error = 'Failed to load user profile';
+                this.notificationService.showError('Error', 'Failed to load user profile');
+            }
+        });
+    }
 
-    forkJoin({
-      dataspaces: dataspaces$,
-      files: files$,
-      useCases: useCases$
-    }).pipe(
-      switchMap(({ dataspaces, files, useCases }) => {
-        this.membershipsCount = dataspaces.length;
-        this.recentMemberships = [...dataspaces].reverse().slice(0, 6);
-        this.filesCount = files.length;
-        this.useCases = useCases;
-        this.useCasesCount = useCases.length;
-        this.lastUpdateTime = new Date();
-
-        if (dataspaces.length > 0) {
-          const partnerRequests = dataspaces.map(dataspace =>
-            this.partnerService.getPartners(
-              userIds.providerId,
-              userIds.tenantId,
-              userIds.participantId,
-              dataspace.id
-            ).pipe(
-              catchError(() => of([] as Partner[]))
-            )
-          );
-
-          return forkJoin(partnerRequests).pipe(
-            catchError(() => of([] as Partner[][]))
-          );
-        } else {
-          return of([] as Partner[][]);
+    loadStats(): void {
+        const userIds = this.authService.getRedlineUser();
+        if (!userIds) {
+            return;
         }
-      }),
-      catchError(() => {
-        this.membershipsCount = 0;
-        this.filesCount = 0;
-        this.partnersCount = 0;
-        this.useCasesCount = 0;
-        this.useCases = [];
-        return of([] as Partner[][]);
-      })
-    ).subscribe({
-      next: (partnersArrays) => {
-        if (partnersArrays.length > 0) {
-          const allPartners = partnersArrays.flat();
-          const uniquePartners = Array.from(
-            new Map(allPartners.map(p => [p.identifier, p])).values()
-          );
-          this.partnersCount = uniquePartners.length;
-        } else {
-          this.partnersCount = 0;
-        }
-        this.lastUpdateTime = new Date();
-      },
-      error: () => {
-        this.partnersCount = 0;
-      }
-    });
-  }
+
+        const dataspaces$ = this.dataspaceService.getParticipantDataspaces(
+            userIds.providerId,
+            userIds.tenantId,
+            userIds.participantId
+        ).pipe(
+            catchError(() => of([] as DataspaceResource[]))
+        );
+
+        const files$ = this.edcDataOperationsService.listFiles(
+            userIds.participantId,
+            userIds.tenantId,
+            userIds.providerId
+        ).pipe(
+            catchError(() => of([]))
+        );
+
+        const useCases$ = this.useCaseService.getUseCases().pipe(
+            catchError(() => of([] as UseCase[]))
+        );
+
+        forkJoin({
+            dataspaces: dataspaces$,
+            files: files$,
+            useCases: useCases$
+        }).pipe(
+            switchMap(({ dataspaces, files, useCases }) => {
+                this.membershipsCount = dataspaces.length;
+                this.recentMemberships = [...dataspaces].reverse().slice(0, 6);
+                this.filesCount = files.length;
+                this.useCases = useCases;
+                this.useCasesCount = useCases.length;
+                this.lastUpdateTime = new Date();
+
+                if (dataspaces.length > 0) {
+                    const partnerRequests = dataspaces.map(dataspace =>
+                        this.partnerService.getPartners(
+                            userIds.providerId,
+                            userIds.tenantId,
+                            userIds.participantId,
+                            dataspace.id
+                        ).pipe(
+                            catchError(() => of([] as Partner[]))
+                        )
+                    );
+
+                    return forkJoin(partnerRequests).pipe(
+                        catchError(() => of([] as Partner[][]))
+                    );
+                } else {
+                    return of([] as Partner[][]);
+                }
+            }),
+            catchError(() => {
+                this.membershipsCount = 0;
+                this.filesCount = 0;
+                this.partnersCount = 0;
+                this.useCasesCount = 0;
+                this.useCases = [];
+                return of([] as Partner[][]);
+            })
+        ).subscribe({
+            next: (partnersArrays) => {
+                if (partnersArrays.length > 0) {
+                    const allPartners = partnersArrays.flat();
+                    const uniquePartners = Array.from(
+                        new Map(allPartners.map(p => [p.identifier, p])).values()
+                    );
+                    this.partnersCount = uniquePartners.length;
+                } else {
+                    this.partnersCount = 0;
+                }
+                this.lastUpdateTime = new Date();
+            },
+            error: () => {
+                this.partnersCount = 0;
+            }
+        });
+    }
 }

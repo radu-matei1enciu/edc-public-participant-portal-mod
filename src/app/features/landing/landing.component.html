@@ -2,17 +2,18 @@
   <header class="bg-white shadow-sm border-b border-gray-100">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center py-5">
-        <!-- UCB Logo + name -->
+        <!-- Logo + name -->
         <div class="flex items-center space-x-3" (click)="logout()">
           <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 flex-shrink-0">
-            <rect width="100" height="100" fill="#1B3A99"/>
-            <circle cx="50" cy="50" r="41" fill="white"/>
-            <line x1="50" y1="9" x2="50" y2="91" stroke="#1B3A99" stroke-width="3"/>
-            <text x="54" y="67" font-family="Arial,sans-serif" font-size="23" font-weight="900" fill="#1B3A99" letter-spacing="-0.5">ucb</text>
-          </svg>
+  <rect width="100" height="100" rx="22" fill="var(--primary, #0891B2)"/>
+  <circle cx="50" cy="28" r="10" fill="white"/>
+  <circle cx="26" cy="70" r="10" fill="white"/>
+  <circle cx="74" cy="70" r="10" fill="white"/>
+  <path d="M50 38 L29 61 M50 38 L71 61 M36 70 L64 70" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
           <div class="flex flex-col leading-tight">
-            <span class="text-lg font-bold text-primary-800">UCB DataSpace Portal</span>
-            <span class="text-xs text-gray-400 tracking-wide">Inspired by patients, driven by science</span>
+            <span class="text-lg font-bold text-primary-800">DataSpace Portal</span>
+            <span class="text-xs text-gray-400 tracking-wide">Standardized data sharing, simplified</span>
           </div>
         </div>
 
@@ -53,25 +54,26 @@
   <section class="py-24">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center max-w-4xl mx-auto">
-        <!-- UCB logo hero -->
+        <!-- Logo hero -->
         <div class="flex justify-center mb-8">
           <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="h-20 w-20">
-            <rect width="100" height="100" fill="#1B3A99"/>
-            <circle cx="50" cy="50" r="41" fill="white"/>
-            <line x1="50" y1="9" x2="50" y2="91" stroke="#1B3A99" stroke-width="3"/>
-            <text x="54" y="67" font-family="Arial,sans-serif" font-size="23" font-weight="900" fill="#1B3A99" letter-spacing="-0.5">ucb</text>
-          </svg>
+  <rect width="100" height="100" rx="22" fill="var(--primary, #0891B2)"/>
+  <circle cx="50" cy="28" r="10" fill="white"/>
+  <circle cx="26" cy="70" r="10" fill="white"/>
+  <circle cx="74" cy="70" r="10" fill="white"/>
+  <path d="M50 38 L29 61 M50 38 L71 61 M36 70 L64 70" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
         </div>
         <h1 class="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
-          UCB <span class="text-primary-700">DataSpace</span>
+          The <span class="text-primary-700">DataSpace</span> Portal
         </h1>
         <p class="text-base font-medium text-primary-600 mb-8 tracking-widest uppercase">
-          Inspired by patients, driven by science
+          Standardized. Secure. Real-time.
         </p>
         <p class="text-xl text-gray-600 mb-10 leading-relaxed max-w-3xl mx-auto">
-          UCB's secure data-sharing platform connecting pharmaceutical partners,
-          clinical research organisations, and supply chain participants in a
-          trusted, GDPR-compliant ecosystem built on open dataspace standards.
+          A secure data-sharing platform connecting partners, organisations,
+          and systems in a trusted ecosystem for live, standardized data
+          exchange — built on open dataspace standards.
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
           <button (click)="navigateToSignUp()" class="btn-primary text-lg px-8 py-4">
@@ -89,10 +91,10 @@
   <section id="features" class="py-20 bg-white">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-16">
-        <h2 class="text-4xl font-bold text-gray-900 mb-4">Why UCB DataSpace</h2>
+        <h2 class="text-4xl font-bold text-gray-900 mb-4">Why DataSpace Portal</h2>
         <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-          A purpose-built platform to share pharmaceutical data securely across
-          the value chain — with the highest standards of compliance and trust.
+          A purpose-built platform to share live, standardized data securely
+          across your network — with the highest standards of compliance and trust.
         </p>
       </div>
 
@@ -116,10 +118,10 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-3">GDPR &amp; GxP Compliant</h3>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">Standards-Based Compliance</h3>
           <p class="text-gray-600">
-            Full alignment with European data-protection legislation, pharmaceutical
-            GxP standards, and international best practices.
+            Full alignment with European data-protection legislation,
+            open dataspace specifications, and international best practices.
           </p>
         </div>
 
@@ -132,7 +134,7 @@
           <h3 class="text-xl font-semibold text-gray-900 mb-3">High Availability</h3>
           <p class="text-gray-600">
             Cloud-native infrastructure with 24/7 availability, ensuring
-            uninterrupted data access for time-sensitive clinical and supply operations.
+            uninterrupted access to live data for time-sensitive operations.
           </p>
         </div>
 
@@ -144,8 +146,8 @@
           </div>
           <h3 class="text-xl font-semibold text-gray-900 mb-3">Multi-Dataspace</h3>
           <p class="text-gray-600">
-            Participate in multiple dataspaces simultaneously — clinical trials,
-            manufacturing supply chain, and partner networks — through a single identity.
+            Participate in multiple dataspaces simultaneously — different
+            projects, supply chains, and partner networks — through a single identity.
           </p>
         </div>
 
@@ -205,7 +207,7 @@
           </div>
           <h3 class="text-xl font-semibold text-gray-900 mb-4">Verify</h3>
           <p class="text-gray-600">
-            UCB verifies your details and provisions your dataspace identity and
+            We verify your details and provision your dataspace identity and
             verifiable credentials automatically.
           </p>
         </div>
@@ -229,11 +231,11 @@
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center">
         <h2 class="text-4xl font-bold text-white mb-4">
-          Ready to Join the UCB DataSpace?
+          Ready to Join the DataSpace?
         </h2>
         <p class="text-xl text-primary-200 mb-8 max-w-2xl mx-auto">
-          Join UCB's growing network of partners and organisations sharing data
-          securely in pursuit of better patient outcomes.
+          Join a growing network of partners and organisations sharing live,
+          standardized data securely and efficiently.
         </p>
         <button (click)="navigateToSignUp()"
                 class="bg-white hover:bg-primary-50 text-primary-800 font-bold py-4 px-8 rounded-lg text-lg transition-colors duration-200">
@@ -250,15 +252,16 @@
         <div>
           <div class="flex items-center space-x-3 mb-4">
             <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 flex-shrink-0">
-              <rect width="100" height="100" fill="#1B3A99"/>
-              <circle cx="50" cy="50" r="41" fill="white"/>
-              <line x1="50" y1="9" x2="50" y2="91" stroke="#1B3A99" stroke-width="3"/>
-              <text x="54" y="67" font-family="Arial,sans-serif" font-size="23" font-weight="900" fill="#1B3A99" letter-spacing="-0.5">ucb</text>
-            </svg>
-            <span class="text-lg font-bold">UCB DataSpace</span>
+  <rect width="100" height="100" rx="22" fill="var(--primary, #0891B2)"/>
+  <circle cx="50" cy="28" r="10" fill="white"/>
+  <circle cx="26" cy="70" r="10" fill="white"/>
+  <circle cx="74" cy="70" r="10" fill="white"/>
+  <path d="M50 38 L29 61 M50 38 L71 61 M36 70 L64 70" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+            <span class="text-lg font-bold">DataSpace Portal</span>
           </div>
           <p class="text-gray-400 text-sm">
-            Inspired by patients, driven by science.
+            Standardized data sharing, built on open dataspace technology.
           </p>
         </div>
 
@@ -289,21 +292,21 @@
               <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
-              dataspace@ucb.com
+              support@dataspace.example
             </li>
             <li class="flex items-center">
               <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              Brussels, Belgium
+              Operated globally
             </li>
           </ul>
         </div>
       </div>
 
       <div class="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-        <p>&copy; 2025 UCB S.A. All rights reserved. &nbsp;|&nbsp; Allée de la Recherche 60, 1070 Brussels</p>
+        <p>&copy; 2025 DataSpace Portal. All rights reserved.</p>
       </div>
     </div>
   </footer>

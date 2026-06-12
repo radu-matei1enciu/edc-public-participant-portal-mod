@@ -10,37 +10,37 @@ import {ErrorInterceptor} from './core/interceptors/error.interceptor';
 import {Configuration} from "./core/redline";
 
 export function configFactory(configService: ConfigService) {
-  return () => configService.loadConfig().toPromise();
+    return () => configService.loadConfig().toPromise();
 }
 
 export const appConfig: ApplicationConfig = {
-  providers: [
-    provideRouter(routes),
-    provideHttpClient(withInterceptorsFromDi()),
-    {
-      provide: Configuration,
-      useFactory: () => {
-        const configService = inject(ConfigService);
-        return new Configuration({
-          basePath: configService.getNestedValue<string>('redlineUrl') || 'http://redline.localhost'
-        })
-      }
-    },
-    ConfigService,
-    AuthService,
-    provideAppInitializer(() => {
-        const configService = inject(ConfigService);
-        return configService.loadConfig().toPromise();
-      }),
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: AuthInterceptor,
-      multi: true
-    },
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: ErrorInterceptor,
-      multi: true
-    }
-  ]
+    providers: [
+        provideRouter(routes),
+        provideHttpClient(withInterceptorsFromDi()),
+        {
+            provide: Configuration,
+            useFactory: () => {
+                const configService = inject(ConfigService);
+                return new Configuration({
+                    basePath: configService.getNestedValue<string>('redlineUrl') || 'http://redline.localhost'
+                })
+            }
+        },
+        ConfigService,
+        AuthService,
+        provideAppInitializer(() => {
+            const configService = inject(ConfigService);
+            return configService.loadConfig().toPromise();
+        }),
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: AuthInterceptor,
+            multi: true
+        },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: ErrorInterceptor,
+            multi: true
+        }
+    ]
 };

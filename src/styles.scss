@@ -3,24 +3,24 @@
 @use 'tailwindcss/utilities';
 
 :root {
-  /* UCB Deep Blue palette */
-  --color-primary-50:  rgb(237 241 251);
-  --color-primary-100: rgb(209 219 245);
-  --color-primary-200: rgb(163 184 234);
-  --color-primary-300: rgb(117 148 224);
-  --color-primary-400: rgb(71  113 213);
-  --color-primary-500: rgb(42  82  186);
-  --color-primary-600: rgb(27  58  153);   /* UCB primary blue */
-  --color-primary-700: rgb(21  45  119);
-  --color-primary-800: rgb(15  32   85);
-  --color-primary-900: rgb(9   19   51);
+  /* DataSpace Cyan palette */
+  --color-primary-50:  rgb(236 254 255);
+  --color-primary-100: rgb(207 250 254);
+  --color-primary-200: rgb(165 243 252);
+  --color-primary-300: rgb(103 232 249);
+  --color-primary-400: rgb(34  211 238);
+  --color-primary-500: rgb(6   182 212);
+  --color-primary-600: rgb(8   145 178);   /* DataSpace primary cyan */
+  --color-primary-700: rgb(14  116 144);
+  --color-primary-800: rgb(21  94  117);
+  --color-primary-900: rgb(22  78  99);
 
-  --primary:       #1B3A99;
-  --accent:        #2D5CBE;
-  --primary-light: #4771D5;
-  --primary-dark:  #152D77;
-  --accent-light:  #5E86DC;
-  --accent-dark:   #1B3A99;
+  --primary:       #0891B2;
+  --accent:        #06B6D4;
+  --primary-light: #22D3EE;
+  --primary-dark:  #0E7490;
+  --accent-light:  #67E8F9;
+  --accent-dark:   #0891B2;
 
   --gray-50:  #F9FAFB;
   --gray-100: #F3F4F6;
@@ -80,28 +80,28 @@
 body {
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', sans-serif;
+  'Ubuntu', 'Cantarell', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--gray-50);
   color: var(--gray-900);
 }
 
-/* Custom Tailwind Classes — UCB themed */
+/* Custom Tailwind Classes — DataSpace Portal theme */
 .btn-primary {
-  @apply bg-blue-800 hover:bg-blue-900 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  @apply bg-primary-800 hover:bg-primary-900 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
 }
 
 .btn-secondary {
-  @apply bg-blue-700 hover:bg-blue-800 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  @apply bg-primary-700 hover:bg-primary-800 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
 }
 
 .btn-outline {
-  @apply border-2 border-blue-800 text-blue-800 hover:bg-blue-800 hover:text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  @apply border-2 border-primary-800 text-primary-800 hover:bg-primary-800 hover:text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
 }
 
 .form-input {
-  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
 }
 
 .form-label {
@@ -116,22 +116,22 @@ body {
   @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
 }
 
-/* Color scheme overrides — all mapped to UCB blue family */
+/* Color scheme overrides — alternate accent palettes for the theme switcher */
 .scheme-blue {
-  --color-primary-50:  rgb(237 241 251);
-  --color-primary-100: rgb(209 219 245);
-  --color-primary-200: rgb(163 184 234);
-  --color-primary-300: rgb(117 148 224);
-  --color-primary-400: rgb(71  113 213);
-  --color-primary-500: rgb(42  82  186);
-  --color-primary-600: rgb(27  58  153);
-  --color-primary-700: rgb(21  45  119);
-  --color-primary-800: rgb(15  32   85);
-  --color-primary-900: rgb(9   19   51);
-  --primary: #1B3A99;
-  --primary-light: #4771D5;
-  --primary-dark: #152D77;
-  --accent: #2D5CBE;
+  --color-primary-50:  rgb(239 246 255);
+  --color-primary-100: rgb(219 234 254);
+  --color-primary-200: rgb(191 219 254);
+  --color-primary-300: rgb(147 197 253);
+  --color-primary-400: rgb(96  165 250);
+  --color-primary-500: rgb(59  130 246);
+  --color-primary-600: rgb(37  99  235);
+  --color-primary-700: rgb(29  78  216);
+  --color-primary-800: rgb(30  64  175);
+  --color-primary-900: rgb(30  58  138);
+  --primary: #2563EB;
+  --primary-light: #60A5FA;
+  --primary-dark: #1E40AF;
+  --accent: #3B82F6;
 }
 
 .scheme-green {

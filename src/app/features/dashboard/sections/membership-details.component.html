@@ -1,74 +1,74 @@
 <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" (click)="close.emit()">
-  <div class="relative top-20 mx-auto p-5 border w-full max-w-3xl shadow-lg rounded-md bg-white dark:bg-gray-800" (click)="$event.stopPropagation()">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-medium text-gray-900 dark:text-white">Membership Details</h3>
-      <button
-        (click)="close.emit()"
-        class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
-        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
-      </button>
-    </div>
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-3xl shadow-lg rounded-md bg-white dark:bg-gray-800" (click)="$event.stopPropagation()">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Membership Details</h3>
+            <button
+                    (click)="close.emit()"
+                    class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
 
-    @if (loading) {
-      <div class="flex items-center justify-center py-12">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-      </div>
-    } @else {
-      @if (membership) {
-        <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
-          <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <div class="h-12 w-12 rounded-lg bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
+        @if (loading) {
+            <div class="flex items-center justify-center py-12">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+            </div>
+        } @else {
+            @if (membership) {
+                <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
+                    <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="h-12 w-12 rounded-lg bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
                   <span class="text-lg font-bold text-primary-600 dark:text-primary-200">
                     {{ membership.name.charAt(0).toUpperCase() }}
                   </span>
-                </div>
-              </div>
-              <div class="ml-4">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
-                  {{ membership.name }}
-                </h3>
-                <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
-                  {{ membership.properties?.description }}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div class="px-4 py-5 sm:p-6">
-            <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3">
-              <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono break-all bg-gray-50 dark:bg-gray-700 p-2 rounded">
-                  {{ membership.id }}
-                </dd>
-              </div>
-              <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Region</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+                                    {{ membership.name }}
+                                </h3>
+                                <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
+                                    {{ membership.properties?.description }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-4 py-5 sm:p-6">
+                        <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3">
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono break-all bg-gray-50 dark:bg-gray-700 p-2 rounded">
+                                    {{ membership.id }}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Region</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
                   <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200">
                     {{ membership.properties?.region }}
                   </span>
-                </dd>
-              </div>
-              <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Protocol</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                  {{ membership.properties?.protocol }}
-                </dd>
-              </div>
-              <div class="sm:col-span-3">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Description</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                  {{ membership.properties?.description }}
-                </dd>
-              </div>
-            </dl>
-          </div>
-        </div>
-      }
-    }
-  </div>
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Protocol</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                                    {{ membership.properties?.protocol }}
+                                </dd>
+                            </div>
+                            <div class="sm:col-span-3">
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Description</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                                    {{ membership.properties?.description }}
+                                </dd>
+                            </div>
+                        </dl>
+                    </div>
+                </div>
+            }
+        }
+    </div>
 </div>

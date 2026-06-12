@@ -163,7 +163,7 @@ export class FilesListComponent implements OnInit {
 
         await this.catalogService.matchContractsToFiles(remoteFiles);
 
-        // Only keep files where UCB already has access
+        // Only keep files where this participant already has access
         return remoteFiles.filter(f => f.agreements && f.agreements.length > 0);
     }
 
